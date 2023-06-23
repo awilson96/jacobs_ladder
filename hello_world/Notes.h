@@ -1,4 +1,9 @@
-enum class Notes : int
+#ifndef NOTES_H
+#define NOTES_H
+
+#include <iostream>
+
+enum class Notes : std::uint8_t
 {
     A0        = 21,
     ASharp0   = 22,
@@ -153,3 +158,5 @@ enum class Notes : int
     BSharp7   = 108,
     C8        = 108
 };
+
+#endif // NOTES_H
