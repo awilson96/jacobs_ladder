@@ -2,8 +2,9 @@
 #define NOTES_H
 
 #include <iostream>
+#include <string>
 
-enum class Notes : std::uint8_t
+enum class Note : int
 {
     A0        = 21,
     ASharp0   = 22,
@@ -158,5 +159,7 @@ enum class Notes : std::uint8_t
     BSharp7   = 108,
     C8        = 108
 };
+
+int operator-(Note lhs, Note rhs) { return static_cast<int>(lhs) - static_cast<int>(rhs); }
 
 #endif // NOTES_H
