@@ -11,53 +11,13 @@
 
 std::string determineChord(Note bass, Note tenor, Note treble) 
 {
-    int lowerInterval = tenor - bass;
-    int upperInterval = treble - tenor;
+    // Get the intervals between all three notes
+    Interval bassTenor = tenor - bass;
+    Interval tenorTreble = treble - tenor;
+    Interval bassTreble = treble - bass;
 
-    if (lowerInterval == Intervals::semitone)
-    {
-
-    }
-    else if (lowerInterval == Intervals::wholeStep)
-    {
-
-    }
-    else if (lowerInterval == Intervals::minorThird)
-    {
-
-    }
-    else if (lowerInterval == Intervals::majorThird)
-    {
-
-    }
-    else if (lowerInterval == Intervals::fourth)
-    {
-
-    }
-    else if (lowerInterval == Intervals::tritone)
-    {
-
-    }
-    else if (lowerInterval == Intervals::fifth)
-    {
-
-    }
-    else if (lowerInterval == Intervals::minorSixth)
-    {
-
-    }
-    else if (lowerInterval == Intervals::sixth)
-    {
-
-    }
-    else if (lowerInterval == Intervals::minorSeventh)
-    {
-
-    }
-    else if (lowerInterval == Intervals::majorSeventh)
-    {
-
-    }
 }
+
+
 
 #endif // TRIADS_H
