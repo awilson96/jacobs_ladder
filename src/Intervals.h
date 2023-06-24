@@ -10,15 +10,15 @@
 
 enum class Interval : int
 {
-    semitone        = 1,
+    halfStep        = 1,
     wholeStep       = 2,
     minorThird      = 3,
     majorThird      = 4,
-    fourth          = 5,
+    perfectFourth   = 5,
     tritone         = 6,
-    fifth           = 7,
+    perfectFifth    = 7,
     minorSixth      = 8,
-    sixth           = 9,
+    majorSixth      = 9,
     minorSeventh    = 10,
     majorSeventh    = 11,
     octave          = 12,
@@ -30,7 +30,7 @@ Interval createInterval(int interval)
     switch(interval)
     {
         case 1:
-            return Interval::semitone;
+            return Interval::halfStep;
         case 2:
             return Interval::wholeStep;
         case 3:
@@ -38,15 +38,15 @@ Interval createInterval(int interval)
         case 4:
             return Interval::majorThird;
         case 5:
-            return Interval::fourth;
+            return Interval::perfectFourth;
         case 6:
             return Interval::tritone;
         case 7:
-            return Interval::fifth;
+            return Interval::perfectFifth;
         case 8:
             return Interval::minorSixth;
         case 9:
-            return Interval::sixth;
+            return Interval::majorSixth;
         case 10:
             return Interval::minorSeventh;
         case 11:
@@ -55,6 +55,37 @@ Interval createInterval(int interval)
             return Interval::octave;
         default:
             return Interval::unknown;
+    }
+}
+
+void printInterval(Interval interval)
+{
+    switch(interval)
+    {
+        case Interval::halfStep:
+            std::cout << "Half Step";
+        case Interval::wholeStep:
+            std::cout << "Whole Step";
+        case Interval::minorThird:
+            std::cout << "Minor Third";
+        case Interval::majorThird:
+            std::cout << "Major Third";
+        case Interval::perfectFourth:
+            std::cout << "Perfect Fourth";
+        case Interval::tritone:
+            std::cout << "Tritone";
+        case Interval::perfectFifth:
+            std::cout << "Perfect Fifth";
+        case Interval::minorSixth:
+            std::cout << "Minor Sixth";
+        case Interval::majorSixth:
+            std::cout << "Major Sixth";
+        case Interval::minorSeventh:
+            std::cout << "MinorSeventh";
+        case Interval::majorSeventh:
+            std::cout << "Major Seventh";
+        default:
+            std::cout << "Unknown";
     }
 }
 
@@ -67,8 +98,6 @@ Interval operator-(Interval lhs, Interval rhs)
 Interval operator-(Note lhs, Note rhs) 
     { return createInterval(static_cast<int>(lhs) - static_cast<int>(rhs)); }
 
-bool operator==(Interval lhs, Note rhs) { return static_cast<int>(lhs) == static_cast<int>(rhs); }
-bool operator==(Note lhs, Interval rhs) { return static_cast<int>(lhs) == static_cast<int>(rhs); }
 bool operator==(Interval lhs, int rhs) { return static_cast<int>(lhs) == rhs; }
 bool operator==(int lhs, Interval rhs) { lhs == static_cast<int>(rhs); }
 
