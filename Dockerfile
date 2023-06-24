@@ -1,7 +1,21 @@
-ARG VERSION=latest
+# Use a Linux distribution as the base image
+FROM ubuntu:latest
 
-FROM ubuntu:${VERSION}
+# Install necessary dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    g++ \
+    cmake
 
-Run apt-get update -y
+# Set the working directory
+WORKDIR /src
 
-CMD ["bash"] 
+# Copy the source code to the container
+COPY . /src
+
+# Build the C++ application
+RUN cmake .
+RUN make
+
+# Set the entry point for the container
+# CMD ["./your_application"]
