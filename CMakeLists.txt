@@ -12,4 +12,4 @@ set(SOURCES
 )
 
 # Add the executable target
-add_executable(my_executable ${SOURCES})
+add_executable(Jacob ${SOURCES})
