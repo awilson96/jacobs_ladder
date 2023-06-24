@@ -64,11 +64,12 @@ Interval operator+(Interval lhs, Interval rhs)
 Interval operator-(Interval lhs, Interval rhs) 
     { return static_cast<Interval>(static_cast<int>(lhs) - static_cast<int>(rhs)); }
 
+Interval operator-(Note lhs, Note rhs) 
+    { return createInterval(static_cast<int>(lhs) - static_cast<int>(rhs)); }
+
 bool operator==(Interval lhs, Note rhs) { return static_cast<int>(lhs) == static_cast<int>(rhs); }
 bool operator==(Note lhs, Interval rhs) { return static_cast<int>(lhs) == static_cast<int>(rhs); }
 bool operator==(Interval lhs, int rhs) { return static_cast<int>(lhs) == rhs; }
 bool operator==(int lhs, Interval rhs) { lhs == static_cast<int>(rhs); }
-
-
 
 #endif // INTERVALS_H

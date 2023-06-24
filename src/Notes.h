@@ -4,8 +4,6 @@
 #include <iostream>
 #include <string>
 
-#include "Intervals.h"
-
 enum class Note : int
 {
     A0        = 21,
@@ -161,7 +159,5 @@ enum class Note : int
     BSharp7   = 108,
     C8        = 108
 };
-
-Interval operator-(Note lhs, Note rhs) { return createInterval(static_cast<int>(lhs) - static_cast<int>(rhs)); }
 
 #endif // NOTES_H

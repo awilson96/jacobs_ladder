@@ -8,14 +8,16 @@ RUN apt-get update && apt-get install -y \
     cmake
 
 # Set the working directory
-WORKDIR /src
+WORKDIR /cpp
 
 # Copy the source code to the container
-COPY . /src
+COPY . /cpp
 
-# Build the C++ application
-RUN cmake .
-RUN make
+# Run CMake to build the project
+RUN mkdir build && cd build && cmake ..
 
-# Set the entry point for the container
-# CMD ["./your_application"]
+# Build the project using make
+RUN cd build && make
+
+# Set the entry point to the built executable
+ENTRYPOINT ["/cpp/build/triads"]
