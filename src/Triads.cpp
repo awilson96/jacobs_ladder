@@ -13,5 +13,12 @@ namespace Fundamentals
         Interval bassTenor = tenor - bass;
         Interval tenorTreble = treble - tenor;
         Interval bassTreble = treble - bass;
+
     }
+}
+
+int main()
+{
+    
+    return 0;
 }
