@@ -22,7 +22,19 @@ enum class Interval : int
     minorSeventh    = 10,
     majorSeventh    = 11,
     octave          = 12,
-    unknown         = 13
+    minorNinth      = 13,
+    majorNinth      = 14,
+    minorTenth      = 15,
+    majorTenth      = 16,
+    eleventh        = 17,
+    sharpEleventh   = 18,
+    twelth          = 19,
+    flatThirteenth  = 20,
+    thirteenth      = 21,
+    flatFourteenth  = 22,
+    fourteenth      = 23,
+    doubleOctave    = 24,
+    unknown         = 25
 };
 
 Interval createInterval(int interval)
@@ -53,6 +65,30 @@ Interval createInterval(int interval)
             return Interval::majorSeventh;
         case 12:
             return Interval::octave;
+        case 13:
+            return Interval::minorNinth;
+        case 14:
+            return Interval::majorNinth;
+        case 15:
+            return Interval::minorTenth;
+        case 16:
+            return Interval::majorTenth;
+        case 17:
+            return Interval::eleventh;
+        case 18:
+            return Interval::sharpEleventh;
+        case 19:
+            return Interval::twelth;
+        case 20:
+            return Interval::flatThirteenth;
+        case 21:
+            return Interval::thirteenth;
+        case 22:
+            return Interval::flatFourteenth;
+        case 23:
+            return Interval::fourteenth;
+        case 24:
+            return Interval::doubleOctave;
         default:
             return Interval::unknown;
     }
@@ -81,9 +117,35 @@ void printInterval(Interval interval)
         case Interval::majorSixth:
             std::cout << "Major Sixth";
         case Interval::minorSeventh:
-            std::cout << "MinorSeventh";
+            std::cout << "Minor Seventh";
         case Interval::majorSeventh:
             std::cout << "Major Seventh";
+        case Interval::octave:
+            std::cout << "Octave";
+        case Interval::minorNinth:
+            std::cout << "Minor Ninth";
+        case Interval::majorNinth:
+            std::cout << "Major Ninth";
+        case Interval::minorTenth:
+            std::cout << "Minor Tenth";
+        case Interval::majorTenth:
+            std::cout << "Major Tenth";
+        case Interval::eleventh:
+            std::cout << "Eleventh";
+        case Interval::sharpEleventh:
+            std::cout << "Sharp Eleventh";
+        case Interval::twelth:
+            std::cout << "Twelth";
+        case Interval::flatThirteenth:
+            std::cout << "Flat Thirteenth";
+        case Interval::thirteenth:
+            std::cout << "Thirteenth";
+        case Interval::flatFourteenth:
+            std::cout << "Flat Fourteenth";
+        case Interval::fourteenth:
+            std::cout << "Fourteenth";
+        case Interval::doubleOctave:
+            std::cout << "Double Octave";
         default:
             std::cout << "Unknown";
     }
