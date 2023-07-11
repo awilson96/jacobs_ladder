@@ -1,23 +1,22 @@
-# Use a Linux distribution as the base image
+# Use an Ubuntu base image
 FROM ubuntu:latest
 
-# Install necessary dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    g++ \
-    cmake
+# Install necessary packages for C++ development
+RUN apt-get update && \
+    apt-get install -y build-essential g++ cmake
 
 # Set the working directory
-WORKDIR /cpp
+WORKDIR /jacobs-ladder
 
-# Copy the source code to the container
-COPY . /cpp
+# Copy the source code into the container
+COPY . /jacobs-ladder
 
-# Run CMake to build the project
-RUN mkdir build && cd build && cmake ..
+# Build the project using CMake
+RUN mkdir build && \
+    cd build
 
-# Build the project using make
-RUN cd build && make
+RUN cmake ./CMakeLists.txt && \
+    make
 
-# Set the entry point to the built executable
-ENTRYPOINT ["/cpp/build/triads"]
+# Uncomment if you want the container to stop after it is finished running
+# CMD ["./build/Triads"]
