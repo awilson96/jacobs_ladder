@@ -42,17 +42,19 @@ class MidiReader:
 
     def event_listener(self):
         """
-        Listen for Midi messages sent from the input device to the MidiReader
-        :return:
+        Listens for Midi messages sent from the input device to the MidiReader and modifies/prints messages
+        :return: None
         """
         kill_key = 160
         note_on = 144
         note_off = 128
+        pitch_bend = 244
 
         while True:
             message = self.midi_in.get_message()
             if message:
                 payload, dt = message
+                message_id, note, velocity = payload
                 print(f"{payload}")
 
                 # This is the kill key which ends this function (corresponds to pad1 on my keyboard)
