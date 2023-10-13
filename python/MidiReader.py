@@ -69,20 +69,21 @@ class MidiController:
             new_status = self.determineOctave(note)
             if new_status is not None:
                 heapq.heappush(self.note_heap, [new_status, note, velocity, dt])
-                self.midi_out.send_message([new_status, note, velocity])
                 self.note_off[note] = new_status - 16
             else:
-                new_status_on, new_status_off = self.available_channels_heap.pop()
-                heapq.heappush(self.note_heap, [new_status_on, note, velocity, dt])
-                self.midi_out.send_message([new_status_on, note, velocity])
-                self.note_off[note] = new_status_off
+                new_status, status_off = self.available_channels_heap.pop()
+                heapq.heappush(self.note_heap, [new_status, note, velocity, dt])
+                self.note_off[note] = status_off
+                
+            self.midi_out.send_message([new_status, note, velocity])
             
             print(f"{self.note_heap}")
 
         # Note Off event
         elif status in range (128, 144):
             new_status = self.note_off[note]
-            heapq.heappush(self.available_channels_heap, [new_status + 16, new_status])
+            if [new_status + 16, new_status] not in self.available_channels_heap:
+                heapq.heappush(self.available_channels_heap, [new_status + 16, new_status])
             # Remove the note from the heap if it is present
             self.midi_out.send_message([new_status, note, velocity])
             self.note_heap = [
@@ -127,17 +128,17 @@ class MidiController:
         self.midi_in.close_port()
         self.midi_out.close_port()
 
-    # def just_intonation(self):
-    #     """Retune the keyboard to match just intonation
-    #     """
-    #     if len(self.note_heap) == 3:
-    #         note1, _, _ = self.note_heap[0]
-    #         note2, _, _ = self.note_heap[1]
-    #         note3, _, _ = self.note_heap[2]
+    def just_intonation(self):
+        """Retune the keyboard to match just intonation
+        """
+        if len(self.note_heap) == 3:
+            status1, note1, _, _ = self.note_heap[0]
+            status2, note2, _, _ = self.note_heap[1]
+            status2, note3, _, _ = self.note_heap[2]
 
-    #         # Check for major triad
-    #         if abs(note1 - note2) in [4, 7] and abs(note1 - note3) in [4, 7]:
-    #             print(note1, note2, note3)
+            # Check for major triad
+            if abs(note1 - note2) in [4, 7] and abs(note1 - note3) in [4, 7]:
+                print(note1, note2, note3)
 
 
 def main():
