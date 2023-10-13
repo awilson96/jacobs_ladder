@@ -1,89 +1,45 @@
-import mido
-# import pygame
-import numpy
 import rtmidi
-import scipy
-import sounddevice
-import time
 
-
-class MidiReader:
-    def __init__(self, input_device_name):
-        """
-        Examine incoming messages from the Midi keyboard
-        :param input_device_name: name of user's Midi keyboard, (use list_available_in_ports() to see options)
-        """
-        self.input_device_name = input_device_name
-        self.available_ports = self.list_available_in_ports()
-        self.midi_in = None
-
-    def connect_input_device(self):
-        """
-        Connect input device to rtmidi api
-        :return: None
-        """
+class MidiController:
+    def __init__(self, port_name="jacobs_ladder 2"):
         self.midi_in = rtmidi.MidiIn()
+        self.available_ports = self.midi_in.get_ports()
+        print(self.available_ports)
+        self.port_name = port_name
 
-        for device in enumerate(self.available_ports):
-            if self.input_device_name == device[1]:
-                print(f"Opening \"{self.input_device_name}\" on port {device[0]}")
-                self.midi_in.open_port(device[0])
-
-    def disconnect_input_device(self):
-        """
-        Disconnect input device from rtmidi api
-        :return: None
-        """
-
-        for device in enumerate(self.available_ports):
-            if self.input_device_name == device[1]:
-                print(f"Closing \"{self.input_device_name}\" on port {device[0]}")
-                self.midi_in.close_port()
-
-    def event_listener(self):
-        """
-        Listens for Midi messages sent from the input device to the MidiReader and modifies/prints messages
-        :return: None
-        """
-        kill_key = 160
-        note_on = 144
-        note_off = 128
-        pitch_bend = 244
-
-        while True:
-            message = self.midi_in.get_message()
-            if message:
-                payload, dt = message
-                message_id, note, velocity = payload
-                print(f"{payload}")
-
-                # This is the kill key which ends this function (corresponds to pad1 on my keyboard)
-                if payload[0] == kill_key:
-                    break
-
-    @staticmethod
-    def list_available_in_ports():
-        """
-        List all Midi capable devices
-        :return: list of devices or None if there are no Midi capable devices
-        """
-        midi_in = rtmidi.MidiIn()
-        available_ports = midi_in.get_ports()
-
-        if available_ports:
-            print(f"Listing available ports\n\t {available_ports}\n")
-            return available_ports
+    def open_port(self):
+        if self.port_name in self.available_ports:
+            port_number = self.available_ports.index(self.port_name)
+            self.midi_in.open_port(port_number)
+            print(f"Opened MIDI input port: {self.port_name}")
         else:
-            print("No devices are connected.")
-            return None
+            print(f"MIDI input port '{self.port_name}' not found.")
+            exit()
 
+    def on_midi_message(self, message, time_stamp):
+        print(message)
+
+    def set_midi_callback(self):
+        self.midi_in.set_callback(self.on_midi_message)
+
+    def start_listening(self):
+        try:
+            self.set_midi_callback()
+            print("Listening for MIDI messages. Press Ctrl+C to exit.")
+            while True:
+                pass
+        except KeyboardInterrupt:
+            print("Exiting...")
+        finally:
+            self.close_port()
+
+    def close_port(self):
+        self.midi_in.close_port()
 
 def main():
-    reader = MidiReader("Arturia KeyLab Essential 88 0")
-    reader.connect_input_device()
-    reader.event_listener()
-    reader.disconnect_input_device()
-
+    midi_controller = MidiController()
+    midi_controller.open_port()  # Opens the specified MIDI port
+    midi_controller.start_listening()
 
 if __name__ == "__main__":
     main()
