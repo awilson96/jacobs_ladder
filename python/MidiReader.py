@@ -24,10 +24,10 @@ class MidiController:
 
     def on_midi_message(self, message, timestamp):
         print(message)
-        midi_event, _ = message
+        midi_event, dt = message
         status, note, velocity = midi_event
         if status == 148:  # Note On event
-            heapq.heappush(self.note_heap, [note, velocity, timestamp])
+            heapq.heappush(self.note_heap, [note, velocity, dt])
             print(f"{self.note_heap}")
         elif status == 132:  # Note Off event
             # Remove the note from the heap if it is present
