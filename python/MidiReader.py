@@ -3,6 +3,9 @@ import time
 
 import rtmidi
 
+__author__ = "Alex Wilson"
+__copyright__ = "Copyright (c) 2023 Jacob's Ladder"
+__date__ = "October 12th 2023 (creation)"
 
 class MidiController:
     """
@@ -91,6 +94,15 @@ class MidiController:
             ]
             
     def determineOctave(self, note):
+        """Determines if the current note is an octave of any currently active note. 
+        If so then it is assigned the channel corresponding to the note in note_heap which is its octave.
+
+        Args:
+            note (int): the active Midi note that is being considered 
+
+        Returns:
+            int: status, the status which encapsulates the Midi channel information. Notes which are octaves of eachother can be on the same channel
+        """
         get_status = lambda sublist: sublist[0]
         get_notes = lambda sublist: sublist[1]
         status = list(map(get_status, self.note_heap))
