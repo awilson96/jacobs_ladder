@@ -29,6 +29,12 @@ class MidiController:
 
         # Heap to store active notes (message format: ([status, note, velocity], timestamp))
         self.note_heap = []
+        self.available_channels_heap = [[144, 128], [145, 129], [146, 130], [147, 131], [148, 132], [149, 133], [150, 134], [151, 135], 
+                                        [152, 136], [153, 137], [154, 138], [155, 139], [156, 140], [157, 141], [158, 142], [159, 143]]
+        heapq.heapify(self.available_channels_heap)
+        self.note_off = {}
+        
+        
 
     def open_ports(self):
         """This function used the ports extracted from the initializer to open Midi input and output ports
@@ -59,19 +65,39 @@ class MidiController:
         midi_event, dt = message
         status, note, velocity = midi_event
         # Note On event
-        if status == 148:
-            heapq.heappush(self.note_heap, [note, velocity, dt])
-            self.just_intonation()
-            self.midi_out.send_message([status, note, velocity])
+        if status in range(144, 160):
+            new_status = self.determineOctave(note)
+            if new_status is not None:
+                heapq.heappush(self.note_heap, [new_status, note, velocity, dt])
+                self.midi_out.send_message([new_status, note, velocity])
+                self.note_off[note] = new_status - 16
+            else:
+                new_status_on, new_status_off = self.available_channels_heap.pop()
+                heapq.heappush(self.note_heap, [new_status_on, note, velocity, dt])
+                self.midi_out.send_message([new_status_on, note, velocity])
+                self.note_off[note] = new_status_off
+            
             print(f"{self.note_heap}")
 
         # Note Off event
-        elif status == 132:
+        elif status in range (128, 144):
+            new_status = self.note_off[note]
+            heapq.heappush(self.available_channels_heap, [new_status + 16, new_status])
             # Remove the note from the heap if it is present
-            self.midi_out.send_message([status, note, velocity])
+            self.midi_out.send_message([new_status, note, velocity])
             self.note_heap = [
-                note_info for note_info in self.note_heap if note_info[0] != note
+                note_info for note_info in self.note_heap if note_info[1] != note
             ]
+            
+    def determineOctave(self, note):
+        get_status = lambda sublist: sublist[0]
+        get_notes = lambda sublist: sublist[1]
+        status = list(map(get_status, self.note_heap))
+        notes = list(map(get_notes, self.note_heap))
+        for n in notes:
+            if abs(note-n) == 12:
+                return status[notes.index(n)]
+        return None
 
     def set_midi_callback(self):
         """This function filters the output to the console based on the on_midi_message function
@@ -101,17 +127,17 @@ class MidiController:
         self.midi_in.close_port()
         self.midi_out.close_port()
 
-    def just_intonation(self):
-        """Retune the keyboard to match just intonation
-        """
-        if len(self.note_heap) == 3:
-            note1, _, _ = self.note_heap[0]
-            note2, _, _ = self.note_heap[1]
-            note3, _, _ = self.note_heap[2]
+    # def just_intonation(self):
+    #     """Retune the keyboard to match just intonation
+    #     """
+    #     if len(self.note_heap) == 3:
+    #         note1, _, _ = self.note_heap[0]
+    #         note2, _, _ = self.note_heap[1]
+    #         note3, _, _ = self.note_heap[2]
 
-            # Check for major triad
-            if abs(note1 - note2) in [4, 7] and abs(note1 - note3) in [4, 7]:
-                print(note1, note2, note3)
+    #         # Check for major triad
+    #         if abs(note1 - note2) in [4, 7] and abs(note1 - note3) in [4, 7]:
+    #             print(note1, note2, note3)
 
 
 def main():
