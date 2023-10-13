@@ -62,11 +62,13 @@ class MidiController:
         if status == 148:
             heapq.heappush(self.note_heap, [note, velocity, dt])
             self.just_intonation()
+            self.midi_out.send_message([status, note, velocity])
             print(f"{self.note_heap}")
 
         # Note Off event
         elif status == 132:
             # Remove the note from the heap if it is present
+            self.midi_out.send_message([status, note, velocity])
             self.note_heap = [
                 note_info for note_info in self.note_heap if note_info[0] != note
             ]
