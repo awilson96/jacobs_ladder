@@ -4,7 +4,7 @@ class MidiController:
     def __init__(self, port_name="jacobs_ladder 2"):
         self.midi_in = rtmidi.MidiIn()
         self.available_ports = self.midi_in.get_ports()
-        # print(self.available_ports)
+        print(self.available_ports)
         self.port_name = port_name
 
     def open_port(self):
@@ -16,7 +16,7 @@ class MidiController:
             print(f"MIDI input port '{self.port_name}' not found.")
             exit()
 
-    def on_midi_message(self, message):
+    def on_midi_message(self, message, time_stamp):
         print(message)
 
     def set_midi_callback(self):
@@ -38,7 +38,7 @@ class MidiController:
 
 def main():
     midi_controller = MidiController()
-    midi_controller.open_port()
+    midi_controller.open_port()  # Opens the specified MIDI port
     midi_controller.start_listening()
 
 if __name__ == "__main__":
