@@ -19,11 +19,11 @@ To get started with running MidiReader.py do the following:
 # Next Steps
 The current progress is that I got each note to be sent out on different channels which will be useful for just intonation
 There are a few things that need to be done:
-1. The code should be optimized:
-  - The self.available_channels_heap needs only one param, either the note_on or note off param not both since one can be derived from the other
+1. The code should be refactored:
   - The variable names should be renamed so that they do not get confused, in one loop there is n note and notes all in the same place making it unclear which is which
 2. I need to think about what happens once I add a sustain pedal into the mix, and how that will change things. Specifically, what happens when the number of channels runs out when holding the sustain pedal? Does the ocatave optimization mostly save us from this pitfall or is there a need to setup a second output port and route two outut ports into the software instrument
 3. What is the most effecient way to track the state of things. The status byte may need to go somewhere else in the note_heap since the heap is sorted according to the first parameter that is put into the heap. The note is the main data that will be accessed therefore having it already sorted will save a lot of time and effort if we don't need to rely on sorting given the heap state. 
 4. I need to build a pitch shift function which takes as params the status byte (from which the channel can be extracted) and the number of cents need to be shifted up or down (minus for down + for positive) It may be more effecient to store the self.available_channels_heap as hex instead of decimal so that there is no need of conversion. The only problem then is how do I add and subtract numbers in hex? May need to see if thisis worth it. 
 5. I need a class variable called self.fulcrum which will act as the place from which all other notes will be tuned from. However fulcrum may not be a single note it may need to be a list of the most recently played notes.  Most recently will need to be determined using dt, but also may need to be based on which notes are still active.  This choice will be very difficult and will proabably need to be handled on a case by case basis.
 6. It may also be useful to create a class variable called self.key which records the key of the music we are currently playing in.  This variable will be set by a method called set_key() and will also likely need some history to determine what key we are actually in. 
+7. There is currently a bug in the software when I play C E G B C E G A and then any note after that makes no tone

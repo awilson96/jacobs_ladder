@@ -33,26 +33,11 @@ class MidiController:
 
         # Heap to store active notes (message format: ([status, note, velocity], timestamp))
         self.note_heap = []
-        self.available_channels_heap = [
-            [144, 128],
-            [145, 129],
-            [146, 130],
-            [147, 131],
-            [148, 132],
-            [149, 133],
-            [150, 134],
-            [151, 135],
-            [152, 136],
-            [153, 137],
-            [154, 138],
-            [155, 139],
-            [156, 140],
-            [157, 141],
-            [158, 142],
-            [159, 143],
-        ]
+        self.available_channels_heap = [144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159]
         heapq.heapify(self.available_channels_heap)
         self.note_off = {}
+        
+        self.sustain = False
 
     def open_ports(self):
         """This function used the ports extracted from the initializer to open Midi input and output ports"""
@@ -84,30 +69,34 @@ class MidiController:
         # Note On event
         if status in range(144, 160):
             new_status = self.determineOctave(note)
-            if new_status is not None:
-                heapq.heappush(self.note_heap, [new_status, note, velocity, dt])
-                self.note_off[note] = new_status - 16
-            else:
-                new_status, status_off = self.available_channels_heap.pop()
-                heapq.heappush(self.note_heap, [new_status, note, velocity, dt])
-                self.note_off[note] = status_off
-
+            if new_status is None:
+                new_status = self.available_channels_heap.pop()
+            
+            heapq.heappush(self.note_heap, [new_status, note, velocity, dt])
+            self.note_off[note] = new_status - 16
             self.midi_out.send_message([new_status, note, velocity])
 
+            # print(f"{self.available_channels_heap}")
             print(f"{self.note_heap}")
+            
 
         # Note Off event
         elif status in range(128, 144):
             new_status = self.note_off[note]
-            if [new_status + 16, new_status] not in self.available_channels_heap:
+            if new_status + 16 not in self.available_channels_heap:
                 heapq.heappush(
-                    self.available_channels_heap, [new_status + 16, new_status]
+                    self.available_channels_heap, new_status + 16
                 )
             # Remove the note from the heap if it is present
             self.midi_out.send_message([new_status, note, velocity])
             self.note_heap = [
                 note_info for note_info in self.note_heap if note_info[1] != note
             ]
+            del self.note_off[note]
+            
+        elif status in range(176, 192):
+            print(status, note, velocity, self.note_heap)
+            self.determinePedal(velocity)
 
     def determineOctave(self, note):
         """Determines if the current note is an octave of any currently active note.
@@ -127,6 +116,17 @@ class MidiController:
             if abs(note - n) == 12:
                 return status[notes.index(n)]
         return None
+    
+    def determinePedal(self, velocity):
+        if velocity == 127:
+            self.sustain = True
+        elif velocity == 0:
+            self.sustain = False
+        get_status = lambda sublist: sublist[0]
+        status = list(set(map(get_status, self.note_heap)))
+        for stat in status:
+            self.midi_out.send_message([stat + 32, 64, velocity])
+            
 
     def set_midi_callback(self):
         """This function filters the output to the console based on the on_midi_message function"""
