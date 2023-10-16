@@ -21,22 +21,33 @@ class MidiController:
             input_port (str, optional): The Midi input port used for connecting the keyboard to the script. Defaults to "jacobs_ladder 2".
             output_port (str, optional): The Midi ouput port used for sending manipulated data to the software instrument. Defaults to "analog_lab 4".
         """
+        # All Midi In operations are done through self.midi_in
         self.midi_in = rtmidi.MidiIn()
+        # All Midi Out operations are done through self.midi_in
         self.midi_out = rtmidi.MidiOut()
+        # A list of all of the available input ports used for sending Midi data to the script
         self.available_input_ports = self.midi_in.get_ports()
+        # A list of all of the available output ports used for sending Midi data from the script
         self.available_output_ports = self.midi_out.get_ports()
 
+        # Display this data to the user to aid in selection of port 
         print(f"Available input ports {self.available_input_ports}")
         print(f"Available output ports {self.available_output_ports}")
+        # The input port chosen from the input port list
         self.input_port = input_port
+        # The output port chosen from the output port list
         self.output_port = output_port
 
-        # Heap to store active notes (message format: ([status, note, velocity], timestamp))
+        # Heap to efficiently store active notes (message format: [status, note, velocity, timestamp])
         self.note_heap = []
+        # Heap to store available channels, these channels are 'checked-out' when needed to be used by a note
         self.available_channels_heap = [144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159]
+        # Sorts the heap into a min heap
         heapq.heapify(self.available_channels_heap)
+        # {note: note_off_status} used to map the note to its note off status messages. When it comes time to turn it off, we know which channel to send the note off message on.
         self.note_off = {}
         
+        # Used to track the status of the sustain pedal for sending out sustain control messages
         self.sustain = False
 
     def open_ports(self):
@@ -94,9 +105,20 @@ class MidiController:
             ]
             del self.note_off[note]
             
+        # Sustain Pedal event
         elif status in range(176, 192):
-            print(status, note, velocity, self.note_heap)
             self.determinePedal(velocity)
+            if self.sustain == True:
+                for control_msg in range(176, 192):
+                    self.midi_out.send_message([control_msg, 64, 127])
+            else:
+                for control_msg in range(176, 192):
+                    self.midi_out.send_message([control_msg, 64, 0])
+                    
+        # Pads (used for triggering all notes off event on all channels)
+        elif status == 169:
+            print(status, note, velocity)
+            self.turn_off_all_notes()
 
     def determineOctave(self, note):
         """Determines if the current note is an octave of any currently active note.
@@ -122,11 +144,13 @@ class MidiController:
             self.sustain = True
         elif velocity == 0:
             self.sustain = False
-        get_status = lambda sublist: sublist[0]
-        status = list(set(map(get_status, self.note_heap)))
-        for stat in status:
-            self.midi_out.send_message([stat + 32, 64, velocity])
             
+    def turn_off_all_notes(self):
+        # Send "All Notes Off" message for all channels
+        all_notes_off_message = [0xB0, 123, 0]  # Controller number 123, value 0
+        for channel in range(16):  # Iterate through all 16 MIDI channels
+            all_notes_off_message[0] = 0xB0 + channel  # Set the appropriate channel in the status byte
+            self.midi_out.send_message(all_notes_off_message)
 
     def set_midi_callback(self):
         """This function filters the output to the console based on the on_midi_message function"""
