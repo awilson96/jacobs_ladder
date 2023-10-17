@@ -16,14 +16,18 @@ To get started with running MidiReader.py do the following:
 7. After running MidiReader.py, ensure that you are getting MIDI data printed to the console when you press keys on the keyboard
 8. Now open up your software instrument and connect it to the port called software_instrument. At this stage you should see that your able to hear the output of the MIDI data in your software instrument.  Note that your software instrument should play nothing if the script is not running.
 
+# Overcome Issues
+1. IF I play more than 8 notes simultaneously and then any note after that makes no tone. THIS IS NOT A BUG, THIS HAPPENS DUE TO CERTAIN SYNTHS HAVE VOICE STEALING TECHNIQUES TO LIMIT THE NUMBER OF VOICES TO SAVE ON CPUS. TRY SWITCHING SYNTHS TO SOMETHING MORE SIMPLE AND IT WILL LIKELY FIX YOUR ISSUE.
+
+# Future Optimizations
+1. It may be nice to have the option so create a second or third output port for other software modules which can use their own instances of software instruments to distrubute the cpu load and provided a kind of MT performance
+2. I need to think about what happens once I add a sustain pedal into the mix, and how that will change things. Specifically, what happens when the number of channels runs out when holding the sustain pedal? RIGHT NOW THE SOFTWARE RELEASED THE CHANNELS AFTER NOTE OFF EVENTS, THIS IS NOT IDEAL BECAUSE IF THERE IS ANY KIND OF TUNING, THEN ONCE THE CHANNEL IS RELEASED IT MAY START RETUNING OTHER SUSTAINED NOTES. HOWEVER, IT IS ALSO POSSIBLE THAT WE COULD RUN OUT OF CHANNELS IF THE NUMBER OF NOTES HELD EXCEEDS 16. THIS COULD BE A POTENTIALLY GOOD USE CASE FOR CREATING A SECOND PORT AND SOFTWARE INSTANCE.
+
 # Next Steps
-The current progress is that I got each note to be sent out on different channels which will be useful for just intonation
+The current progress is that I got each note to be sent out on different channels. 
 There are a few things that need to be done:
-1. The code should be refactored:
-  - The variable names should be renamed so that they do not get confused, in one loop there is n note and notes all in the same place making it unclear which is which
-2. I need to think about what happens once I add a sustain pedal into the mix, and how that will change things. Specifically, what happens when the number of channels runs out when holding the sustain pedal? Does the ocatave optimization mostly save us from this pitfall or is there a need to setup a second output port and route two outut ports into the software instrument
-3. What is the most effecient way to track the state of things. The status byte may need to go somewhere else in the note_heap since the heap is sorted according to the first parameter that is put into the heap. The note is the main data that will be accessed therefore having it already sorted will save a lot of time and effort if we don't need to rely on sorting given the heap state. 
-4. I need to build a pitch shift function which takes as params the status byte (from which the channel can be extracted) and the number of cents need to be shifted up or down (minus for down + for positive) It may be more effecient to store the self.available_channels_heap as hex instead of decimal so that there is no need of conversion. The only problem then is how do I add and subtract numbers in hex? May need to see if thisis worth it. 
-5. I need a class variable called self.fulcrum which will act as the place from which all other notes will be tuned from. However fulcrum may not be a single note it may need to be a list of the most recently played notes.  Most recently will need to be determined using dt, but also may need to be based on which notes are still active.  This choice will be very difficult and will proabably need to be handled on a case by case basis.
-6. It may also be useful to create a class variable called self.key which records the key of the music we are currently playing in.  This variable will be set by a method called set_key() and will also likely need some history to determine what key we are actually in. 
-7. There is currently a bug in the software when I play C E G B C E G A and then any note after that makes no tone
+1. I need to build a pitch shift function which takes as params the status byte (from which the channel can be extracted) and the number of cents need to be shifted up or down (minus for down + for positive)
+2. I need a class variable called self.fulcrum which will act as the place from which all other notes will be tuned from. However fulcrum may not be a single note it may need to be a list of the most recently played notes.  Most recently will need to be determined using dt, but also may need to be based on which notes are still active.  This choice will be very difficult and will proabably need to be handled on a case by case basis.
+3. It may also be useful to create a class variable called self.key which records the key of the music we are currently playing in.  This variable will be set by a method called set_key() and will also likely need some history to determine what key we are actually in. 
+4. Make a log output or history of sorts to be used by other modules
+
