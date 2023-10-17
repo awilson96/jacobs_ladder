@@ -30,9 +30,10 @@ class MidiController:
         # A list of all of the available output ports used for sending Midi data from the script
         self.available_output_ports = self.midi_out.get_ports()
 
-        # Display this data to the user to aid in selection of port 
-        print(f"Available input ports {self.available_input_ports}")
-        print(f"Available output ports {self.available_output_ports}")
+        # Uncomment to display the input and output port data to the user to aid in selection of port 
+        # print(f"Available input ports {self.available_input_ports}")
+        # print(f"Available output ports {self.available_output_ports}")
+        
         # The input port chosen from the input port list
         self.input_port = input_port
         # The output port chosen from the output port list
@@ -103,7 +104,7 @@ class MidiController:
                 unique_status = self.available_channels_heap.pop()
             
             # Add the note to the note_heap used to track the state of all active notes
-            heapq.heappush(self.note_heap, [unique_status, note, velocity, dt])
+            heapq.heappush(self.note_heap, [note, unique_status, velocity, dt])
             # Update the note_off dictionary to assign a note off status message to the current note. 
             # Once the note_off signal is found the script can then use this dictionary to form the note off message and be sure to turn the note off on the right channel
             self.note_channel[note] = unique_status
@@ -127,7 +128,7 @@ class MidiController:
             self.midi_out.send_message([unique_status - 16, note, velocity])
             # Remove note from the active notes represented by note_heap since we have received the NOTE_OFF message
             self.note_heap = [
-                active_note for active_note in self.note_heap if active_note[1] != note
+                active_note for active_note in self.note_heap if active_note[0] != note
             ]
             # Clean up the note_channel dictionary to show that the note channel pair is no longer active
             del self.note_channel[note]
@@ -162,8 +163,8 @@ class MidiController:
             int: status, the status which encapsulates the Midi channel information. Notes which are octaves of eachother can be on the same channel
         """
         # Define lambda functions to extract the statuses and notes from the sublist [status, note, velocity, dt]
-        get_status = lambda sublist: sublist[0]
-        get_notes = lambda sublist: sublist[1]
+        get_notes = lambda sublist: sublist[0]
+        get_status = lambda sublist: sublist[1]
         
         # Extract the statuses and notes from self.note_heap and store them in the 'status' and 'notes' lists
         status = list(map(get_status, self.note_heap))
@@ -237,9 +238,9 @@ class MidiController:
         # If the active notes list has only three notes
         if len(self.note_heap) == 3:
             # Get the statuses and note numbers for each note
-            status1, note1, _, _ = self.note_heap[0]
-            status2, note2, _, _ = self.note_heap[1]
-            status2, note3, _, _ = self.note_heap[2]
+            note1, status1, _, _ = self.note_heap[0]
+            note2, status2, _, _ = self.note_heap[1]
+            note3, status3, _, _ = self.note_heap[2]
 
             # Check for major triad
             if abs(note1 - note2) in [4, 7] and abs(note1 - note3) in [4, 7]:
