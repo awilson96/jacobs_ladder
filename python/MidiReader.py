@@ -44,83 +44,114 @@ class MidiController:
         self.available_channels_heap = [144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159]
         # Sorts the heap into a min heap
         heapq.heapify(self.available_channels_heap)
-        # {note: note_off_status} used to map the note to its note off status messages. When it comes time to turn it off, we know which channel to send the note off message on.
-        self.note_off = {}
+        # {note: channel} used to map the note to its note on status messages. When it comes time to turn it off, we know which channel to send the note off message on.
+        self.note_channel = {}
         
         # Used to track the status of the sustain pedal for sending out sustain control messages
         self.sustain = False
 
-    def open_ports(self):
-        """This function used the ports extracted from the initializer to open Midi input and output ports"""
+    def initialize_ports(self):
+        """Uses the input and output ports from the initializer to open Midi input and output ports for reading and writing"""
+        # Check that the input port provided by the user is indeed in the available_input_ports list
         if self.input_port in self.available_input_ports:
+            # Find the index of the input port that was given by the user
             port_number = self.available_input_ports.index(self.input_port)
+            # Use this index to open the port for reading in Midi data
             self.midi_in.open_port(port_number)
+            # Display the opened port to the user to show that a successful connection was made
             print(f"Opened MIDI input port: {self.input_port}")
+        # The input port provided by the user was not in the avilable_input_ports list
         else:
+            # Display this error to the user and exit the program
             print(f"MIDI input port '{self.input_port}' not found.")
             exit()
 
+        # Check that the input port provided by the user is indeed in the available_output_ports list
         if self.output_port in self.available_output_ports:
+            # Find the index of the output port that was given by the user
             port_number = self.available_output_ports.index(self.output_port)
+            # Use this index to open the port for sending out Midi data
             self.midi_out.open_port(port_number)
+            # Display the opened port to the user to show that a successful connection was made
             print(f"Opened MIDI output port: {self.output_port}")
+        # The output port provided by the user was not in the avilable_output_ports list
         else:
+            # Display this error to the user and exit the program
             print(f"MIDI output port '{self.output_port}' not found.")
             exit()
 
-    def on_midi_message(self, message, timestamp):
+    def filter(self, message, timestamp):
         """Function for maintaining a notes queue called note_heap based on note on and note off events. Used in forming callback (Midi filter)
 
         Args:
             message (tuple([status, note, velocity], dt)): message is the standard Midi message sent from the keyboard to the program
-            timestamp (None): placeholder, for now having this in the callback makes the function work but timestamp has no other function
+            timestamp (None): the callback expects this function signiture although timestamp is unused
         """
-        midi_event, dt = message
-        status, note, velocity = midi_event
-        # Note On event
+        # Parsing message to separate payload [status, note, velocity] from difference in time in between messages (dt)
+        payload, dt = message
+        # Further parsing the payload into status, note, and velocity
+        status, note, velocity = payload
+        
+        # Process NOTE_ON events here
         if status in range(144, 160):
-            new_status = self.determineOctave(note)
-            if new_status is None:
-                new_status = self.available_channels_heap.pop()
+            # Call determine_octave to check if the current note is an octave of any active notes. These notes can share the same channel
+            # Returns the status message of the note it is an octave of or None if no octave is not found
+            unique_status = self.determine_octave(note)
+            # If no octave is found between the current note and the active note list
+            if unique_status is None:
+                # Checkout an unused channel for that note. Note that the status message encapsulates the message type and channel information in the same number
+                unique_status = self.available_channels_heap.pop()
             
-            heapq.heappush(self.note_heap, [new_status, note, velocity, dt])
-            self.note_off[note] = new_status - 16
-            self.midi_out.send_message([new_status, note, velocity])
+            # Add the note to the note_heap used to track the state of all active notes
+            heapq.heappush(self.note_heap, [unique_status, note, velocity, dt])
+            # Update the note_off dictionary to assign a note off status message to the current note. 
+            # Once the note_off signal is found the script can then use this dictionary to form the note off message and be sure to turn the note off on the right channel
+            self.note_channel[note] = unique_status
+            # Send the Midi out message with a unique channel number for all non-octave notes and the same channel number for all octave notes. This was done to help reserve
+            # more channels in case more than 16 notes need to be held at once, (i.e. the sutain pedal has been held down for a long time)
+            self.midi_out.send_message([unique_status, note, velocity])
 
-            # print(f"{self.available_channels_heap}")
+            # Display the note heap to the user. Used in troubleshooting
             print(f"{self.note_heap}")
             
-
-        # Note Off event
+        # Process NOTE_OFF events here
         elif status in range(128, 144):
-            new_status = self.note_off[note]
-            if new_status + 16 not in self.available_channels_heap:
+            # Find the channel that the note was played on via status message
+            unique_status = self.note_channel[note]
+            # If the channel is not available, (it is not in available_channels_heap), then add it back so it can be used by another process.
+            if unique_status not in self.available_channels_heap:
                 heapq.heappush(
-                    self.available_channels_heap, new_status + 16
+                    self.available_channels_heap, unique_status
                 )
-            # Remove the note from the heap if it is present
-            self.midi_out.send_message([new_status, note, velocity])
+            # Send the Midi out message with the status message subtracted by 16 to account for the difference between NOTE_ON and NOTE_OFF messages (NOTE_OFF = NOTE_ON -16)
+            self.midi_out.send_message([unique_status - 16, note, velocity])
+            # Remove note from the active notes represented by note_heap since we have received the NOTE_OFF message
             self.note_heap = [
-                note_info for note_info in self.note_heap if note_info[1] != note
+                active_note for active_note in self.note_heap if active_note[1] != note
             ]
-            del self.note_off[note]
+            # Clean up the note_channel dictionary to show that the note channel pair is no longer active
+            del self.note_channel[note]
             
-        # Sustain Pedal event
+        # Process CC: Pedal (Sustain) events here
         elif status in range(176, 192):
-            self.determinePedal(velocity)
+            # Inquire about the state of the sustain pedal and set self.sustain to either False or True based on whether we received a velocity of 127 (on) or 0 (off)
+            self.is_sustain_pedal(velocity)
+            # If the sustain pedal is pressed
             if self.sustain == True:
+                # Cycle through all possible channels and send out a control change message with note 64 to indicate that it is a sustain message and velocity 127 (on)
                 for control_msg in range(176, 192):
                     self.midi_out.send_message([control_msg, 64, 127])
+            # If the sustain pedal has been released
             else:
+                # Cycle through all possible channels and send out a control change message with note 64 to indicate that it is a sustain message and velocity 0 (off)
                 for control_msg in range(176, 192):
                     self.midi_out.send_message([control_msg, 64, 0])
                     
-        # Pads (used for triggering all notes off event on all channels)
+        # Pads (used for triggering CC: All Notes Off event on all channels). Useful when testing. FIXME: Remove this later when no longer needed
         elif status == 169:
-            print(status, note, velocity)
             self.turn_off_all_notes()
 
-    def determineOctave(self, note):
+    def determine_octave(self, note):
         """Determines if the current note is an octave of any currently active note.
         If so then it is assigned the channel corresponding to the note in note_heap which is its octave.
 
@@ -130,41 +161,60 @@ class MidiController:
         Returns:
             int: status, the status which encapsulates the Midi channel information. Notes which are octaves of eachother can be on the same channel
         """
+        # Define lambda functions to extract the statuses and notes from the sublist [status, note, velocity, dt]
         get_status = lambda sublist: sublist[0]
         get_notes = lambda sublist: sublist[1]
+        
+        # Extract the statuses and notes from self.note_heap and store them in the 'status' and 'notes' lists
         status = list(map(get_status, self.note_heap))
         notes = list(map(get_notes, self.note_heap))
-        for n in notes:
-            if abs(note - n) == 12:
-                return status[notes.index(n)]
+        
+        # Create an unordered list of notes that are octaves of the current note.  The list does not include the current note
+        octaves = [octave for octave in range(note + 12, 109, 12)]
+        octaves += [octave for octave in range(note - 12, 20, -12)]
+    
+        # Iterate through the notes list to check if the current note is an octave of any active note
+        for active_note in notes:
+            # If the active note is in the octaves list (a list of notes which are octaves of the played note)
+            if active_note in octaves:
+                # Return the status (channel information) so that we can use the same channel as this active note for the currently playing note
+                return status[notes.index(active_note)]
+        # If no notes are found in the active notes list to be octaves of the current note than return None
         return None
     
-    def determinePedal(self, velocity):
+    def is_sustain_pedal(self, velocity):
+        """Is the sustain pedal pressed or not
+
+        Args:
+            velocity (int): the state of the pedal (127: the sustain pedal has been pressed, 0: the sustain pedal has been released)
+        """
+        # Track the state of the sustain pedal for determining what kind of control messages to send out on each channel, SUSTAIN_ON or SUSTAIN_OFF
         if velocity == 127:
             self.sustain = True
         elif velocity == 0:
             self.sustain = False
             
     def turn_off_all_notes(self):
-        # Send "All Notes Off" message for all channels
-        all_notes_off_message = [0xB0, 123, 0]  # Controller number 123, value 0
-        for channel in range(16):  # Iterate through all 16 MIDI channels
-            all_notes_off_message[0] = 0xB0 + channel  # Set the appropriate channel in the status byte
+        """Utility function used for silencing all active notes on all channels. Used in testing. FIXME: Remove this function at a later point"""
+        # Send All Notes Off message for channel 0
+        all_notes_off_message = [176, 123, 0]
+        # Iterate through all 16 MIDI channels
+        for channel in range(16):  
+            # Set the appropriate channel in the status byte and send out the message
+            all_notes_off_message[0] = 176 + channel  
             self.midi_out.send_message(all_notes_off_message)
 
     def set_midi_callback(self):
-        """This function filters the output to the console based on the on_midi_message function"""
-        self.midi_in.set_callback(self.on_midi_message)
+        """This function filters the output to the console based on the filter function"""
+        self.midi_in.set_callback(self.filter)
 
     def start_listening(self):
         """This is the main loop where execution takes place. The listener waits for Midi messages and acts accordingly based on supporting functions"""
         try:
             print("Listening for MIDI messages. Press Ctrl+C to exit.")
             while True:
+                # Get the current message contents, filtering and display are handled by the filter function
                 message = self.midi_in.get_message()
-                if message:
-                    _, dt = message
-                    print("Received MIDI message:", message, "Timestamp:", dt)
                 # Add a small delay to control the polling rate
                 time.sleep(0.001)
         except KeyboardInterrupt:
@@ -173,13 +223,20 @@ class MidiController:
             self.close_port()
 
     def close_port(self):
-        """Close the ports at the end of execution"""
+        """Close the input and output ports at the end of execution"""
         self.midi_in.close_port()
         self.midi_out.close_port()
 
     def just_intonation(self):
         """Retune the keyboard to match just intonation"""
+        # TODO: Finish basic case of major triad
+        # TODO: Create a self.just_intonation boolean to compare and contrast just intonation with equal temperment
+        # TODO: Handle all combinations of 3 notes
+        # TODO: Handle all combinations of 4 notes
+        # TODO: Investigate if there is some more general intervallic way of handling m notes
+        # If the active notes list has only three notes
         if len(self.note_heap) == 3:
+            # Get the statuses and note numbers for each note
             status1, note1, _, _ = self.note_heap[0]
             status2, note2, _, _ = self.note_heap[1]
             status2, note3, _, _ = self.note_heap[2]
@@ -188,14 +245,12 @@ class MidiController:
             if abs(note1 - note2) in [4, 7] and abs(note1 - note3) in [4, 7]:
                 print(note1, note2, note3)
 
-
 def main():
     """Instantiates the class, opens ports, sets the callback for filtered Midi output, and listens for events"""
     midi_controller = MidiController()
-    midi_controller.open_ports()
+    midi_controller.initialize_ports()
     midi_controller.set_midi_callback()
     midi_controller.start_listening()
-
 
 if __name__ == "__main__":
     main()
