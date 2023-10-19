@@ -47,6 +47,14 @@ class MidiController:
         heapq.heapify(self.available_channels_heap)
         # {note: channel} used to map the note to its note on status messages. When it comes time to turn it off, we know which channel to send the note off message on.
         self.note_channel = {}
+        self.int_note = {21: "A", 22: "Bb", 23: "B", 24: "C", 25: "Db", 26: "D", 27: "Eb", 28: "E", 29: "F", 30: "Gb", 31: "G", 32: "Ab", 
+                         33: "A", 34: "Bb", 35: "B", 36: "C", 37: "Db", 38: "D", 39: "Eb", 40: "E", 41: "F", 42: "Gb", 43: "G", 44: "Ab",
+                         45: "A", 46: "Bb", 47: "B", 48: "C", 49: "Db", 50: "D", 51: "Eb", 52: "E", 53: "F", 54: "Gb", 55: "G", 56: "Ab",
+                         57: "A", 58: "Bb", 59: "B", 60: "C", 61: "Db", 62: "D", 63: "Eb", 64: "E", 65: "F", 66: "Gb", 67: "G", 68: "Ab",
+                         69: "A", 70: "Bb", 71: "B", 72: "C", 73: "Db", 74: "D", 75: "Eb", 76: "E", 77: "F", 78: "Gb", 79: "G", 80: "Ab",
+                         81: "A", 82: "Bb", 83: "B", 84: "C", 85: "Db", 86: "D", 87: "Eb", 88: "E", 89: "F", 90: "Gb", 91: "G", 92: "Ab", 
+                         93: "A", 94: "Bb", 95: "B", 96: "C", 97: "Db", 98: "D", 99: "Eb", 100: "E", 101: "F", 102: "Gb", 103: "G", 104: "Ab",
+                         105: "A", 106: "Bb", 107: "B", 108: "C"}
         
         # Used to track the status of the sustain pedal for sending out sustain control messages
         self.sustain = False
@@ -108,12 +116,16 @@ class MidiController:
             # Update the note_off dictionary to assign a note off status message to the current note. 
             # Once the note_off signal is found the script can then use this dictionary to form the note off message and be sure to turn the note off on the right channel
             self.note_channel[note] = unique_status
+            
+            # Determine chord prints the chord in human readable format to the console
+            self.determine_chord()
+            
             # Send the Midi out message with a unique channel number for all non-octave notes and the same channel number for all octave notes. This was done to help reserve
             # more channels in case more than 16 notes need to be held at once, (i.e. the sutain pedal has been held down for a long time)
             self.midi_out.send_message([unique_status, note, velocity])
 
             # Display the note heap to the user. Used in troubleshooting
-            print(f"{self.note_heap}")
+            # print(f"{self.note_heap}")
             
         # Process NOTE_OFF events here
         elif status in range(128, 144):
@@ -130,6 +142,8 @@ class MidiController:
             self.note_heap = [
                 active_note for active_note in self.note_heap if active_note[0] != note
             ]
+            # Determine chord prints the chord in human readable format to the console
+            self.determine_chord()
             # Clean up the note_channel dictionary to show that the note channel pair is no longer active
             del self.note_channel[note]
             
@@ -147,7 +161,7 @@ class MidiController:
                 # Cycle through all possible channels and send out a control change message with note 64 to indicate that it is a sustain message and velocity 0 (off)
                 for control_msg in range(176, 192):
                     self.midi_out.send_message([control_msg, 64, 0])
-                    
+
         # Pads (used for triggering CC: All Notes Off event on all channels). Useful when testing. FIXME: Remove this later when no longer needed
         elif status == 169:
             self.turn_off_all_notes()
@@ -227,6 +241,19 @@ class MidiController:
         """Close the input and output ports at the end of execution"""
         self.midi_in.close_port()
         self.midi_out.close_port()
+        
+    def determine_chord(self):
+        """Determine chord name to be used internally for just intonation operations as well as visual display to the user
+        """
+        # Get a list of all of the notes that are currently being played 
+        chord_notes = [self.int_note[note[0]] for note in self.note_heap]
+        left_hand = chord_notes[0:4]
+        right_hand = chord_notes[4:]
+        # Create a string by joining a space to each note
+        left_chord = " ".join(left_hand)
+        right_chord = " ".join(right_hand)
+        print(f"{left_chord}   {right_chord}")
+        return f"{left_chord}   {right_chord}"
 
     def just_intonation(self):
         """Retune the keyboard to match just intonation"""
