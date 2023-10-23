@@ -47,14 +47,14 @@ class MidiController:
         heapq.heapify(self.available_channels_heap)
         # {note: channel} used to map the note to its note on status messages. When it comes time to turn it off, we know which channel to send the note off message on.
         self.note_channel = {}
-        self.int_note = {21: "A", 22: "Bb", 23: "B", 24: "C", 25: "Db", 26: "D", 27: "Eb", 28: "E", 29: "F", 30: "Gb", 31: "G", 32: "Ab", 
-                         33: "A", 34: "Bb", 35: "B", 36: "C", 37: "Db", 38: "D", 39: "Eb", 40: "E", 41: "F", 42: "Gb", 43: "G", 44: "Ab",
-                         45: "A", 46: "Bb", 47: "B", 48: "C", 49: "Db", 50: "D", 51: "Eb", 52: "E", 53: "F", 54: "Gb", 55: "G", 56: "Ab",
-                         57: "A", 58: "Bb", 59: "B", 60: "C", 61: "Db", 62: "D", 63: "Eb", 64: "E", 65: "F", 66: "Gb", 67: "G", 68: "Ab",
-                         69: "A", 70: "Bb", 71: "B", 72: "C", 73: "Db", 74: "D", 75: "Eb", 76: "E", 77: "F", 78: "Gb", 79: "G", 80: "Ab",
-                         81: "A", 82: "Bb", 83: "B", 84: "C", 85: "Db", 86: "D", 87: "Eb", 88: "E", 89: "F", 90: "Gb", 91: "G", 92: "Ab", 
-                         93: "A", 94: "Bb", 95: "B", 96: "C", 97: "Db", 98: "D", 99: "Eb", 100: "E", 101: "F", 102: "Gb", 103: "G", 104: "Ab",
-                         105: "A", 106: "Bb", 107: "B", 108: "C"}
+        self.int_note = {21: "A1", 22: "Bb1", 23: "B1", 24: "C1", 25: "Db1", 26: "D1", 27: "Eb1", 28: "E1", 29: "F1", 30: "Gb1", 31: "G1", 32: "Ab1", 
+                         33: "A2", 34: "Bb2", 35: "B2", 36: "C2", 37: "Db2", 38: "D2", 39: "Eb2", 40: "E2", 41: "F2", 42: "Gb2", 43: "G2", 44: "Ab2",
+                         45: "A3", 46: "Bb3", 47: "B3", 48: "C3", 49: "Db3", 50: "D3", 51: "Eb3", 52: "E3", 53: "F3", 54: "Gb3", 55: "G3", 56: "Ab3",
+                         57: "A4", 58: "Bb4", 59: "B4", 60: "C4", 61: "Db4", 62: "D4", 63: "Eb4", 64: "E4", 65: "F4", 66: "Gb4", 67: "G4", 68: "Ab4",
+                         69: "A5", 70: "Bb5", 71: "B5", 72: "C5", 73: "Db5", 74: "D5", 75: "Eb5", 76: "E5", 77: "F5", 78: "Gb5", 79: "G5", 80: "Ab5",
+                         81: "A6", 82: "Bb6", 83: "B6", 84: "C6", 85: "Db6", 86: "D6", 87: "Eb6", 88: "E6", 89: "F6", 90: "Gb6", 91: "G6", 92: "Ab6", 
+                         93: "A7", 94: "Bb7", 95: "B7", 96: "C7", 97: "Db7", 98: "D7", 99: "Eb7", 100: "E7", 101: "F7", 102: "Gb7", 103: "G7", 104: "Ab7",
+                         105: "A8", 106: "Bb8", 107: "B8", 108: "C8"}
         
         # Used to track the status of the sustain pedal for sending out sustain control messages
         self.sustain = False
@@ -89,7 +89,7 @@ class MidiController:
             print(f"MIDI output port '{self.output_port}' not found.")
             exit()
 
-    def filter(self, message, timestamp):
+    def filter(self, message: tuple, timestamp: float):
         """Function for maintaining a notes queue called note_heap based on note on and note off events. Used in forming callback (Midi filter)
 
         Args:
@@ -123,6 +123,7 @@ class MidiController:
             # Send the Midi out message with a unique channel number for all non-octave notes and the same channel number for all octave notes. This was done to help reserve
             # more channels in case more than 16 notes need to be held at once, (i.e. the sutain pedal has been held down for a long time)
             self.midi_out.send_message([unique_status, note, velocity])
+            # self.just_intonation()
 
             # Display the note heap to the user. Used in troubleshooting
             # print(f"{self.note_heap}")
@@ -147,6 +148,10 @@ class MidiController:
             # Clean up the note_channel dictionary to show that the note channel pair is no longer active
             del self.note_channel[note]
             
+        # Pads (used for triggering CC: All Notes Off event on all channels). Useful when testing. FIXME: Remove this later when no longer needed
+        elif status == 169:
+            self.turn_off_all_notes()
+            
         # Process CC: Pedal (Sustain) events here
         elif status in range(176, 192):
             # Inquire about the state of the sustain pedal and set self.sustain to either False or True based on whether we received a velocity of 127 (on) or 0 (off)
@@ -162,11 +167,7 @@ class MidiController:
                 for control_msg in range(176, 192):
                     self.midi_out.send_message([control_msg, 64, 0])
 
-        # Pads (used for triggering CC: All Notes Off event on all channels). Useful when testing. FIXME: Remove this later when no longer needed
-        elif status == 169:
-            self.turn_off_all_notes()
-
-    def determine_octave(self, note):
+    def determine_octave(self, note: int):
         """Determines if the current note is an octave of any currently active note.
         If so then it is assigned the channel corresponding to the note in note_heap which is its octave.
 
@@ -197,7 +198,7 @@ class MidiController:
         # If no notes are found in the active notes list to be octaves of the current note than return None
         return None
     
-    def is_sustain_pedal(self, velocity):
+    def is_sustain_pedal(self, velocity: int):
         """Is the sustain pedal pressed or not
 
         Args:
@@ -235,6 +236,7 @@ class MidiController:
         except KeyboardInterrupt:
             print("Exiting...")
         finally:
+            self.turn_off_all_notes()
             self.close_port()
 
     def close_port(self):
@@ -254,6 +256,18 @@ class MidiController:
         right_chord = " ".join(right_hand)
         print(f"{left_chord}   {right_chord}")
         return f"{left_chord}   {right_chord}"
+    
+    def modify_note_pitch(self, status: int, portemento_value: int):
+        """Modify the pitch of a channel by entering a pitch bend value, channel is obtained through status bytes.
+
+        Args:
+            status (int): Message | Channel, used to send portemento message to proper channel
+            portemento_value (int): pitch bend takes values (0 to 127)
+        """
+        # Constructing the pitch bend message
+        portemento_message = [status, 65, portemento_value]
+        # Sending the pitch bend message
+        self.midi_out.send_message(portemento_message)
 
     def just_intonation(self):
         """Retune the keyboard to match just intonation"""
@@ -265,13 +279,18 @@ class MidiController:
         # If the active notes list has only three notes
         if len(self.note_heap) == 3:
             # Get the statuses and note numbers for each note
-            note1, status1, _, _ = self.note_heap[0]
-            note2, status2, _, _ = self.note_heap[1]
-            note3, status3, _, _ = self.note_heap[2]
+            sorted_note_heap = sorted(self.note_heap)
+            note1, status1, _, _ = sorted_note_heap[0]
+            note2, status2, _, _ = sorted_note_heap[1]
+            note3, status3, _, _ = sorted_note_heap[2]
+            
+            print(status1, status2, status3)
 
             # Check for major triad
             if abs(note1 - note2) in [4, 7] and abs(note1 - note3) in [4, 7]:
-                print(note1, note2, note3)
+                pass
+                
+                
 
 def main():
     """Instantiates the class, opens ports, sets the callback for filtered Midi output, and listens for events"""
