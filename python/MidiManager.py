@@ -16,18 +16,15 @@ class MidiController:
     def __init__(self, input_port="jacobs_ladder 2", output_ports=list(map(str, range(16)))):
         self.midi_in = rtmidi.MidiIn()
         self.midi_out_ports = [rtmidi.MidiOut() for _ in range(16)]
-        
         self.input_port = input_port
         self.output_ports = output_ports
-        
         self.initialize_ports()
-        
         self.instance_index = list(range(16))
         heapq.heapify(self.instance_index)
-        
-        self.in_use_indices = {}
-        
         self.message_heap = []
+        self.in_use_indices = {}
+        self.sustain = False
+        
         
     def initialize_ports(self):
         # Initialize MIDI input port
@@ -85,6 +82,8 @@ class MidiController:
             self.midi_out_ports[instance_index].send_message([status, note, velocity])
             heapq.heappush(self.message_heap, [note, instance_index, status, velocity])
             
+            print(self.message_heap)
+            
         elif status in range(128, 144):
             
             instance_index = self.in_use_indices[note]
@@ -93,6 +92,30 @@ class MidiController:
             self.midi_out_ports[instance_index].send_message([status, note, velocity])
             self.message_heap = [sublist for sublist in self.message_heap if sublist[0] != note]
             heapq.heapify(self.message_heap)
+            
+            print(self.message_heap)
+            
+        elif status in range(176, 192) and note == 64:
+       
+            if velocity == 127:
+                self.sustain = True
+            elif velocity == 0:
+                self.sustain = False
+    
+            if self.sustain == True:
+                for instance_index in range(16):
+                    self.midi_out_ports[instance_index].send_message([status, 64, 127])
+            else:
+                for instance_index in range(16):
+                    self.midi_out_ports[instance_index].send_message([status, 64, 0])
+                    
+        elif status == 169:
+            self.turn_off_all_notes()
+                    
+    def turn_off_all_notes(self):
+        all_notes_off_message = [176, 123, 0]
+        for instance_index in range(16):  
+            self.midi_out_ports[instance_index].send_message(all_notes_off_message)
             
     def set_midi_callback(self):
         """This function filters the output to the console based on the filter function"""
