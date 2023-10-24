@@ -27,6 +27,8 @@ class MidiController:
         
         self.in_use_indices = {}
         
+        self.message_heap = []
+        
     def initialize_ports(self):
         # Initialize MIDI input port
         try:
@@ -76,22 +78,21 @@ class MidiController:
         # Further parsing the payload into status, note, and velocity
         status, note, velocity = payload
         
-        
-        
         if status in range(144, 160):
             
-            instance_index = self.instance_index.pop()
+            instance_index = heapq.heappop(self.instance_index)
             self.in_use_indices[note] = instance_index
             self.midi_out_ports[instance_index].send_message([status, note, velocity])
+            heapq.heappush(self.message_heap, [note, instance_index, status, velocity])
             
         elif status in range(128, 144):
             
             instance_index = self.in_use_indices[note]
             heapq.heappush(self.instance_index, instance_index)
             del self.in_use_indices[note]
-            
             self.midi_out_ports[instance_index].send_message([status, note, velocity])
-
+            self.message_heap = [sublist for sublist in self.message_heap if sublist[0] != note]
+            heapq.heapify(self.message_heap)
             
     def set_midi_callback(self):
         """This function filters the output to the console based on the filter function"""
