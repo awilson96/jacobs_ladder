@@ -24,6 +24,7 @@ class MidiController:
         self.message_heap = []
         self.in_use_indices = {}
         self.sustain = False
+        self.sustained_notes = []
         
         
     def initialize_ports(self):
@@ -69,45 +70,58 @@ class MidiController:
                 midi_out_port.close_port()
             
     def filter(self, message: tuple, timestamp: float):
-        
-        # Parsing message to separate payload [status, note, velocity] from difference in time in between messages (dt)
+
         payload, dt = message
-        # Further parsing the payload into status, note, and velocity
         status, note, velocity = payload
         
         if status in range(144, 160):
             
-            instance_index = heapq.heappop(self.instance_index)
+            if note not in [msg_note[0] for msg_note in self.message_heap]:
+                instance_index = heapq.heappop(self.instance_index)
+            else:
+                instance_index = self.in_use_indices[note]
             self.in_use_indices[note] = instance_index
             self.midi_out_ports[instance_index].send_message([status, note, velocity])
             heapq.heappush(self.message_heap, [note, instance_index, status, velocity])
             
-            print(self.message_heap)
+            print(f"self.sustain {self.sustain}")
+            print(f"self.sustained_notes {self.sustained_notes}")
+            print(f"self.instance_index {self.instance_index}")
+            print(f"self.message_heap {self.message_heap}")
+            print(f"self.in_use_indices {self.in_use_indices}")
+            print()
             
         elif status in range(128, 144):
             
             instance_index = self.in_use_indices[note]
-            heapq.heappush(self.instance_index, instance_index)
-            del self.in_use_indices[note]
             self.midi_out_ports[instance_index].send_message([status, note, velocity])
-            self.message_heap = [sublist for sublist in self.message_heap if sublist[0] != note]
-            heapq.heapify(self.message_heap)
             
-            print(self.message_heap)
+            if not self.sustain:
+                heapq.heappush(self.instance_index, instance_index)
+                del self.in_use_indices[note]
+                self.message_heap = [sublist for sublist in self.message_heap if sublist[0] != note]
+                heapq.heapify(self.message_heap)
+            else:
+                if note not in [sus_note[0] for sus_note in self.sustained_notes]:
+                    heapq.heappush(self.sustained_notes, [note, instance_index, status, velocity])
             
         elif status in range(176, 192) and note == 64:
        
             if velocity == 127:
                 self.sustain = True
-            elif velocity == 0:
-                self.sustain = False
-    
-            if self.sustain == True:
                 for instance_index in range(16):
                     self.midi_out_ports[instance_index].send_message([status, 64, 127])
-            else:
+            elif velocity == 0:
+                self.sustain = False
                 for instance_index in range(16):
                     self.midi_out_ports[instance_index].send_message([status, 64, 0])
+                for sus_note in self.sustained_notes:
+                    instance_index = self.in_use_indices[sus_note[0]]
+                    heapq.heappush(self.instance_index, instance_index)
+                    del self.in_use_indices[sus_note[0]]
+                    self.message_heap = [sublist for sublist in self.message_heap if sublist[0] != sus_note[0]]
+                    heapq.heapify(self.message_heap)
+                self.sustained_notes = [] 
                     
         elif status == 169:
             self.turn_off_all_notes()
