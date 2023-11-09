@@ -86,12 +86,14 @@ class MidiController:
         status, note, velocity = payload
 
         if status in range(144, 160):
-            if note not in [msg_note[0] for msg_note in self.message_heap]:
-                instance_index = heapq.heappop(self.instance_index)
-            else:
-                instance_index = self.in_use_indices[note]
-                if not instance_index:
-                    print("not instance index")
+            instance_index = self.determine_octave(note)
+            if instance_index is None:
+                if note not in [msg_note[0] for msg_note in self.message_heap]:
+                    instance_index = heapq.heappop(self.instance_index)
+                else:
+                    instance_index = self.in_use_indices[note]
+                    if not instance_index:
+                        logging.warning(f"no instances are left! {self.instance_index}")
             self.in_use_indices[note] = instance_index
             self.midi_out_ports[instance_index].send_message([status, note, velocity])
             heapq.heappush(self.message_heap, [note, instance_index, status, velocity])
@@ -126,22 +128,14 @@ class MidiController:
                         break
                 heapq.heapify(self.message_heap)
                 if note not in [sublist[0] for sublist in self.message_heap]:
-                    heapq.heappush(self.instance_index, instance_index)
+                    if instance_index not in self.instance_index:
+                        heapq.heappush(self.instance_index, instance_index)
                     del self.in_use_indices[note]
         
             else:
                 heapq.heappush(
                     self.sustained_notes, [note, instance_index, status, velocity]
                 )
-            
-            print(f"NOTE_OFF")  
-            print(f"message {status, note, velocity}") 
-            print(f"self.sustain {self.sustain}")
-            print(f"self.sustained_notes {self.sustained_notes}")
-            print(f"self.instance_index {self.instance_index}")
-            print(f"self.message_heap {self.message_heap}")
-            print(f"self.in_use_indices {self.in_use_indices}")
-            print()
             
             logging.debug(f"NOTE_OFF")
             logging.debug(f"message {status, note, velocity}")
@@ -166,10 +160,11 @@ class MidiController:
                         if sublist[0] == sus_note[0]:
                             del self.message_heap[index]
                             break
-                    if sus_note[1] not in [sublist[1] for sublist in self.message_heap]:
-                        heapq.heappush(self.instance_index, instance_index)
+                    if sus_note[0] not in [sublist[0] for sublist in self.message_heap]:
+                        if sus_note[1] not in [sublist[1] for sublist in self.message_heap]:
+                            heapq.heappush(self.instance_index, instance_index)
                         del self.in_use_indices[sus_note[0]]
-            
+
                 heapq.heapify(self.message_heap)
                 self.sustained_notes = []
 
