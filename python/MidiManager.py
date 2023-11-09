@@ -96,6 +96,8 @@ class MidiController:
             self.midi_out_ports[instance_index].send_message([status, note, velocity])
             heapq.heappush(self.message_heap, [note, instance_index, status, velocity])
 
+            print(f"NOTE_ON")
+            print(f"message {status, note, velocity}")
             print(f"self.sustain {self.sustain}")
             print(f"self.sustained_notes {self.sustained_notes}")
             print(f"self.instance_index {self.instance_index}")
@@ -103,6 +105,8 @@ class MidiController:
             print(f"self.in_use_indices {self.in_use_indices}")
             print()
             
+            logging.debug(f"NOTE_ON")
+            logging.debug(f"message {status, note, velocity}")
             logging.debug(f"self.sustain {self.sustain}")
             logging.debug(f"self.sustained_notes {self.sustained_notes}")
             logging.debug(f"self.instance_index {self.instance_index}")
@@ -115,17 +119,38 @@ class MidiController:
             self.midi_out_ports[instance_index].send_message([status, note, velocity])
 
             if not self.sustain:
-                heapq.heappush(self.instance_index, instance_index)
-                del self.in_use_indices[note]
-                self.message_heap = [
-                    sublist for sublist in self.message_heap if sublist[0] != note
-                ]
+                # Delete only the first occurance of note in self.message_heap
+                for index, sublist in enumerate(self.message_heap):
+                    if sublist[0] == note:
+                        del self.message_heap[index]
+                        break
                 heapq.heapify(self.message_heap)
+                if note not in [sublist[0] for sublist in self.message_heap]:
+                    heapq.heappush(self.instance_index, instance_index)
+                    del self.in_use_indices[note]
+        
             else:
                 if note not in [sus_note[0] for sus_note in self.sustained_notes]:
                     heapq.heappush(
                         self.sustained_notes, [note, instance_index, status, velocity]
                     )
+            
+            print(f"NOTE_OFF")  
+            print(f"message {status, note, velocity}") 
+            print(f"self.sustain {self.sustain}")
+            print(f"self.sustained_notes {self.sustained_notes}")
+            print(f"self.instance_index {self.instance_index}")
+            print(f"self.message_heap {self.message_heap}")
+            print(f"self.in_use_indices {self.in_use_indices}")
+            print()
+            
+            logging.debug(f"NOTE_OFF")
+            logging.debug(f"message {status, note, velocity}")
+            logging.debug(f"self.sustain {self.sustain}")
+            logging.debug(f"self.sustained_notes {self.sustained_notes}")
+            logging.debug(f"self.instance_index {self.instance_index}")
+            logging.debug(f"self.message_heap {self.message_heap}")
+            logging.debug(f"self.in_use_indices {self.in_use_indices}\n")
 
         elif status in range(176, 192) and note == 64:
             if velocity == 127:
