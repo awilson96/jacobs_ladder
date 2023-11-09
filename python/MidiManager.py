@@ -106,7 +106,7 @@ class MidiController:
             print(f"self.message_heap {self.message_heap}")
             print(f"self.in_use_indices {self.in_use_indices}")
             print()
-            
+
             logging.debug(f"NOTE_ON")
             logging.debug(f"message {status, note, velocity}")
             logging.debug(f"self.sustain {self.sustain}")
@@ -114,7 +114,6 @@ class MidiController:
             logging.debug(f"self.instance_index {self.instance_index}")
             logging.debug(f"self.message_heap {self.message_heap}")
             logging.debug(f"self.in_use_indices {self.in_use_indices}\n")
-
 
         elif status in range(128, 144):
             instance_index = self.in_use_indices[note]
@@ -131,12 +130,12 @@ class MidiController:
                     if instance_index not in self.instance_index:
                         heapq.heappush(self.instance_index, instance_index)
                     del self.in_use_indices[note]
-        
+
             else:
                 heapq.heappush(
                     self.sustained_notes, [note, instance_index, status, velocity]
                 )
-            
+
             logging.debug(f"NOTE_OFF")
             logging.debug(f"message {status, note, velocity}")
             logging.debug(f"self.sustain {self.sustain}")
@@ -161,7 +160,9 @@ class MidiController:
                             del self.message_heap[index]
                             break
                     if sus_note[0] not in [sublist[0] for sublist in self.message_heap]:
-                        if sus_note[1] not in [sublist[1] for sublist in self.message_heap]:
+                        if sus_note[1] not in [
+                            sublist[1] for sublist in self.message_heap
+                        ]:
                             heapq.heappush(self.instance_index, instance_index)
                         del self.in_use_indices[sus_note[0]]
 
@@ -170,15 +171,22 @@ class MidiController:
 
         elif status == 169:
             self.turn_off_all_notes()
-            
-    def determine_octave(self, note: int):
 
+    def determine_octave(self, note: int):
+        """Determine if the current note is an octave of any of the currently active notes
+
+        Args:
+            note (int): an active note to check against self.message_heap
+
+        Returns:
+            int: returns the instance index if the current note is an octave multiple of an active note and None otherwise
+        """
         notes = list(map(lambda sublist: sublist[0], self.message_heap))
         instance = list(map(lambda sublist: sublist[1], self.message_heap))
-    
+
         octaves = [octave for octave in range(note + 12, 109, 12)]
         octaves += [octave for octave in range(note - 12, 20, -12)]
-    
+
         for active_note in notes:
             if active_note in octaves:
                 return instance[notes.index(active_note)]
