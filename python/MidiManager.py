@@ -130,10 +130,9 @@ class MidiController:
                     del self.in_use_indices[note]
         
             else:
-                if note not in [sus_note[0] for sus_note in self.sustained_notes]:
-                    heapq.heappush(
-                        self.sustained_notes, [note, instance_index, status, velocity]
-                    )
+                heapq.heappush(
+                    self.sustained_notes, [note, instance_index, status, velocity]
+                )
             
             print(f"NOTE_OFF")  
             print(f"message {status, note, velocity}") 
@@ -163,14 +162,15 @@ class MidiController:
                     self.midi_out_ports[instance_index].send_message([status, 64, 0])
                 for sus_note in self.sustained_notes:
                     instance_index = self.in_use_indices[sus_note[0]]
-                    heapq.heappush(self.instance_index, instance_index)
-                    del self.in_use_indices[sus_note[0]]
-                    self.message_heap = [
-                        filtered_list
-                        for filtered_list in self.message_heap
-                        if filtered_list[0] != sus_note[0]
-                    ]
-                    heapq.heapify(self.message_heap)
+                    for index, sublist in enumerate(self.message_heap):
+                        if sublist[0] == sus_note[0]:
+                            del self.message_heap[index]
+                            break
+                    if sus_note[1] not in [sublist[1] for sublist in self.message_heap]:
+                        heapq.heappush(self.instance_index, instance_index)
+                        del self.in_use_indices[sus_note[0]]
+            
+                heapq.heapify(self.message_heap)
                 self.sustained_notes = []
 
         elif status == 169:
