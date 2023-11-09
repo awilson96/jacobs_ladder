@@ -48,6 +48,35 @@ class MidiInjector:
         except (ValueError, rtmidi._rtmidi.SystemError):
             raise RuntimeError(f"Failed to open output port '{index}'")
 
+    def send_note_on(self, note, velocity):
+        """Send a note-on message
+
+        Args:
+            note (int): The note number corresponding the key you want to send a note on message for
+            velocity (int): The velocity of the note (0-127 inclusive)
+        """
+        note_on = [144, note, velocity]
+        self.midi_out.send_message(note_on)
+
+    def send_note_off(self, note):
+        """Send a note-off message
+
+        Args:
+            note (int): The note number corresponding to the key you want to send a note off message for
+        """
+        note_off = [128, note, 0]
+        self.midi_out.send_message(note_off)
+
+    def send_sustain_pedal_high(self):
+        """Send a sustain pedal message (sustain pedal is held down)"""
+        sustain_pedal_high = [176, 64, 127]
+        self.midi_out.send_message(sustain_pedal_high)
+
+    def send_sustain_pedal_high(self):
+        """Send a sustain pedal message (sustain pedal is released)"""
+        sustain_pedal_low = [176, 64, 0]
+        self.midi_out.send_message(sustain_pedal_low)
+
 
 def main():
     midi_injector = MidiInjector()
