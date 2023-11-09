@@ -73,13 +73,23 @@ class MidiInjector:
         sustain_pedal_high = [176, 64, 127]
         self.midi_out.send_message(sustain_pedal_high)
 
-    def send_sustain_pedal_high(self):
+    def send_sustain_pedal_low(self):
         """Send a sustain pedal message (sustain pedal is released)"""
         sustain_pedal_low = [176, 64, 0]
         self.midi_out.send_message(sustain_pedal_low)
-        
+
+    def toggle_sustain_pedal(self, dur):
+        """Toggle the sustain pedal on and off
+
+        Args:
+            dur (float): time in seconds
+        """
+        self.send_sustain_pedal_high()
+        time.sleep(dur)
+        self.send_sustain_pedal_low()
+
     def play_scale(self, note_list, dur_list):
-        """Send a list of notes and durations to be played 
+        """Send a list of notes and durations to be played
 
         Args:
             note_list (list[int]): A list of note numbers to be played one after another
@@ -90,7 +100,7 @@ class MidiInjector:
             time.sleep(dur)
             self.send_note_off(note)
         time.sleep(1)
-            
+
     def play_chord(self, note_list):
         """Play a chord by sending note-on messages for the specified notes and holding them for 2 seconds
 
@@ -102,23 +112,21 @@ class MidiInjector:
         time.sleep(0.5)
         for note in note_list:
             self.send_note_off(note)
-        
-        
+
     def testPlayDistinctNotes(self):
         """
         Play note on messages followed by note off messages and ensure that instances are allocated correctly
         """
-        
+
         note_list = [60, 62, 64, 65, 67, 69, 71, 72]
         dur_list = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
         self.play_scale(note_list, dur_list)
-        
-        
+
     def testPlayOverlappingNotes(self):
         """
         Play notes which overlap to test that instances are allocated correctly and that all note on messages have a corresponding note off
         """
-        
+
         # Create threads for testPlayDistinctNotes and play_chord
         thread_distinct_notes = threading.Thread(target=self.testPlayDistinctNotes)
         c_major_chord = [60, 64, 67]
@@ -126,15 +134,28 @@ class MidiInjector:
 
         # Start the threads
         thread_distinct_notes.start()
-        thread_chord.start() 
+        thread_chord.start()
+
+    def testPlayOverlappingNotesWithSustain(self):
+        """
+        Play overlapping notes and hold down the sustain pedal releasing it half way through
+        """
+
+        # Create threads for testPlayDistinctNotes and play_chord
+        thread_overlapping_notes = threading.Thread(target=self.testPlayOverlappingNotes)
+        duration = 0.7
+        thread_sustain_pedal = threading.Thread(target=self.toggle_sustain_pedal, args=(duration,))
         
-        
-        
+        # Start the threads
+        thread_overlapping_notes.start()
+        thread_sustain_pedal.start()
 
 def main():
     midi_injector = MidiInjector()
     midi_injector.testPlayDistinctNotes()
     midi_injector.testPlayOverlappingNotes()
+    midi_injector.testPlayOverlappingNotesWithSustain()
+
 
 if __name__ == "__main__":
     main()
