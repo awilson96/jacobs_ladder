@@ -10,6 +10,7 @@ __date__ = "October 12th 2023 (creation)"
 
 logging.basicConfig(
     filename="MidiManager.log",
+    filemode="w",
     level=logging.DEBUG,
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
@@ -89,6 +90,8 @@ class MidiController:
                 instance_index = heapq.heappop(self.instance_index)
             else:
                 instance_index = self.in_use_indices[note]
+                if not instance_index:
+                    print("not instance index")
             self.in_use_indices[note] = instance_index
             self.midi_out_ports[instance_index].send_message([status, note, velocity])
             heapq.heappush(self.message_heap, [note, instance_index, status, velocity])
@@ -138,15 +141,28 @@ class MidiController:
                     heapq.heappush(self.instance_index, instance_index)
                     del self.in_use_indices[sus_note[0]]
                     self.message_heap = [
-                        sublist
-                        for sublist in self.message_heap
-                        if sublist[0] != sus_note[0]
+                        filtered_list
+                        for filtered_list in self.message_heap
+                        if filtered_list[0] != sus_note[0]
                     ]
                     heapq.heapify(self.message_heap)
                 self.sustained_notes = []
 
         elif status == 169:
             self.turn_off_all_notes()
+            
+    def determine_octave(self, note: int):
+
+        notes = list(map(lambda sublist: sublist[0], self.message_heap))
+        instance = list(map(lambda sublist: sublist[1], self.message_heap))
+    
+        octaves = [octave for octave in range(note + 12, 109, 12)]
+        octaves += [octave for octave in range(note - 12, 20, -12)]
+    
+        for active_note in notes:
+            if active_note in octaves:
+                return instance[notes.index(active_note)]
+        return None
 
     def turn_off_all_notes(self):
         all_notes_off_message = [176, 123, 0]
