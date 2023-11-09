@@ -22,12 +22,21 @@ class MidiInjector:
     """
 
     def __init__(self, output_port="jacobs_ladder"):
+        """_summary_
+
+        Args:
+            output_port (str, optional): Name of the output port you want to send Midi data on. Defaults to "jacobs_ladder".
+        """
         self.midi_out = rtmidi.MidiOut()
         self.output_ports = output_port
         self.initialize_port()
 
     def initialize_port(self):
-        # Initialize MIDI output port
+        """Initialize the port specified in __init__ by opening that port for Midi out operations
+
+        Raises:
+            RuntimeError: If the port cannot be found, this funtion raises an error
+        """
         try:
             available_output_ports = [
                 port.split(" ", 1)[0] for port in self.midi_out.get_ports()
