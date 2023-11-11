@@ -2,7 +2,7 @@ import logging
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
-__date__ = "October 12th 2023 (creation)"
+__date__ = "November 11th 2023 (creation)"
 
 logging.basicConfig(
     filename="MidiManager.log",
