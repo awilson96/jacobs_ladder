@@ -14,7 +14,7 @@ logging.basicConfig(
 class MusicTheory:
     def __init__(self):
         pass
-    
+
     def determine_chord(self, message_heap: list[list]):
         """
         Based on the currently active notes in the message_heap, determine the chord
@@ -26,15 +26,16 @@ class MusicTheory:
         notes = [note[0] for note in message_heap]
         notes = sorted(list(set(notes)))
         logging.debug(f"Notes: {notes}")
-        
+
         intervals = self.get_intervals(notes)
         logging.debug(f"Intervals: {intervals}")
-        
+
         diads = self.get_diads(intervals)
         logging.debug(f"Diads: {diads}")
-        
-        
-        
+
+        if len(diads) == 1:
+            return f"{diads[0]}"
+
     def get_intervals(self, notes: list[int]):
         """Determine the intervals between notes
 
@@ -45,14 +46,14 @@ class MusicTheory:
             list[int]: A sorted list of the intervals from the lowest note to the highest note
         """
         intervals: list[int] = []
-        
+
         sorted_notes = sorted(notes)
         if len(sorted_notes) > 1:
-            for idx in range(len(sorted_notes)-1):
-                intervals.append(notes[idx+1] - notes[idx])
-        
+            for idx in range(len(sorted_notes) - 1):
+                intervals.append(notes[idx + 1] - notes[idx])
+
         return intervals
-    
+
     def get_diads(self, intervals: list[int]):
         """
         Get the stringified name of a diad interval, used to make tuning decisions or displaying to the terminal
@@ -64,7 +65,7 @@ class MusicTheory:
             list[string]: list of intervallic relationships expressed as strings
         """
         diads: list[str] = []
-        
+
         for interval in intervals:
             match interval:
                 case 1:
@@ -79,7 +80,7 @@ class MusicTheory:
                     diads.append("Perfect 4")
                 case 6:
                     diads.append("Minor 5")
-                case 7: 
+                case 7:
                     diads.append("Perfect 5")
                 case 8:
                     diads.append("Minor 6")
