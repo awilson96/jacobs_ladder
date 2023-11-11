@@ -3,6 +3,7 @@ import logging
 import time
 
 import rtmidi
+from JustIntonation import JustIntonation
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
@@ -18,26 +19,47 @@ logging.basicConfig(
 
 class MidiController:
     """
-    This is a Midi Keyboard interface which allows for the manipulation of real time Midi data
-    before sending that data back out through a virtual port to another program such as a software instrument
+    This is a Midi Keyboard interface which allows for the manipulation of real time Midi data.
+    MidiController maps 1 input port to 16 output ports converted raw MIDI streams for the keyboard to retuned notes.
+    The MidiController does this to take advantage of the pitch wheel which globally alters the pitch of all 16 channels.
+    By separating each note on to a unique rtmidi.MidiOut port, individual retuning of notes is possible.
+    MidiController handles the mapping of a single port to 16 ports and all instance allocation and re-allocation.
+    All tuning, chord display, and additional features are handled by other submodules.
     """
 
-    def __init__(
-        self, input_port="jacobs_ladder 2", output_ports=list(map(str, range(16)))
-    ):
+    def __init__(self, input_port="jacobs_ladder 2", output_ports=list(map(str, range(16)))):
+        """
+        Class Constructor creates a MidiController object.
+        MidiController handles MIDI port management, output port instance management, and sustain pedal management.
+
+        Args:
+            input_port (str, optional): input port name. Defaults to "jacobs_ladder 2".
+            output_ports (list, optional): output port name. Defaults to a list on integers from 0-15.
+        """
+        # MIDI port management
         self.midi_in = rtmidi.MidiIn()
         self.midi_out_ports = [rtmidi.MidiOut() for _ in range(16)]
         self.input_port = input_port
         self.output_ports = output_ports
         self.initialize_ports()
+        
+        # Output port instance management
         self.instance_index = list(range(16))
-        heapq.heapify(self.instance_index)
         self.message_heap = []
         self.in_use_indices = {}
+        
+        # Sustain pedal management
         self.sustain = False
         self.sustained_notes = []
 
     def initialize_ports(self):
+        """
+        Initialize input and output ports based on user provided values
+
+        Raises:
+            ValueError: If the input/output port is not found, an error is raised
+            RuntimeError: If either a value error or a rtmidi system error is caught, then an error is raised
+        """
         # Initialize MIDI input port
         try:
             available_input_ports = self.midi_in.get_ports()
@@ -53,7 +75,7 @@ class MidiController:
         except (ValueError, rtmidi._rtmidi.SystemError):
             raise RuntimeError(f"Failed to open input port '{self.input_port}'")
 
-        # Initialize MIDI output ports with specified names
+        # Initialize MIDI output ports
         try:
             available_output_ports = [
                 port.split(" ", 1)[0] for port in self.midi_out_ports[0].get_ports()
@@ -82,6 +104,16 @@ class MidiController:
                 midi_out_port.close_port()
 
     def filter(self, message: tuple, timestamp: float):
+        """
+        Filter used to set the MIDI callback.
+        The MIDI callback filters out only the messages you want to process within the callback.
+        The filter handles NOTE_ON, NOTE_OFF, CONTROL_CHANGE, and ALL_NOTES_OFF message types.
+        The filter is called by start_listening() and can be thought of as the main control loop.
+
+        Args:
+            message (tuple): The raw MIDI message ([status, note, velocity], dt)
+            timestamp (float): Empty variable, necessary for MIDI callback as the underlying C++ code is expecting this function signiture
+        """
         payload, dt = message
         status, note, velocity = payload
 
@@ -173,7 +205,8 @@ class MidiController:
             self.turn_off_all_notes()
 
     def determine_octave(self, note: int):
-        """Determine if the current note is an octave of any of the currently active notes
+        """
+        Determine if the current note is an octave of any of the currently active notes.
 
         Args:
             note (int): an active note to check against self.message_heap
@@ -193,6 +226,10 @@ class MidiController:
         return None
 
     def turn_off_all_notes(self):
+        """
+        Utility function used in troubleshooting/debugging
+        It is useful when handling hanging MIDI messages, and it's used to silence all output by sending ALL_NOTES_OFF message to all instances
+        """
         all_notes_off_message = [176, 123, 0]
         for instance_index in range(16):
             self.midi_out_ports[instance_index].send_message(all_notes_off_message)
@@ -202,21 +239,19 @@ class MidiController:
         self.midi_in.set_callback(self.filter)
 
     def start_listening(self):
-        """This is the main loop where execution takes place. The listener waits for Midi messages and acts accordingly based on supporting functions"""
+        """
+        This is the main control loop where execution takes place. 
+        The listener waits for Midi messages and acts according to the filter function
+        """
         try:
             print("Listening for MIDI messages. Press Ctrl+C to exit.")
             while True:
-                # Get the current message contents, filtering and display are handled by the filter function
                 message = self.midi_in.get_message()
-                # Add a small delay to control the polling rate
                 time.sleep(0.001)
         except KeyboardInterrupt:
             print("Exiting...")
         finally:
-            self.close_port()
-
-    def close_port(self):
-        pass
+            self.close_ports()
 
 
 def main():
