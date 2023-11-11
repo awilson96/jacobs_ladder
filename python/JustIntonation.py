@@ -5,7 +5,7 @@ __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
 __date__ = "November 11th 2023 (creation)"
 
 logging.basicConfig(
-    filename="MidiManager.log",
+    filename="../logs/MidiManager.log",
     level=logging.DEBUG,
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
