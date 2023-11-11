@@ -27,7 +27,9 @@ class MidiController:
     All tuning, chord display, and additional features are handled by other submodules.
     """
 
-    def __init__(self, input_port="jacobs_ladder 2", output_ports=list(map(str, range(16)))):
+    def __init__(
+        self, input_port="jacobs_ladder 2", output_ports=list(map(str, range(16)))
+    ):
         """
         Class Constructor creates a MidiController object.
         MidiController handles MIDI port management, output port instance management, and sustain pedal management.
@@ -42,15 +44,18 @@ class MidiController:
         self.input_port = input_port
         self.output_ports = output_ports
         self.initialize_ports()
-        
+
         # Output port instance management
         self.instance_index = list(range(16))
         self.message_heap = []
         self.in_use_indices = {}
-        
+
         # Sustain pedal management
         self.sustain = False
         self.sustained_notes = []
+
+        # Tuning management
+        self.just_intonation = JustIntonation()
 
     def initialize_ports(self):
         """
@@ -240,7 +245,7 @@ class MidiController:
 
     def start_listening(self):
         """
-        This is the main control loop where execution takes place. 
+        This is the main control loop where execution takes place.
         The listener waits for Midi messages and acts according to the filter function
         """
         try:
