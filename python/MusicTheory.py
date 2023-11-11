@@ -80,18 +80,18 @@ class MusicTheory:
                     diads.append("Perfect 4")
                 case 6:
                     diads.append("Minor 5")
-                case 7:
+                case 7 | 19 | 31 | 43 | 55 | 67 | 79 | 91 | 103:
                     diads.append("Perfect 5")
                 case 8:
                     diads.append("Minor 6")
                 case 9:
                     diads.append("Major 6")
-                case 10:
+                case 10 | 22 | 34 | 46 | 58 | 70 | 82 | 94 | 106:
                     diads.append("Minor 7")
-                case 11:
+                case 11 | 23 | 35 | 47 | 59 | 71 | 83 | 95 | 107:
                     diads.append("Major 7")
-                case 12:
-                    diads.append("Octave 8")
+                case 12 | 24 | 36 | 48 | 60 | 72 | 84 | 96 | 108:
+                    diads.append("Octave")
                 case 13 | 25 | 37 | 49 | 61 | 73 | 85 | 97:
                     diads.append("Minor 9")
                 case 14 | 26 | 38 | 50 | 62 | 74 | 86 | 98:
@@ -104,16 +104,8 @@ class MusicTheory:
                     diads.append("Major 11")
                 case 18 | 30 | 42 | 54 | 66 | 78 | 90 | 102:
                     diads.append("Sharp 11")
-                case 19 | 31 | 43 | 55 | 67 | 79 | 91 | 103:
-                    diads.append("Major 12")
                 case 20 | 32 | 44 | 56 | 68 | 80 | 92 | 104:
                     diads.append("Minor 13")
                 case 21 | 33 | 45 | 57 | 69 | 81 | 93 | 105:
                     diads.append("Major 13")
-                case 22 | 34 | 46 | 58 | 70 | 82 | 94 | 106:
-                    diads.append("Minor 14")
-                case 23 | 35 | 47 | 59 | 71 | 83 | 95 | 107:
-                    diads.append("Major 14")
-                case 24 | 36 | 48 | 60 | 72 | 84 | 96 | 108:
-                    diads.append("Octave 15")
         return diads
