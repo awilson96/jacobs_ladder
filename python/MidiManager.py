@@ -4,6 +4,7 @@ import time
 
 import rtmidi
 from JustIntonation import JustIntonation
+from MusicTheory import MusicTheory
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
@@ -56,6 +57,9 @@ class MidiController:
 
         # Tuning management
         self.just_intonation = JustIntonation()
+        
+        # Music theory management
+        self.music_theory = MusicTheory()
 
     def initialize_ports(self):
         """
@@ -136,6 +140,7 @@ class MidiController:
             heapq.heappush(self.message_heap, [note, instance_index, status, velocity])
 
             print(f"NOTE_ON")
+            print(f"chord {self.music_theory.determine_chord(self.message_heap)}")
             print(f"message {status, note, velocity}")
             print(f"self.sustain {self.sustain}")
             print(f"self.sustained_notes {self.sustained_notes}")
@@ -145,6 +150,7 @@ class MidiController:
             print()
 
             logging.debug(f"NOTE_ON")
+            logging.debug(f"chord {self.music_theory.determine_chord(self.message_heap)}")
             logging.debug(f"message {status, note, velocity}")
             logging.debug(f"self.sustain {self.sustain}")
             logging.debug(f"self.sustained_notes {self.sustained_notes}")
