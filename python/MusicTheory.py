@@ -135,22 +135,61 @@ class MusicTheory:
         root, branch, leaf = self.int_note[root], self.int_note[branch], self.int_note[leaf]
         
         match intervals:
-            case [4, 3]:
-                return f"{root} Major"
-            case [3, 4]:
-                return f"{root} Minor"
-            case [4, 4]:
-                return f"{root} Augmented"
-            case [3, 3]:
-                return f"{root} Diminished"
-            case [2, 5]:
-                return f"{root} Sus 2"
-            case [5, 2]:
-                return f"{root} Sus 4"
+            case [4, 3] | [7, 9]:
+                return f"{root}"                    # Major
             case [3, 5]:
-                return f"{leaf} Major 1st Inv"
+                return f"{leaf}/{root}"             # Major 1st Inversion
             case [5, 4]:
-                return f"{branch} Major 2nd Inv"
+                return f"{branch}/{root}"           # Major 2nd Inversion
+            case [3, 4]:
+                return f"{root}m"                   # Minor
+            case [4, 5]:
+                return f"{leaf}m/{root}"            # Minor 1st Inversion
+            case [5, 3]:
+                return f"{branch}m/{root}"          # Minor 2nd Inversion
+            case [2, 2]:
+                return f"{root}add(2)"              # Add 2 chord
+            case [3, 3]:
+                return f"{root}dim"                 # Diminished
+            case [4, 4]:
+                return f"{root}aug"                 # Augmented
+            case [5, 5]:
+                return f"{root}11sus4"              # Quartal chord (stacking fourths)
+            case [2, 5] | [7, 7]:
+                return f"{root}sus2"                # Suspended 2
+            case [5, 2]:
+                return f"{root}sus4"                # Suspended 4
+            case [7, 3]:
+                return f"{branch}7 Sus"             # Dominant with no 3rd
+            case [3, 2]:
+                return f"{leaf}7sus/{root}"         # Dominant with no 3rd 1st Inversion
+            case [2, 7]:
+                return f"{branch}7sus/{root}"       # Dominant with no 3rd 2nd Inversion
+            case [4, 6]:
+                return f"{root}7"                   # Dominant with no 5th
+            case [6, 2]:
+                return f"{leaf}7/{root}"            # Dominant with no 5th 1st Inversion
+            case [2, 4]:
+                return f"{branch}7/{root}"          # Dominant with no 5th 2nd Inversion
+            case [3, 6]:
+                return f"{root}min6"                # Minor 6 (Diminished 1st Inversion)
+            case [6, 3]:
+                return f"{leaf}min6/{root}"         # Minor 6 1st inv (Diminished 2nd Inversion)
+            case [7, 4]:
+                return f"{root}maj7sus"             # Major 7 no 3rd
+            case [4, 1]:
+                return f"{leaf}maj7sus/{root}"      # Major 7 no 3rd 1st Inversion
+            case [1, 7]:
+                return f"{branch}maj7sus/{root}"    # Major 7 no 3rd 2nd Inversion
+            case [4, 7]:
+                return f"{root}maj7"                # Major 7 no 5th
+            case [7, 1]:
+                return f"{leaf}maj7/{root}"         # Major 7 no 5th 1st Inversion
+            case [1, 4]:
+                return f"{branch}maj7/{root}"       # Major 7 no 5th 2nd Inversion
+            case [7, 5]:
+                return f"{root}sus"                 # Suspended Chord
+            
         
         triad: str = ""
         return triad
