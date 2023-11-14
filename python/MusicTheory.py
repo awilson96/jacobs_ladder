@@ -13,7 +13,14 @@ logging.basicConfig(
 
 class MusicTheory:
     def __init__(self):
-        pass
+        self.int_note = {21: "A", 22: "B\u266d", 23: "B", 24: "C", 25: "D\u266d", 26: "D", 27: "E\u266d", 28: "E", 29: "F", 30: "G\u266d", 31: "G", 32: "A\u266d", 
+                         33: "A", 34: "B\u266d", 35: "B", 36: "C", 37: "D\u266d", 38: "D", 39: "E\u266d", 40: "E", 41: "F", 42: "G\u266d", 43: "G", 44: "A\u266d",
+                         45: "A", 46: "B\u266d", 47: "B", 48: "C", 49: "D\u266d", 50: "D", 51: "E\u266d", 52: "E", 53: "F", 54: "G\u266d", 55: "G", 56: "A\u266d",
+                         57: "A", 58: "B\u266d", 59: "B", 60: "C", 61: "D\u266d", 62: "D", 63: "E\u266d", 64: "E", 65: "F", 66: "G\u266d", 67: "G", 68: "A\u266d",
+                         69: "A", 70: "B\u266d", 71: "B", 72: "C", 73: "D\u266d", 74: "D", 75: "E\u266d", 76: "E", 77: "F", 78: "G\u266d", 79: "G", 80: "A\u266d",
+                         81: "A", 82: "B\u266d", 83: "B", 84: "C", 85: "D\u266d", 86: "D", 87: "E\u266d", 88: "E", 89: "F", 90: "G\u266d", 91: "G", 92: "A\u266d", 
+                         93: "A", 94: "B\u266d", 95: "B", 96: "C", 97: "D\u266d", 98: "D", 99: "E\u266d", 100: "E", 101: "F", 102: "G\u266d", 103: "G", 104: "A\u266d",
+                         105: "A", 106: "B\u266d", 107: "B", 108: "C"}
 
     def determine_chord(self, message_heap: list[list]):
         """
@@ -30,11 +37,15 @@ class MusicTheory:
         intervals = self.get_intervals(notes)
         logging.debug(f"Intervals: {intervals}")
 
-        diads = self.get_diads(intervals)
-        logging.debug(f"Diads: {diads}")
-
-        if len(diads) == 1:
+        if len(intervals) == 1:
+            diads = self.get_diads(intervals)
+            logging.debug(f"Diads: {diads}")
             return f"{diads[0]}"
+            
+        elif len(intervals) == 2:
+            triad = self.get_triads(intervals, notes)
+            logging.debug(f"Triad: {triad}")
+            return triad
 
     def get_intervals(self, notes: list[int]):
         """Determine the intervals between notes
@@ -109,3 +120,37 @@ class MusicTheory:
                 case 21 | 33 | 45 | 57 | 69 | 81 | 93 | 105:
                     diads.append("Major 13")
         return diads
+
+    def get_triads(self, intervals: list, notes: list):
+        """
+        Get the chord as a triad given a list of two intervals
+
+        Args:
+            diads (list): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        root, branch, leaf = notes
+        root, branch, leaf = self.int_note[root], self.int_note[branch], self.int_note[leaf]
+        
+        match intervals:
+            case [4, 3]:
+                return f"{root} Major"
+            case [3, 4]:
+                return f"{root} Minor"
+            case [4, 4]:
+                return f"{root} Augmented"
+            case [3, 3]:
+                return f"{root} Diminished"
+            case [2, 5]:
+                return f"{root} Sus 2"
+            case [5, 2]:
+                return f"{root} Sus 4"
+            case [3, 5]:
+                return f"{leaf} Major 1st Inv"
+            case [5, 4]:
+                return f"{branch} Major 2nd Inv"
+        
+        triad: str = ""
+        return triad
