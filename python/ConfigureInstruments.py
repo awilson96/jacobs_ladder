@@ -1,6 +1,11 @@
 import subprocess
-import pyautogui
 import time
+
+import pyautogui
+
+__author__ = "Alex Wilson"
+__copyright__ = "Copyright (c) 2023 Jacob's Ladder"
+__date__ = "October 26th 2023 (creation)"
 
 # Path to your Analog Lab 4 executable
 analog_lab_path = "C:\\Program Files\\Arturia\\Analog Lab 4\\Analog Lab 4.exe"
@@ -14,7 +19,7 @@ num_instances = 16
 for i in range(2):
     subprocess.Popen([midiOX_path])
     time.sleep(1)
-    
+
 pyautogui.mouseDown(-1124, 812)
 pyautogui.dragTo(-1920, 650, duration=0.5)
 pyautogui.mouseUp()
@@ -47,7 +52,7 @@ x4, y4 = 1612, 629
 # Launch 16 instances of Analog Lab 4
 for i in range(num_instances):
     subprocess.Popen([analog_lab_path])
-    
+
     time.sleep(6)
 
     # Click Analog Lab
@@ -71,7 +76,7 @@ for i in range(num_instances):
         if color == (0, 188, 250):
             pyautogui.click(p3, q3)
             time.sleep(0.3)
-            
+
     elif i == 1:
         # Get the color of the port icon
         color = pyautogui.pixel(p1, q1)
@@ -94,7 +99,7 @@ for i in range(num_instances):
             if color != (31, 30, 36):
                 pyautogui.click(p2, q2)
                 time.sleep(0.3)
-                
+
     elif i == 3:
         color = pyautogui.pixel(p3, q3)
         if color == (0, 188, 250):
@@ -107,7 +112,7 @@ for i in range(num_instances):
         if color == (31, 30, 36):
             pyautogui.click(p4, q4)
             time.sleep(0.5)
-            
+
     elif i == 4:
         pyautogui.mouseDown(s1, t1)
         pyautogui.dragTo(s2, t2, duration=0.5)
@@ -121,7 +126,7 @@ for i in range(num_instances):
         if color == (54, 53, 58):
             pyautogui.click(p5, q5)
             time.sleep(0.5)
-            
+
     elif i == 5:
         pyautogui.mouseDown(s1, t1)
         pyautogui.dragTo(s2, t2, duration=0.5)
@@ -135,7 +140,7 @@ for i in range(num_instances):
         if color == (31, 30, 36):
             pyautogui.click(p6, q6)
             time.sleep(0.5)
-            
+
     elif i == 6:
         pyautogui.mouseDown(s1, t1)
         pyautogui.dragTo(s2, t2, duration=0.5)
@@ -149,7 +154,7 @@ for i in range(num_instances):
         if color == (54, 53, 58):
             pyautogui.click(p7, q7)
             time.sleep(0.5)
-            
+
     elif i == 7:
         pyautogui.mouseDown(s1, t1)
         pyautogui.dragTo(s2, t2, duration=0.5)
@@ -163,7 +168,7 @@ for i in range(num_instances):
         if color == (31, 30, 36):
             pyautogui.click(p8, q8)
             time.sleep(0.5)
-            
+
     elif i == 8:
         pyautogui.mouseDown(s1, t1)
         pyautogui.dragTo(s2, t2, duration=0.5)
@@ -177,7 +182,7 @@ for i in range(num_instances):
         if color == (54, 53, 58):
             pyautogui.click(p9, q9)
             time.sleep(0.5)
-            
+
     elif i == 9:
         pyautogui.mouseDown(s1, t1)
         pyautogui.dragTo(s2, t2, duration=0.5)
@@ -195,7 +200,7 @@ for i in range(num_instances):
         if color == (31, 30, 36):
             pyautogui.click(p4, q4)
             time.sleep(0.5)
-            
+
     elif i == 10:
         pyautogui.mouseDown(s1, t1)
         pyautogui.dragTo(s3, t3, duration=0.5)
@@ -209,7 +214,7 @@ for i in range(num_instances):
         if color == (54, 53, 58):
             pyautogui.click(p5, q5)
             time.sleep(0.5)
-            
+
     elif i == 11:
         pyautogui.mouseDown(s1, t1)
         pyautogui.dragTo(s3, t3, duration=0.5)
@@ -223,7 +228,7 @@ for i in range(num_instances):
         if color == (31, 30, 36):
             pyautogui.click(p6, q6)
             time.sleep(0.5)
-            
+
     elif i == 12:
         pyautogui.mouseDown(s1, t1)
         pyautogui.dragTo(s3, t3, duration=0.5)
@@ -237,7 +242,7 @@ for i in range(num_instances):
         if color == (54, 53, 58):
             pyautogui.click(p7, q7)
             time.sleep(0.5)
-            
+
     elif i == 13:
         pyautogui.mouseDown(s1, t1)
         pyautogui.dragTo(s3, t3, duration=0.5)
@@ -251,7 +256,7 @@ for i in range(num_instances):
         if color == (31, 30, 36):
             pyautogui.click(p8, q8)
             time.sleep(0.5)
-            
+
     elif i == 14:
         pyautogui.mouseDown(s1, t1)
         pyautogui.dragTo(s3, t3, duration=0.5)
@@ -265,7 +270,7 @@ for i in range(num_instances):
         if color == (54, 53, 58):
             pyautogui.click(p9, q9)
             time.sleep(0.5)
-            
+
     elif i == 15:
         pyautogui.mouseDown(s1, t1)
         pyautogui.dragTo(s4, t4, duration=0.5)
@@ -279,8 +284,7 @@ for i in range(num_instances):
         if color == (31, 30, 36):
             pyautogui.click(p9, q9)
             time.sleep(0.5)
-        
-      
+
     # Close out of audio midi settings
     pyautogui.click(x4, y4)
     # Drag the window to the other screen so it is out of the way

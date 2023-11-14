@@ -1,6 +1,11 @@
 import subprocess
-import pyautogui
 import time
+
+import pyautogui
+
+__author__ = "Alex Wilson"
+__copyright__ = "Copyright (c) 2023 Jacob's Ladder"
+__date__ = "November 13th 2023 (creation)"
 
 # Path to your Analog Lab 4 executable
 analog_lab_path = "C:\\Program Files\\Arturia\\Analog Lab 4\\Analog Lab 4.exe"
@@ -26,7 +31,7 @@ c1, d1 = 1904, 321
 c2, d2 = -34, 342
 c3, d3 = -992, 350
 
-# clean up instance 
+# clean up instance
 subprocess.Popen([analog_lab_path])
 time.sleep(6)
 # Click Analog Lab
@@ -48,7 +53,7 @@ color = pyautogui.pixel(p9, q9)
 if color == (0, 188, 250):
     pyautogui.click(p9, q9)
     time.sleep(0.5)
-    
+
 # Close out of audio midi settings and application
 pyautogui.click(x4, y4)
 pyautogui.click(c1, d1)
@@ -60,7 +65,9 @@ time.sleep(3)
 powershell_cmd = 'Get-Process -Name "Analog Lab 4" | Stop-Process -Force'
 
 # Run the PowerShell command
-subprocess.run(['powershell', '-Command', powershell_cmd], capture_output=True, text=True)
+subprocess.run(
+    ["powershell", "-Command", powershell_cmd], capture_output=True, text=True
+)
 
 # # Get the current mouse position
 # x, y = pyautogui.position()
