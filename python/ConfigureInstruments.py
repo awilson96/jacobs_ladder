@@ -5,30 +5,48 @@ import time
 # Path to your Analog Lab 4 executable
 analog_lab_path = "C:\\Program Files\\Arturia\\Analog Lab 4\\Analog Lab 4.exe"
 
+midiOX_path = "C:\\Program Files (x86)\\MIDIOX\\midiox.exe"
+
 # Number of instances you want to open
 num_instances = 16
+
+# Open two instances of MIDI-OX
+for i in range(2):
+    subprocess.Popen([midiOX_path])
+    time.sleep(1)
+    
+pyautogui.mouseDown(-1124, 812)
+pyautogui.dragTo(-1920, 650, duration=0.5)
+pyautogui.mouseUp()
+time.sleep(0.5)
+pyautogui.click(-549, 566)
+
+time.sleep(5)
+x, y = pyautogui.position()
+
+print("Icon coordinates (x, y):", x, y)
+
+# Coordinates of the icon you want to click
+x1, y1 = 724, 357
+x2, y2 = 716, 565
+p1, q1 = 1424, 789
+p2, q2 = 1425, 807
+p3, q3 = 1425, 830
+p4, q4 = 1425, 726
+p5, q5 = 1425, 746
+p6, q6 = 1425, 765
+p7, q7 = 1425, 785
+p8, q8 = 1425, 807
+p9, q9 = 1425, 827
+s1, t1 = 1612, 722
+s2, t2 = 1612, 765
+s3, t3 = 1612, 807
+s4, t4 = 1612, 850
+x4, y4 = 1612, 629
 
 # Launch 16 instances of Analog Lab 4
 for i in range(num_instances):
     subprocess.Popen([analog_lab_path])
-    
-    # Coordinates of the icon you want to click
-    x1, y1 = 724, 357
-    x2, y2 = 716, 565
-    p1, q1 = 1424, 789
-    p2, q2 = 1425, 807
-    p3, q3 = 1425, 830
-    p4, q4 = 1425, 726
-    p5, q5 = 1425, 746
-    p6, q6 = 1425, 765
-    p7, q7 = 1425, 785
-    p8, q8 = 1425, 807
-    p9, q9 = 1425, 827
-    s1, t1 = 1612, 722
-    s2, t2 = 1612, 765
-    s3, t3 = 1612, 807
-    s4, t4 = 1612, 850
-    x4, y4 = 1612, 629
     
     time.sleep(6)
 
@@ -271,10 +289,8 @@ for i in range(num_instances):
     pyautogui.dragTo(new_x, new_y, duration=1)
     pyautogui.mouseUp()
 
+# print("Configuration completed for", num_instances, "instances.")
+# # Get the current mouse position
+# x, y = pyautogui.position()
 
-
-print("Configuration completed for", num_instances, "instances.")
-# Get the current mouse position
-x, y = pyautogui.position()
-
-print("Icon coordinates (x, y):", x, y)
+# print("Icon coordinates (x, y):", x, y)
