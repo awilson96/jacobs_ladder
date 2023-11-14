@@ -123,13 +123,16 @@ class MusicTheory:
 
     def get_triads(self, intervals: list, notes: list):
         """
-        Get the chord as a triad given a list of two intervals
+        Get triad chord from a list of two intervals and a list of notes
 
         Args:
-            diads (list): _description_
+            intervals (list): a list of intervals between sorted notes (lowest to highest)
+            notes (list): a list of sorted notes (lowest to highest)
 
         Returns:
-            _type_: _description_
+            str: a stringified description of the triad you just played
+            
+        Source: https://www.scales-chords.com/chord-namer/piano?notes=C;F;D&key=&bass=C
         """
         root, branch, leaf = notes
         root, branch, leaf = self.int_note[root], self.int_note[branch], self.int_note[leaf]
