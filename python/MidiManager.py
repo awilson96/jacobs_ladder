@@ -139,14 +139,7 @@ class MidiController:
             self.midi_out_ports[instance_index].send_message([status, note, velocity])
             heapq.heappush(self.message_heap, [note, instance_index, status, velocity])
 
-            print(f"NOTE_ON")
-            print(f"chord {self.music_theory.determine_chord(self.message_heap)}")
-            print(f"message {status, note, velocity}")
-            print(f"self.sustain {self.sustain}")
-            print(f"self.sustained_notes {self.sustained_notes}")
-            print(f"self.instance_index {self.instance_index}")
-            print(f"self.message_heap {self.message_heap}")
-            print(f"self.in_use_indices {self.in_use_indices}")
+            print(f"{self.music_theory.determine_chord(self.message_heap)}")
             print()
 
             logging.debug(f"NOTE_ON")
@@ -178,6 +171,9 @@ class MidiController:
                 heapq.heappush(
                     self.sustained_notes, [note, instance_index, status, velocity]
                 )
+
+            print(f"{self.music_theory.determine_chord(self.message_heap)}")
+            print()
 
             logging.debug(f"NOTE_OFF")
             logging.debug(f"message {status, note, velocity}")
