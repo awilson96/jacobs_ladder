@@ -38,14 +38,19 @@ class MusicTheory:
         logging.debug(f"Intervals: {intervals}")
 
         if len(intervals) == 1:
-            diads = self.get_diads(intervals)
+            diads = self.get_diad(intervals)
             logging.debug(f"Diads: {diads}")
             return f"{diads[0]}"
             
         elif len(intervals) == 2:
-            triad = self.get_triads(intervals, notes)
+            triad = self.get_triad(intervals, notes)
             logging.debug(f"Triad: {triad}")
             return triad
+        
+        elif len(intervals) == 3:
+            tetrad = self.get_tetrad(intervals, notes)
+            logging.debug(f"Tetrad: {tetrad}")
+            return tetrad
 
     def get_intervals(self, notes: list[int]):
         """Determine the intervals between notes
@@ -65,7 +70,7 @@ class MusicTheory:
 
         return intervals
 
-    def get_diads(self, intervals: list[int]):
+    def get_diad(self, intervals: list[int]):
         """
         Get the stringified name of a diad interval, used to make tuning decisions or displaying to the terminal
 
@@ -121,7 +126,7 @@ class MusicTheory:
                     diads.append("Major 13")
         return diads
 
-    def get_triads(self, intervals: list, notes: list):
+    def get_triad(self, intervals: list, notes: list):
         """
         Get triad chord from a list of two intervals and a list of notes
 
@@ -192,7 +197,57 @@ class MusicTheory:
                 return f"{branch}maj7/{root}"       # Major 7 no 5th 2nd Inversion
             case [7, 5]:
                 return f"{root}sus"                 # Suspended Chord
-            
         
         triad: str = ""
         return triad
+    
+    def get_tetrad(self, intervals: list[int], notes: list[int]):
+        """
+        Get tetrad chord based on a list of three intervals and a list of notes
+
+        Args:
+            intervals (list[int]): a list of intervals between sorted notes (lowest to highest)
+            notes (list[int]): a list of sorted notes (lowest to highest)
+
+        Returns:
+            str: a stringified description of the chord
+        """
+
+        bass, tenor, alto, soprano = notes
+
+        match intervals:
+            case [4, 3, 4]:
+                return f"{bass}maj7"                        # Major 7 
+            case [3, 4, 1]:
+                return f"{soprano}maj7/{bass}"              # Major 7 1st Inversion
+            case [4, 1, 4]:
+                return f"{alto}maj7/{bass}"                 # Major 7 2nd Inversion
+            case [1, 4, 3]:
+                return f"{tenor}maj7/{bass}"                # Major 7 3rd Inversion
+            case [3, 4, 3]:
+                return f"{bass}min7"                        # Minor 7 
+            case [4, 3, 2]:
+                return f"{soprano}min7/{bass}"              # Minor 7 1st Inversion
+            case [3, 2, 3]:
+                return f"{alto}min7/{bass}"                 # Minor 7 2nd Inversion
+            case [2, 3, 4]:
+                return f"{tenor}min7/{bass}"                # Minor 7 3rd Inversion
+            case [3, 4, 4]:
+                return f"{bass}m(maj7)"                     # Minor Major 7 
+            case [4, 3, 3]:
+                return f"{bass}7"                           # Dominant 7 
+            case [3, 3, 4]:
+                return f"{bass}m7\u266d5"                   # Half Diminished
+            case [3, 3, 3]:
+                return f"{bass}dim7"                        # Full Diminished
+            case [4, 4, 4]:
+                return f"{bass}aug"                         # Augmented 
+            case [5, 5, 5]:
+                return f"{bass}m11"                         # Minor 11
+            case [2, 1, 4]:
+                return f"{bass}m add(2)"                    # Minor add 2
+            case [2, 2, 3]:
+                return f"{bass} add(2)"                     # Major add 2
+            
+        tetrad: str = ""
+        return tetrad
