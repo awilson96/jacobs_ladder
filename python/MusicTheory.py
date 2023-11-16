@@ -234,8 +234,20 @@ class MusicTheory:
                 return f"{tenor}min7/{bass}"                # Minor 7 3rd Inversion
             case [3, 4, 4]:
                 return f"{bass}m(maj7)"                     # Minor Major 7 
+            case [4, 4, 1]:
+                return f"{soprano}m(maj7)/{bass}"           # Minor Major 7 1st Inversion
+            case [4, 1, 3]:
+                return f"{alto}m(maj7)/{bass}"              # Minor Major 7 2nd Inversion
+            case [1, 3, 4]:
+                return f"{tenor}m(maj7)/{bass}"             # Minor Major 7 3rd Inversion
             case [4, 3, 3]:
-                return f"{bass}7"                           # Dominant 7 
+                return f"{bass}7"                           # Dominant 7
+            case [3, 3, 2]:
+                return f"{soprano}7/{bass}"                 # Dominant 7 1st Inversion
+            case [3, 2, 4]:
+                return f"{alto}7/{bass}"                    # Dominant 7 2nd Inversion
+            case [2, 4, 3]:
+                return f"{tenor}7/{bass}"                   # Dominant 7 3rd Inversion
             case [3, 3, 4]:
                 return f"{bass}m7\u266d5"                   # Half Diminished
             case [3, 3, 3]:
