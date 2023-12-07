@@ -30,15 +30,17 @@ class MusicTheory:
         Args:
             message_heap (list[list]): A list of lists of the form [[note, instance_index, status, velocity], ...]
         """
-        notes = [note[0] for note in message_heap]
-        notes = sorted(list(set(notes)))
+        sorted_message_heap = sorted(message_heap, key=lambda x: x[0])
+        notes = [note[0] for note in sorted_message_heap]
+        instance_indices = [indices[1] for indices in sorted_message_heap]
+        
         logging.debug(f"Notes: {notes}")
 
         intervals = self.get_intervals(notes)
         logging.debug(f"Intervals: {intervals}")
         
         if len(intervals) == 0:
-            return f"{self.int_note[notes[0]]}"
+            return f" "
         elif len(intervals) == 1:
             diads = self.get_diad(intervals)
             logging.debug(f"Diads: {diads}")
@@ -97,7 +99,7 @@ class MusicTheory:
                 case 5:
                     diads.append("Perfect 4")
                 case 6:
-                    diads.append("Minor 5")
+                    diads.append("Tritone")
                 case 7 | 19 | 31 | 43 | 55 | 67 | 79 | 91 | 103:
                     diads.append("Perfect 5")
                 case 8:
@@ -146,7 +148,7 @@ class MusicTheory:
         
         match intervals:
             case [4, 3] | [7, 9]:
-                return f"{root}"                    # Major
+                return f"{root} Major Triad"        # Major
             case [3, 5]:
                 return f"{leaf}/{root}"             # Major 1st Inversion
             case [5, 4]:
