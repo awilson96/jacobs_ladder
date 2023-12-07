@@ -29,7 +29,7 @@ class MidiController:
     """
 
     def __init__(
-        self, input_port="jacobs_ladder 2", output_ports=list(map(str, range(16)))
+        self, input_port="jacobs_ladder 9", output_ports=list(map(str, range(16)))
     ):
         """
         Class Constructor creates a MidiController object.
@@ -140,7 +140,6 @@ class MidiController:
             heapq.heappush(self.message_heap, [note, instance_index, status, velocity])
 
             print(f"{self.music_theory.determine_chord(self.message_heap)}")
-            print()
 
             logging.debug(f"NOTE_ON")
             logging.debug(f"chord {self.music_theory.determine_chord(self.message_heap)}")
@@ -173,7 +172,6 @@ class MidiController:
                 )
 
             print(f"{self.music_theory.determine_chord(self.message_heap)}")
-            print()
 
             logging.debug(f"NOTE_OFF")
             logging.debug(f"message {status, note, velocity}")

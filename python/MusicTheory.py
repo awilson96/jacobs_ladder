@@ -36,8 +36,10 @@ class MusicTheory:
 
         intervals = self.get_intervals(notes)
         logging.debug(f"Intervals: {intervals}")
-
-        if len(intervals) == 1:
+        
+        if len(intervals) == 0:
+            return f"{self.int_note[notes[0]]}"
+        elif len(intervals) == 1:
             diads = self.get_diad(intervals)
             logging.debug(f"Diads: {diads}")
             return f"{diads[0]}"
@@ -214,6 +216,7 @@ class MusicTheory:
         """
 
         bass, tenor, alto, soprano = notes
+        bass, tenor, alto, soprano = self.int_note[bass], self.int_note[tenor], self.int_note[alto], self.int_note[soprano]
 
         match intervals:
             case [4, 3, 4]:
