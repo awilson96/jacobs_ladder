@@ -140,14 +140,15 @@ class MidiController:
             heapq.heappush(self.message_heap, [note, instance_index, status, velocity])
             
             chord = self.music_theory.determine_chord(self.message_heap)
+            key = self.music_theory.determine_key(self.message_heap)
             action_list = self.just_intonation.pitch_adjust_chord(self.message_heap, chord)
             if action_list:
                 for action in action_list:
                     pitch_bend_message, instance_idx = action
-                    print(pitch_bend_message, instance_idx)
                     self.midi_out_ports[instance_idx].send_message(pitch_bend_message)
 
             print(f"{chord}")
+            print(f"{key}")
 
             logging.debug(f"NOTE_ON")
             logging.debug(f"chord {self.music_theory.determine_chord(self.message_heap)}")

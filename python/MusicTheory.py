@@ -1,4 +1,5 @@
 import logging
+from dataclasses import dataclass
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
@@ -11,6 +12,25 @@ logging.basicConfig(
 )
 
 
+@dataclass
+class Scale:
+    name: str
+    notes: list[str]   
+    
+# Major/Minor scales
+C_Major = Scale("C Ionian", ["C", "D", "E", "F", "G", "A", "B"])
+Db_Major = Scale("Db Ionian", ["D\u266d", "E\u266d", "F", "G\u266d", "A\u266d", "B\u266d", "C"])
+D_Major = Scale("D Ionian", ["D", "E", "G\u266d", "G", "A", "B", "D\u266d"])
+Eb_Major = Scale("Eb Ionian", ["E\u266d", "F", "G", "A\u266d", "B\u266d", "C", "D"])
+E_Major = Scale("E Ionian", ["E", "G\u266d", "A\u266d", "A", "B", "D\u266d", "E\u266d"])
+F_Major = Scale("F Ionian", ["F", "G", "A", "B\u266d", "C", "D", "E"])
+Gb_Major = Scale("Gb Ionian", ["G\u266d", "A\u266d", "B\u266d", "B", "D\u266d", "E\u266d", "F"])
+G_Major = Scale("G Ionian", ["G", "A", "B", "C", "D", "E", "G\u266d"])
+Ab_Major = Scale("Ab Ionian", ["A\u266d", "B\u266d", "C", "D\u266d", "E\u266d", "F", "G"])
+A_Major = Scale("A Ionian", ["A", "B", "D\u266d", "D", "E", "G\u266d", "A\u266d"])
+Bb_Major = Scale("Bb Ionian", ["B\u266d", "C", "D", "E\u266d", "F", "G", "A"])
+B_Major = Scale("B Ionian", ["B", "D\u266d", "E\u266d", "E", "G\u266d", "A\u266d", "B\u266d"])
+
 class MusicTheory:
     def __init__(self):
         self.int_note = {21: "A", 22: "B\u266d", 23: "B", 24: "C", 25: "D\u266d", 26: "D", 27: "E\u266d", 28: "E", 29: "F", 30: "G\u266d", 31: "G", 32: "A\u266d", 
@@ -21,6 +41,8 @@ class MusicTheory:
                          81: "A", 82: "B\u266d", 83: "B", 84: "C", 85: "D\u266d", 86: "D", 87: "E\u266d", 88: "E", 89: "F", 90: "G\u266d", 91: "G", 92: "A\u266d", 
                          93: "A", 94: "B\u266d", 95: "B", 96: "C", 97: "D\u266d", 98: "D", 99: "E\u266d", 100: "E", 101: "F", 102: "G\u266d", 103: "G", 104: "A\u266d",
                          105: "A", 106: "B\u266d", 107: "B", 108: "C"}
+        
+        self.major_scales = [C_Major, Db_Major, D_Major, Eb_Major, E_Major, F_Major, Gb_Major, G_Major, Ab_Major, A_Major, Bb_Major, B_Major]
 
     def determine_chord(self, message_heap: list[list]):
         """
@@ -55,6 +77,26 @@ class MusicTheory:
             tetrad = self.get_tetrad(intervals, notes)
             logging.debug(f"Tetrad: {tetrad}")
             return tetrad
+        
+    def determine_key(self, message_heap: list[list]):
+        """Using the unique notes and instance indices, determine the root of the chord you are currently playing 
+        This is done by comparing the unique notes harmonically speaking which are being played to the list of scales to see where there is a match of all notes 
+
+        Args:
+            message_heap (list[list]): a list of currently active notes with their metadata
+        """
+        notes = [self.int_note[note[0]] for note in message_heap]
+        unique_notes = list(set(notes))
+        print(unique_notes)
+        
+        candidate_keys = []
+        for scale in self.major_scales:
+            is_sublist = all(element in scale.notes for element in unique_notes) 
+            if is_sublist:
+                print("HI")
+                candidate_keys.append(scale.name)      
+        
+        return candidate_keys
 
     def get_intervals(self, notes: list[int]):
         """Determine the intervals between notes
