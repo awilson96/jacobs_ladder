@@ -14,6 +14,7 @@ logging.basicConfig(
 class JustIntonation:
     def __init__(self):
         self.detuned_instances = []
+        self.center_frequency = 8192  # No tuning
 
     def get_pitch_bend_message(self, message_heap_elem: list, pitch_bend_amount: int):
         """
@@ -33,13 +34,13 @@ class JustIntonation:
 
         # Status byte for pitch bend message NOTE_ON status + offset to convert to pitch bend message
         status_byte = message_heap_elem[2] + 80
-    
+
         # Log the pitch bend message
         pitch_bend_message = [status_byte, lsb, msb]
         logging.debug(f"Pitch Bend Message: {pitch_bend_message}")
-        
+
         return pitch_bend_message
-        
+
     def pitch_adjust_chord(self, message_heap: list[list], chord=None):
         """Ajust the pitch of individual notes within a given chord
         If the chord is unknown then it will be tuned using intervals instead
@@ -51,17 +52,36 @@ class JustIntonation:
         Returns:
             list[tuple(pitch_bend_message, instance_index)]: a list of actions in the form of pitch bend messages to be sent by certain instance indices.
         """
-        
+
         sorted_message_heap = sorted(message_heap, key=lambda x: x[0])
         notes = [note[0] for note in sorted_message_heap]
         instance_indices = [indices[1] for indices in sorted_message_heap]
-        
+
         if chord is not None:
             if "Major Triad" in chord:
                 # TODO: Instead of using raw ints (7632 and 8272) calculate these values in another function instead or store cached tuning values
-                action1 = (self.get_pitch_bend_message(sorted_message_heap[1], 7632), instance_indices[1])
-                action2 = (self.get_pitch_bend_message(sorted_message_heap[2], 8272)  , instance_indices[2])
-                print(action1, action2)
+                action1 = (
+                    self.get_pitch_bend_message(sorted_message_heap[1], 7632),
+                    instance_indices[1],
+                )
+                action2 = (
+                    self.get_pitch_bend_message(sorted_message_heap[2], 8272),
+                    instance_indices[2],
+                )
+                # TODO: keep state of detuned instances to be used by the recenter frequency function
+                # self.detuned_instances.append(instance_indices[1])
+                # self.detuned_instances.append(instance_indices[2])
+                # self.detuned_instances = list(set(self.detuned_instances))
+
                 return [action1, action2]
         else:
             pass
+
+    def recenter_frequency(self, message_heap: list[list], instance_index: int):
+        """Used to recenter the base frequencies of instances which are no longer in use
+
+        Args:
+            message_heap (list[list]): a list of notes with their metadata [note, instance_index, status, velocity]
+            instance_index (int): the instance index of the note which has received the note off message
+        """
+        pass
