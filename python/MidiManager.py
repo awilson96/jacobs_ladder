@@ -18,6 +18,7 @@ logging.basicConfig(
 )
 
 
+# TODO: Add type hints to variables
 class MidiController:
     """
     This is a Midi Keyboard interface which allows for the manipulation of real time Midi data.
