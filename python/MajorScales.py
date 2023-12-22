@@ -1,9 +1,7 @@
 from Utilities import Scale
 
-# TODO: Add Harmonic Minor Scales
 # TODO: Add Harmonic Major Scales
 # TODO: Add Melodic Minor Scales
-# TODO: Determine where these scales should live since they are all just dataclasses
 
 # Major/Minor scales
 C_Major = Scale("C Ionian", ["C", "D", "E", "F", "G", "A", "B"])
