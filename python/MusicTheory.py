@@ -138,6 +138,7 @@ class MusicTheory:
         else:
             return unique_key
     
+    # TODO: Test this function for all of the different if statements
     def _create_history(self, potential_keys: list[list]):
         """Create a InOut queue of size 5 enqueuing new potential lists of keys as they arrive, then continuously 
         perform union operations on the current element and the previous union operation resultant list until either

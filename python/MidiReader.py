@@ -271,7 +271,6 @@ class MidiController:
 
     def just_intonation(self):
         """Retune the keyboard to match just intonation"""
-        # TODO: Finish basic case of major triad
         # TODO: Create a self.just_intonation boolean to compare and contrast just intonation with equal temperment
         # TODO: Handle all combinations of 3 notes
         # TODO: Handle all combinations of 4 notes
