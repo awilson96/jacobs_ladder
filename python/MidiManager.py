@@ -3,8 +3,8 @@ import logging
 import time
 
 import rtmidi
-from JustIntonation import JustIntonation
-from MusicTheory import MusicTheory
+from .music.JustIntonation import JustIntonation
+from .music.MusicTheory import MusicTheory
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"

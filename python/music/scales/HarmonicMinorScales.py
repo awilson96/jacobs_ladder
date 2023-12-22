@@ -1,4 +1,4 @@
-from Utilities import Scale
+from ...utilities.DataClasses import Scale
 
 
 # Harmonic Minor Scales

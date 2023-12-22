@@ -1,4 +1,3 @@
-import heapq
 import logging
 import time
 import threading

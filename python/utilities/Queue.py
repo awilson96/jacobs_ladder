@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 class InOutQueue:
     def __init__(self, size):
         self.queue = []
@@ -12,9 +10,3 @@ class InOutQueue:
 
     def get_queue(self):
         return self.queue
-    
-
-@dataclass
-class Scale:
-    name: str
-    notes: list[str]

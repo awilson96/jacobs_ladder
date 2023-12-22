@@ -1,11 +1,10 @@
 import logging
-from dataclasses import dataclass
 
-from HarmonicMajorScales import get_harmonic_major_scales
-from HarmonicMinorScales import get_harmonic_minor_scales
-from MajorScales import get_major_scales
-from MelodicMinorScales import get_melodic_minor_scales
-from Utilities import InOutQueue
+from .scales.HarmonicMajorScales import get_harmonic_major_scales
+from .scales.HarmonicMinorScales import get_harmonic_minor_scales
+from .scales.MajorScales import get_major_scales
+from .scales.MelodicMinorScales import get_melodic_minor_scales
+from ..utilities.Queue import InOutQueue
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
