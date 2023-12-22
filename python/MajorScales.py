@@ -1,6 +1,5 @@
 from Utilities import Scale
 
-# TODO: Add Harmonic Major Scales
 # TODO: Add Melodic Minor Scales
 
 # Major/Minor scales

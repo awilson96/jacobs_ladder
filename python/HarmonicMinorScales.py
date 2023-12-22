@@ -3,7 +3,7 @@ from Utilities import Scale
 
 # Harmonic Minor Scales
 C_Major = Scale("C Harmonic Minor", ["C", "D", "Eb", "F", "G", "Ab", "B"])
-Db_Major = Scale("Db Harmonic Minor", ["D\u266d", "E\u266d", "F\u266d", "G\u266d", "A\u266d", "A", "C"])
+Db_Major = Scale("Db Harmonic Minor", ["D\u266d", "E\u266d", "E", "G\u266d", "A\u266d", "A", "C"])
 D_Major = Scale("D Harmonic Minor", ["D", "E", "F", "G", "A", "B\u266d", "D\u266d"])
 Eb_Major = Scale("Eb Harmonic Minor", ["E\u266d", "F", "G\u266d", "A\u266d", "B\u266d", "B", "D"])
 E_Major = Scale("E Harmonic Minor", ["E", "G\u266d", "G", "A", "B", "C", "E\u266d"])
