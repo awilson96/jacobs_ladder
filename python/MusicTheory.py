@@ -1,6 +1,10 @@
 import logging
 from dataclasses import dataclass
+
+from HarmonicMajorScales import get_harmonic_major_scales
+from HarmonicMinorScales import get_harmonic_minor_scales
 from MajorScales import get_major_scales
+from MelodicMinorScales import get_melodic_minor_scales
 from Utilities import InOutQueue
 
 __author__ = "Alex Wilson"
@@ -24,7 +28,11 @@ class MusicTheory:
                          93: "A", 94: "B\u266d", 95: "B", 96: "C", 97: "D\u266d", 98: "D", 99: "E\u266d", 100: "E", 101: "F", 102: "G\u266d", 103: "G", 104: "A\u266d",
                          105: "A", 106: "B\u266d", 107: "B", 108: "C"}
         
+        # Scales used for justly tuning between two chords from different potential scales
+        self.harmonic_major_scales = get_harmonic_major_scales()
+        self.harmonic_minor_scales = get_harmonic_minor_scales()
         self.major_scales = get_major_scales()
+        self.melodic_minor_scales = get_melodic_minor_scales()
 
         # History of at most the last 5 lists of candidate keys used to determine the key uniquely at a given point in time
         # TODO: Determine the optimum lookback period (more than 5, less than 5?)

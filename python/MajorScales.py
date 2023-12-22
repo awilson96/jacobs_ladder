@@ -1,6 +1,5 @@
 from Utilities import Scale
 
-# TODO: Add Melodic Minor Scales
 
 # Major/Minor scales
 C_Major = Scale("C Ionian", ["C", "D", "E", "F", "G", "A", "B"])
@@ -17,4 +16,5 @@ Bb_Major = Scale("Bb Ionian", ["B\u266d", "C", "D", "E\u266d", "F", "G", "A"])
 B_Major = Scale("B Ionian", ["B", "D\u266d", "E\u266d", "E", "G\u266d", "A\u266d", "B\u266d"])
 
 def get_major_scales():
-    return [C_Major, Db_Major, D_Major, Eb_Major, E_Major, F_Major, Gb_Major, G_Major, Ab_Major, A_Major, Bb_Major, B_Major]
+    return [C_Major, Db_Major, D_Major, Eb_Major, E_Major, F_Major, 
+            Gb_Major, G_Major, Ab_Major, A_Major, Bb_Major, B_Major]
