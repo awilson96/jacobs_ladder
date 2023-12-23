@@ -32,13 +32,15 @@ class MusicTheory:
         # TODO: Determine the optimum lookback period (more than 5, less than 5?)
         self.history = InOutQueue(5)
 
-    def determine_chord(self, message_heap: list[list]):
-        """
-        Based on the currently active notes in the message_heap, determine the chord
+    def determine_chord(self, message_heap: list[list[int]]):
+        """Based on the currently active notes in the message_heap, determine the chord
         This function can be used to display chord data to the terminal or to make tuning decisions based on intervalic relationships
 
         Args:
-            message_heap (list[list]): A list of lists of the form [[note, instance_index, status, velocity], ...]
+            message_heap (list[list[int]]): A list of lists of the form [[note, instance_index, status, velocity], ...]
+
+        Returns:
+            str: stringified description of the chord that was played
         """
         sorted_message_heap = sorted(message_heap, key=lambda x: x[0])
         notes = [note[0] for note in sorted_message_heap]
