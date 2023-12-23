@@ -5,6 +5,7 @@ from .scales.HarmonicMinorScales import get_harmonic_minor_scales
 from .scales.MajorScales import get_major_scales
 from .scales.MelodicMinorScales import get_melodic_minor_scales
 from ..utilities.Queue import InOutQueue
+from ..utilities.Dictionaries  import get_midi_notes
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
@@ -18,14 +19,8 @@ logging.basicConfig(
 
 class MusicTheory:
     def __init__(self):
-        self.int_note = {21: "A", 22: "B\u266d", 23: "B", 24: "C", 25: "D\u266d", 26: "D", 27: "E\u266d", 28: "E", 29: "F", 30: "G\u266d", 31: "G", 32: "A\u266d", 
-                         33: "A", 34: "B\u266d", 35: "B", 36: "C", 37: "D\u266d", 38: "D", 39: "E\u266d", 40: "E", 41: "F", 42: "G\u266d", 43: "G", 44: "A\u266d",
-                         45: "A", 46: "B\u266d", 47: "B", 48: "C", 49: "D\u266d", 50: "D", 51: "E\u266d", 52: "E", 53: "F", 54: "G\u266d", 55: "G", 56: "A\u266d",
-                         57: "A", 58: "B\u266d", 59: "B", 60: "C", 61: "D\u266d", 62: "D", 63: "E\u266d", 64: "E", 65: "F", 66: "G\u266d", 67: "G", 68: "A\u266d",
-                         69: "A", 70: "B\u266d", 71: "B", 72: "C", 73: "D\u266d", 74: "D", 75: "E\u266d", 76: "E", 77: "F", 78: "G\u266d", 79: "G", 80: "A\u266d",
-                         81: "A", 82: "B\u266d", 83: "B", 84: "C", 85: "D\u266d", 86: "D", 87: "E\u266d", 88: "E", 89: "F", 90: "G\u266d", 91: "G", 92: "A\u266d", 
-                         93: "A", 94: "B\u266d", 95: "B", 96: "C", 97: "D\u266d", 98: "D", 99: "E\u266d", 100: "E", 101: "F", 102: "G\u266d", 103: "G", 104: "A\u266d",
-                         105: "A", 106: "B\u266d", 107: "B", 108: "C"}
+        # Dictionary to convert int midi notes into letter notes assuming all flats for ease of logic
+        self.int_note = get_midi_notes()
         
         # Scales used for justly tuning between two chords from different potential scales
         self.harmonic_major_scales = get_harmonic_major_scales()
