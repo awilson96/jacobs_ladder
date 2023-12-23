@@ -51,12 +51,12 @@ class MidiController:
 
         # Output port instance management
         self.instance_index:    list[int]                       = list(range(16))
-        self.message_heap:      list[list[int, int, int, int]]  = [] 
-        self.in_use_indices:    dict[int, int]                  = {}
+        self.message_heap:      list[list[int]]                 = [] 
+        self.in_use_indices:    dict[int]                       = {}
 
         # Sustain pedal management
         self.sustain:           bool                            = False
-        self.sustained_notes:   list[list[int, int, int, int]]  = []
+        self.sustained_notes:   list[list[int]]                 = []
 
         # Tuning management
         self.just_intonation:   JustIntonation                  = JustIntonation()
