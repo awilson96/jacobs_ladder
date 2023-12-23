@@ -41,26 +41,28 @@ class MidiController:
             output_ports (list, optional): output port name. Defaults to a list on integers from 0-15.
         """
         # MIDI port management
-        self.midi_in = rtmidi.MidiIn()
-        self.midi_out_ports = [rtmidi.MidiOut() for _ in range(16)]
-        self.input_port = input_port
-        self.output_ports = output_ports
+        self.midi_in:           object                          = rtmidi.MidiIn()
+        self.midi_out_ports:    list[object]                    = [rtmidi.MidiOut() for _ in range(16)]
+        self.input_port:        str                             = input_port
+        self.output_ports:      list[str]                       = output_ports
+
+        # Create midi in and midi out virtual port objects
         self.initialize_ports()
 
         # Output port instance management
-        self.instance_index = list(range(16))
-        self.message_heap = []
-        self.in_use_indices = {}
+        self.instance_index:    list[int]                       = list(range(16))
+        self.message_heap:      list[list[int, int, int, int]]  = [] 
+        self.in_use_indices:    dict[int, int]                  = {}
 
         # Sustain pedal management
-        self.sustain = False
-        self.sustained_notes = []
+        self.sustain:           bool                            = False
+        self.sustained_notes:   list[list[int, int, int, int]]  = []
 
         # Tuning management
-        self.just_intonation = JustIntonation()
+        self.just_intonation:   JustIntonation                  = JustIntonation()
         
         # Music theory management
-        self.music_theory = MusicTheory()
+        self.music_theory:      MusicTheory                     = MusicTheory()
 
     def initialize_ports(self):
         """
@@ -72,11 +74,11 @@ class MidiController:
         """
         # Initialize MIDI input port
         try:
-            available_input_ports = self.midi_in.get_ports()
-            input_port_index = None
+            available_input_ports:      list[str]   = self.midi_in.get_ports()
+            input_port_index:           int         = None
             for port in available_input_ports:
                 if port.startswith(self.input_port):
-                    input_port_index = available_input_ports.index(port)
+                    input_port_index:   int         = available_input_ports.index(port)
                     break
             if input_port_index is not None:
                 self.midi_in.open_port(input_port_index)
@@ -87,13 +89,13 @@ class MidiController:
 
         # Initialize MIDI output ports
         try:
-            available_output_ports = [
+            available_output_ports:     list[str]   = [
                 port.split(" ", 1)[0] for port in self.midi_out_ports[0].get_ports()
             ]
             for midi_out_idx, port_name in enumerate(self.output_ports):
                 if port_name in available_output_ports:
-                    output_port_index = available_output_ports.index(port_name)
-                    midi_out_port = self.midi_out_ports[midi_out_idx]
+                    output_port_index:  int         = available_output_ports.index(port_name)
+                    midi_out_port:      object      = self.midi_out_ports[midi_out_idx]
                     midi_out_port.open_port(output_port_index)
                 else:
                     raise ValueError(f"Output port '{port_name}' not found.")
@@ -122,27 +124,37 @@ class MidiController:
 
         Args:
             message (tuple): The raw MIDI message ([status, note, velocity], dt)
-            timestamp (float): Empty variable, necessary for MIDI callback as the underlying C++ code is expecting this function signiture
+            timestamp (float): Empty variable, necessary for MIDI callback as the underlying C++ code 
+            is expecting this function signiture
         """
-        payload, dt = message
+        # Type hints
+        payload:                        list[int]
+        dt:                             float
+        status:                         int
+        note:                           int
+        velocity:                       int
+
+        payload, dt  = message
         status, note, velocity = payload
 
         if status in range(144, 160):
-            instance_index = self.determine_octave(note)
+            instance_index:             int | None          = self.determine_octave(note)
             if instance_index is None:
                 if note not in [msg_note[0] for msg_note in self.message_heap]:
-                    instance_index = heapq.heappop(self.instance_index)
+                    instance_index:     int                 = heapq.heappop(self.instance_index)
                 else:
-                    instance_index = self.in_use_indices[note]
+                    instance_index:     int                 = self.in_use_indices[note]
                     if not instance_index:
                         logging.warning(f"no instances are left! {self.instance_index}")
-            self.in_use_indices[note] = instance_index
+            self.in_use_indices[note]:  dict[int, int]      = instance_index
             self.midi_out_ports[instance_index].send_message([status, note, velocity])
             heapq.heappush(self.message_heap, [note, instance_index, status, velocity])
             
-            chord = self.music_theory.determine_chord(self.message_heap)
-            key = self.music_theory.determine_key(self.message_heap)
-            action_list = self.just_intonation.pitch_adjust_chord(self.message_heap, chord)
+            chord:       str                                = self.music_theory.determine_chord(self.message_heap)
+            key:         str                                = self.music_theory.determine_key(self.message_heap)
+            action_list: list[tuple(list[int], int)] | None = self.just_intonation.pitch_adjust_chord(
+                                                                   self.message_heap, chord
+                                                                   )
             if action_list:
                 for action in action_list:
                     pitch_bend_message, instance_idx = action
@@ -161,7 +173,7 @@ class MidiController:
             logging.debug(f"self.in_use_indices {self.in_use_indices}\n")
 
         elif status in range(128, 144):
-            instance_index = self.in_use_indices[note]
+            instance_index:             int              = self.in_use_indices[note]
             self.midi_out_ports[instance_index].send_message([status, note, velocity])
 
             if not self.sustain:
@@ -193,28 +205,26 @@ class MidiController:
 
         elif status in range(176, 192) and note == 64:
             if velocity == 127:
-                self.sustain = True
+                self.sustain:           bool             = True
                 for instance_index in range(16):
                     self.midi_out_ports[instance_index].send_message([status, 64, 127])
             elif velocity == 0:
-                self.sustain = False
+                self.sustain:           bool             = False
                 for instance_index in range(16):
                     self.midi_out_ports[instance_index].send_message([status, 64, 0])
                 for sus_note in self.sustained_notes:
-                    instance_index = self.in_use_indices[sus_note[0]]
+                    instance_index:     int              = self.in_use_indices[sus_note[0]]
                     for index, sublist in enumerate(self.message_heap):
                         if sublist[0] == sus_note[0]:
                             del self.message_heap[index]
                             break
                     if sus_note[0] not in [sublist[0] for sublist in self.message_heap]:
-                        if sus_note[1] not in [
-                            sublist[1] for sublist in self.message_heap
-                        ]:
+                        if sus_note[1] not in [sublist[1] for sublist in self.message_heap]:
                             heapq.heappush(self.instance_index, instance_index)
                         del self.in_use_indices[sus_note[0]]
 
                 heapq.heapify(self.message_heap)
-                self.sustained_notes = []
+                self.sustained_notes:   list[list[int]]  = []
         
         elif status in range(176, 192) and note == 1:
             # if velocity == 127:
@@ -235,10 +245,10 @@ class MidiController:
         Returns:
             int: returns the instance index if the current note is an octave multiple of an active note and None otherwise
         """
-        notes = list(map(lambda sublist: sublist[0], self.message_heap))
-        instance = list(map(lambda sublist: sublist[1], self.message_heap))
+        notes:              int                         = list(map(lambda sublist: sublist[0], self.message_heap))
+        instance:           int                         = list(map(lambda sublist: sublist[1], self.message_heap))
 
-        octaves = [octave for octave in range(note + 12, 109, 12)]
+        octaves:            list[int]                   = [octave for octave in range(note + 12, 109, 12)]
         octaves += [octave for octave in range(note - 12, 20, -12)]
 
         for active_note in notes:
@@ -267,7 +277,7 @@ class MidiController:
         try:
             print("Listening for MIDI messages. Press Ctrl+C to exit.")
             while True:
-                message = self.midi_in.get_message()
+                message:    tuple(list[int], float)     = self.midi_in.get_message()
                 time.sleep(0.001)
         except KeyboardInterrupt:
             print("Exiting...")
@@ -276,7 +286,7 @@ class MidiController:
 
 
 def main():
-    midi_controller = MidiController()
+    midi_controller:        MidiController               = MidiController()
     midi_controller.set_midi_callback()
     midi_controller.start_listening()
 
