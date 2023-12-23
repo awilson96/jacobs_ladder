@@ -72,9 +72,9 @@ class MusicTheory:
     # and C major.  These two chords will have no shared keys since Db Major will have [Db Major, Gb Major, Ab Major] 
     # as its set and C major will have [C Major, F Major, G Major] as its set.  An interesting way to resolve this would
     # be to take the union operation between the notes in Db Major and C Major which would yield [F, B]. The chord 
-    # Db Major contains an F, and although the previous chord C major does not, you could tune off of the F which would \
+    # Db Major contains an F, and although the previous chord C major does not, you could tune off of the F which would 
     # have been a perfect fourth away from C considering F the fulcrum and using it to tune the Db
-    def determine_key(self, message_heap: list[list]):
+    def determine_key(self, message_heap: list[list[int]]):
         """Using the unique notes and instance indices, determine the key of the chord you are currently playing. 
         This is done by comparing the unique notes in the chord to the list of scales to see where there is a 
         match of all notes. If there are multiple possibilites, the method will look at previous lists of potential keys 
@@ -84,10 +84,10 @@ class MusicTheory:
         _create_history() for a full description of how keys are selected when the history is ambiguous.  
 
         Args:
-            message_heap (list[list]): a list of currently active notes with their metadata
+            message_heap (list[list[int]]): a list of currently active notes with their metadata
 
         Returns:
-            list[str]: a single key which can represent the key of the last few chords played
+            str: a single key which can represent the key of the last few chords played
         """
         notes = [self.int_note[note[0]] for note in message_heap]
         unique_notes = list(set(notes))
