@@ -5,6 +5,7 @@ from .scales.HarmonicMinorScales import get_harmonic_minor_scales
 from .scales.MajorScales import get_major_scales
 from .scales.MelodicMinorScales import get_melodic_minor_scales
 from ..utilities.Queue import InOutQueue
+from ..utilities.DataClasses import Scale
 from ..utilities.Dictionaries  import get_midi_notes
 
 __author__ = "Alex Wilson"
@@ -20,17 +21,17 @@ logging.basicConfig(
 class MusicTheory:
     def __init__(self):
         # Dictionary to convert int midi notes into letter notes assuming all flats for ease of logic
-        self.int_note = get_midi_notes()
+        self.int_note:              dict[int, str]              = get_midi_notes()
         
         # Scales used for justly tuning between two chords from different potential scales
-        self.harmonic_major_scales = get_harmonic_major_scales()
-        self.harmonic_minor_scales = get_harmonic_minor_scales()
-        self.major_scales = get_major_scales()
-        self.melodic_minor_scales = get_melodic_minor_scales()
+        self.harmonic_major_scales: list[Scale]                 = get_harmonic_major_scales()
+        self.harmonic_minor_scales: list[Scale]                 = get_harmonic_minor_scales()
+        self.major_scales:          list[Scale]                 = get_major_scales()
+        self.melodic_minor_scales:  list[Scale]                 = get_melodic_minor_scales()
 
         # History of at most the last 5 lists of candidate keys used to determine the key uniquely at a given point in time
         # TODO: Determine the optimum lookback period (more than 5, less than 5?)
-        self.history = InOutQueue(5)
+        self.history:               InOutQueue                  = InOutQueue(5)
 
     def determine_chord(self, message_heap: list[list[int]]):
         """Based on the currently active notes in the message_heap, determine the chord
@@ -42,29 +43,29 @@ class MusicTheory:
         Returns:
             str: stringified description of the chord that was played
         """
-        sorted_message_heap = sorted(message_heap, key=lambda x: x[0])
-        notes = [note[0] for note in sorted_message_heap]
-        instance_indices = [indices[1] for indices in sorted_message_heap]
+        sorted_message_heap:        list[list[int]]             = sorted(message_heap, key=lambda x: x[0])
+        notes:                      list[int]                   = [note[0] for note in sorted_message_heap]
+        instance_indices:           list[int]                   = [indices[1] for indices in sorted_message_heap]
         
         logging.debug(f"Notes: {notes}")
 
-        intervals = self.get_intervals(notes)
+        intervals:                  list[int]                   = self.get_intervals(notes)
         logging.debug(f"Intervals: {intervals}")
         
         if len(intervals) == 0:
             return f" "
         elif len(intervals) == 1:
-            diads = self.get_diad(intervals)
+            diads:                  str                   = self.get_diad(intervals)
             logging.debug(f"Diads: {diads}")
             return f"{diads[0]}"
             
         elif len(intervals) == 2:
-            triad = self.get_triad(intervals, notes)
+            triad:                  list[str]             = self.get_triad(intervals, notes)
             logging.debug(f"Triad: {triad}")
             return triad
         
         elif len(intervals) == 3:
-            tetrad = self.get_tetrad(intervals, notes)
+            tetrad:                 list[str]             = self.get_tetrad(intervals, notes)
             logging.debug(f"Tetrad: {tetrad}")
             return tetrad
     
@@ -89,24 +90,26 @@ class MusicTheory:
         Returns:
             str: a single key which can represent the key of the last few chords played
         """
-        notes = [self.int_note[note[0]] for note in message_heap]
-        unique_notes = list(set(notes))
+        notes:                      list[int]             = [self.int_note[note[0]] for note in message_heap]
+        unique_notes:               list[int]             = list(set(notes))
         print(unique_notes)
         
-        candidate_keys = []
+        candidate_keys:             list[str]             = []
         for scale in self.major_scales:
-            is_sublist = all(element in scale.notes for element in unique_notes) 
+            is_sublist:             bool                  = all(element in scale.notes for element in unique_notes) 
             if is_sublist:
                 candidate_keys.append(scale.name)
 
-        unique_key = self._create_history(candidate_keys)
+        unique_key:                 str                   = self._create_history(candidate_keys)
         if len(candidate_keys) == 1:
             return candidate_keys[0]
         else:
             return unique_key
     
+    # TODO: Write a method that can keep track of the pitch drift and display what key your in with a resolution of
+    # quarter flat and quarter sharp i.e. Bb half flat or C quarter sharp, round to nearest quarter of a semitone
     # TODO: Test this function for all of the different if statements
-    def _create_history(self, potential_keys: list[list]):
+    def _create_history(self, potential_keys: list[str]):
         """Create a InOut queue of size 5 enqueuing new potential lists of keys as they arrive, then continuously 
         perform union operations on the current element and the previous union operation resultant list until either
         a) the set operation results in an empty set in which case the first element in the previous resultant is chosen
@@ -116,7 +119,7 @@ class MusicTheory:
         been reached. In this case the first element of the final resultant will be selected. 
 
         Args:
-            potential_keys (list[list]): possible keys that the current chord being played could belong to
+            potential_keys (list[str]): possible keys that the current chord being played could belong to
 
         Returns:
             str: A single key to which the history of chords can be proven to belong to, or a selected chord the key 
@@ -131,12 +134,13 @@ class MusicTheory:
             if len(potential_keys) == 1:
                 return potential_keys[0] 
             
-            candidate_keys_list: list[list] = self.history.get_queue()
+            candidate_keys_list:    list[list[str]]       = self.history.get_queue()
             # If the history queue has not yet been populated then just return the first found potential key 
             if len(candidate_keys_list) == 0 or len(candidate_keys_list) == 1:
                 return potential_keys[0]
 
-            union_result = list(set(candidate_keys_list[0]) | set(candidate_keys_list[1]))
+            union_result:           list[str]             = list(set(candidate_keys_list[0]) |
+                                                                set(candidate_keys_list[1]))
             if len(union_result) == 0:
                 # TODO: Handle the situation where the union of the two previous chords yields the empty set
                 # right now we are assuming that the new chord is the most up to date so we arbitrarily select the first
@@ -193,7 +197,7 @@ class MusicTheory:
         Returns:
             list[int]: A sorted list of the intervals from the lowest note to the highest note
         """
-        intervals: list[int] = []
+        intervals:                  list[int]             = []
 
         sorted_notes = sorted(notes)
         if len(sorted_notes) > 1:
@@ -210,53 +214,51 @@ class MusicTheory:
             intervals (int): A list of integer interval used to determine intervallic relationships between notes
 
         Returns:
-            list[string]: list of intervallic relationships expressed as strings
+            str: intervallic relationship between two notes expressed as a string
         """
-        diads: list[str] = []
 
         for interval in intervals:
             match interval:
                 case 1:
-                    diads.append("Minor 2")
+                    return "Minor 2" 
                 case 2:
-                    diads.append("Major 2")
+                    return "Major 2"
                 case 3:
-                    diads.append("Minor 3")
+                    return "Minor 3"
                 case 4:
-                    diads.append("Major 3")
+                    return "Major 3"
                 case 5:
-                    diads.append("Perfect 4")
+                    return "Perfect 4"
                 case 6:
-                    diads.append("Tritone")
+                    return "Tritone"
                 case 7 | 19 | 31 | 43 | 55 | 67 | 79 | 91 | 103:
-                    diads.append("Perfect 5")
+                    return "Perfect 5"
                 case 8:
-                    diads.append("Minor 6")
+                    return "Minor 6"
                 case 9:
-                    diads.append("Major 6")
+                    return "Major 6"
                 case 10 | 22 | 34 | 46 | 58 | 70 | 82 | 94 | 106:
-                    diads.append("Minor 7")
+                    return "Minor 7"
                 case 11 | 23 | 35 | 47 | 59 | 71 | 83 | 95 | 107:
-                    diads.append("Major 7")
+                    return "Major 7"
                 case 12 | 24 | 36 | 48 | 60 | 72 | 84 | 96 | 108:
-                    diads.append("Octave")
+                    return "Octave"
                 case 13 | 25 | 37 | 49 | 61 | 73 | 85 | 97:
-                    diads.append("Minor 9")
+                    return "Minor 9"
                 case 14 | 26 | 38 | 50 | 62 | 74 | 86 | 98:
-                    diads.append("Major 9")
+                    return "Major 9"
                 case 15 | 27 | 39 | 51 | 63 | 75 | 87 | 99:
-                    diads.append("Minor 10")
+                    return "Minor 10"
                 case 16 | 28 | 40 | 52 | 64 | 76 | 88 | 100:
-                    diads.append("Major 10")
+                    return "Major 10"
                 case 17 | 29 | 41 | 53 | 65 | 77 | 89 | 101:
-                    diads.append("Major 11")
+                    return "Major 11"
                 case 18 | 30 | 42 | 54 | 66 | 78 | 90 | 102:
-                    diads.append("Sharp 11")
+                    return "Sharp 11"
                 case 20 | 32 | 44 | 56 | 68 | 80 | 92 | 104:
-                    diads.append("Minor 13")
+                    return "Minor 13"
                 case 21 | 33 | 45 | 57 | 69 | 81 | 93 | 105:
-                    diads.append("Major 13")
-        return diads
+                    return "Major 13"
 
     def get_triad(self, intervals: list, notes: list):
         """
@@ -271,6 +273,9 @@ class MusicTheory:
             
         Source: https://www.scales-chords.com/chord-namer/piano?notes=C;F;D&key=&bass=C
         """
+        root:               int
+        branch:             int
+        leaf:               int
         root, branch, leaf = notes
         root, branch, leaf = self.int_note[root], self.int_note[branch], self.int_note[leaf]
         
@@ -344,6 +349,10 @@ class MusicTheory:
         Returns:
             str: a stringified description of the chord
         """
+        bass:               int
+        tenor:              int
+        alto:               int
+        soprano:            int
 
         bass, tenor, alto, soprano = notes
         bass, tenor, alto, soprano = self.int_note[bass], self.int_note[tenor], self.int_note[alto], self.int_note[soprano]
