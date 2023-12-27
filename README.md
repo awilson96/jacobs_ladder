@@ -31,3 +31,6 @@ There are a few things that need to be done:
 3. It may also be useful to create a class variable called self.key which records the key of the music we are currently playing in.  This variable will be set by a method called set_key() and will also likely need some history to determine what key we are actually in. 
 4. Make a log output or history of sorts to be used by other modules
 
+
+How to Run:
+C:\Users\awilson\OneDrive - COMNEXIA\Documents\Music\Jacobs_Ladder\Jacobs-Ladder> python -m python.MidiManager
