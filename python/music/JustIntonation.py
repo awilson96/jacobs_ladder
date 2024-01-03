@@ -62,11 +62,11 @@ class JustIntonation:
         if chord is not None:
             if "Major Triad" in chord:
                 action1 = (
-                    self.get_pitch_bend_message(sorted_message_heap[1], Pitch.major_third),
+                    self.get_pitch_bend_message(sorted_message_heap[1], Pitch.major_third.value),
                     instance_indices[1],
                 )
                 action2 = (
-                    self.get_pitch_bend_message(sorted_message_heap[2], Pitch.perfect_fifth),
+                    self.get_pitch_bend_message(sorted_message_heap[2], Pitch.perfect_fifth.value),
                     instance_indices[2],
                 )
                 # TODO: keep state of detuned instances to be used by the recenter frequency function
