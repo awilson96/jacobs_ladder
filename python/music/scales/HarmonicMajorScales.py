@@ -2,7 +2,7 @@ from ...utilities.DataClasses import Scale
 
 
 # Harmonic Major Scales
-C_Harmonic_Major = Scale("C Harmonic Major", ["C", "D", "E", "F", "G", "Ab", "B"])
+C_Harmonic_Major = Scale("C Harmonic Major", ["C", "D", "E", "F", "G", "A\u266d", "B"])
 Db_Harmonic_Major = Scale("Db Harmonic Major", ["D\u266d", "E\u266d", "F", "G\u266d", "A\u266d", "A", "C"])
 D_Harmonic_Major = Scale("D Harmonic Major", ["D", "E", "G\u266d", "G", "A", "B\u266d", "D\u266d"])
 Eb_Harmonic_Major = Scale("Eb Harmonic Major", ["E\u266d", "F", "G", "A\u266d", "B\u266d", "B", "D"])
