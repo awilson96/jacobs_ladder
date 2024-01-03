@@ -1,11 +1,12 @@
 import logging
+from collections import Counter
 
+from ..utilities.Dictionaries import get_midi_notes
+from ..utilities.Queue import InOutQueue
 from .scales.HarmonicMajorScales import get_harmonic_major_scales
 from .scales.HarmonicMinorScales import get_harmonic_minor_scales
 from .scales.MajorScales import get_major_scales
 from .scales.MelodicMinorScales import get_melodic_minor_scales
-from ..utilities.Queue import InOutQueue
-from ..utilities.Dictionaries  import get_midi_notes
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
@@ -30,7 +31,8 @@ class MusicTheory:
 
         # History of at most the last 5 lists of candidate keys used to determine the key uniquely at a given point in time
         # TODO: Determine the optimum lookback period (more than 5, less than 5?)
-        self.history = InOutQueue(5)
+        self.QUEUE_SIZE = 5
+        self.history = InOutQueue(self.QUEUE_SIZE)
 
     def determine_chord(self, message_heap: list[list[int]]):
         """Based on the currently active notes in the message_heap, determine the chord
@@ -67,21 +69,15 @@ class MusicTheory:
             tetrad = self.get_tetrad(intervals, notes)
             logging.debug(f"Tetrad: {tetrad}")
             return tetrad
+        else:
+            return None
     
-    # TODO: In the future it could be cool to create an ambiguity resolver.  Take for example the two chords Db major
-    # and C major.  These two chords will have no shared keys since Db Major will have [Db Major, Gb Major, Ab Major] 
-    # as its set and C major will have [C Major, F Major, G Major] as its set.  An interesting way to resolve this would
-    # be to take the union operation between the notes in Db Major and C Major which would yield [F, B]. The chord 
-    # Db Major contains an F, and although the previous chord C major does not, you could tune off of the F which would 
-    # have been a perfect fourth away from C considering F the fulcrum and using it to tune the Db
+    # TODO: Look into the case where nothing is returned due to the current chord not matching any known scale
+    # TODO: Look into cases where a major scale would just as easily describe the current chord being held, it may be wise to rank major a bit higher
     def determine_key(self, message_heap: list[list[int]]):
-        """Using the unique notes and instance indices, determine the key of the chord you are currently playing. 
-        This is done by comparing the unique notes in the chord to the list of scales to see where there is a 
-        match of all notes. If there are multiple possibilites, the method will look at previous lists of potential keys 
-        and perform the union operation on this previous list until it finds a unique key to return.  If there is no 
-        history then the method will add the current set of potential candidates to the history and begin building it,
-        and in the beginning will default to selecting the first chord in the list of potential keys.  See
-        _create_history() for a full description of how keys are selected when the history is ambiguous.  
+        """Determines candidate keys based on the notes that are currently being held down. Then it compares those candidate
+        keys to the previous QUEUE_SIZE lists of candidate keys and performs the intersection with the current key and each of the previous lists.
+        The key with the most occurences gets returned as it has best described the key for the last QUEUE_SIZE frames.
 
         Args:
             message_heap (list[list[int]]): a list of currently active notes with their metadata
@@ -91,98 +87,62 @@ class MusicTheory:
         """
         notes = [self.int_note[note[0]] for note in message_heap]
         unique_notes = list(set(notes))
-        print(unique_notes)
         
         candidate_keys = []
         for scale in self.major_scales:
             is_sublist = all(element in scale.notes for element in unique_notes) 
             if is_sublist:
                 candidate_keys.append(scale.name)
-
-        unique_key = self._create_history(candidate_keys)
-        if len(candidate_keys) == 1:
-            return candidate_keys[0]
-        else:
-            return unique_key
-    
-    # TODO: Test this function for all of the different if statements
-    def _create_history(self, potential_keys: list[list]):
-        """Create a InOut queue of size 5 enqueuing new potential lists of keys as they arrive, then continuously 
-        perform union operations on the current element and the previous union operation resultant list until either
-        a) the set operation results in an empty set in which case the first element in the previous resultant is chosen
-        b) the set operation results in a single element in which case this element is selected
-        c) the set operation results in multiple elements in which case the method continues to perform union operations
-        with the resultants of the previous iteration until a) or b) occurs or if the max lookthrough period of 5 has
-        been reached. In this case the first element of the final resultant will be selected. 
-
-        Args:
-            potential_keys (list[list]): possible keys that the current chord being played could belong to
+        if len(candidate_keys) < 7:
+            for scale in self.harmonic_minor_scales:
+                is_sublist = all(element in scale.notes for element in unique_notes) 
+                if is_sublist:
+                    candidate_keys.append(scale.name)
+            for scale in self.harmonic_major_scales:
+                is_sublist = all(element in scale.notes for element in unique_notes) 
+                if is_sublist:
+                    candidate_keys.append(scale.name)
+            for scale in self.melodic_minor_scales:
+                is_sublist = all(element in scale.notes for element in unique_notes) 
+                if is_sublist:
+                    candidate_keys.append(scale.name)
+        
+                
+        self.history.enqueue(candidate_keys)
+        return self.find_most_common_scale()
+        
+    def find_most_common_scale(self):
+        """Uses the InOutQueue to determine out of the previous self.QUEUE_SIZE frames which scale occured the most frequently
+        If there is a tie then one will be chosen arbitrarily from the most frequent scales
 
         Returns:
-            str: A single key to which the history of chords can be proven to belong to, or a selected chord the key 
-            belongs to out of multiple possibly ambiguous keys the chord could also belong to based on the history 
-            of the past five chords played.
+            str | None: most frequently occuring scale if the length of history is greater than self.QUEUE_SIZE and None otherwise
         """
-
-        if potential_keys != [] and potential_keys is not None:
-            self.history.enqueue(potential_keys) 
-            # If there is already only one possible key for the chord being played then just break out of the funtion
-            # after enqueuing the current key to the key history
-            if len(potential_keys) == 1:
-                return potential_keys[0] 
+        history = self.history.get_queue()       
+        if len(history) >= self.QUEUE_SIZE:
+            oldest_frame, older_frame, middle_frame, previous_frame, current_frame = history
             
-            candidate_keys_list: list[list] = self.history.get_queue()
-            # If the history queue has not yet been populated then just return the first found potential key 
-            if len(candidate_keys_list) == 0 or len(candidate_keys_list) == 1:
-                return potential_keys[0]
-
-            union_result = list(set(candidate_keys_list[0]) | set(candidate_keys_list[1]))
-            if len(union_result) == 0:
-                # TODO: Handle the situation where the union of the two previous chords yields the empty set
-                # right now we are assuming that the new chord is the most up to date so we arbitrarily select the first
-                # key in the sequence
-                return candidate_keys_list[1][0]
+            current_frame = set(current_frame)
+            previous_frame = set(previous_frame)
+            middle_frame = set(middle_frame)
+            older_frame = set(older_frame)
+            oldest_frame = set(oldest_frame)
             
-            elif len(union_result) == 1:
-                return union_result[0]
+            frames = [previous_frame, middle_frame, older_frame, oldest_frame]
             
-            elif len(union_result) >= 2:
-                if len(candidate_keys_list) >= 3:
-                    for i in range(2, len(candidate_keys_list)):
-                        union_result_2 = list(set(union_result) | set(candidate_keys_list[i]))
-                        if len(union_result_2) == 0:
-                            # Skip this iteration since it doesn't provide valuable key information
-                            continue
-                        elif len(union_result_2) == 1:
-                            return union_result_2[0]
-                        else:
-                            # If we are on the last iteration and still have not found a unique key then just return
-                            # the first element of the most recent resultant union operation
-                            if i == len(candidate_keys_list) - 1:
-                                return union_result_2[0]
-                            # Otherwise set union_result to the most recent resultant union operation and continue looping
-                            else:
-                                union_result = union_result_2
-                else:
-                    union_result_2 = list(set(union_result) | set(candidate_keys_list[2]))
-                    if union_result_2 == 0:
-                        # TODO: Handle the situation where the union of the two previous chords yields the empty set
-                        # Right now we are just returning the first element of the previous resultant union operation 
-                        # as this will hopefully be a more narrowed down list and will be a good estimate
-                        return union_result[0]
-                    
-                    elif len(union_result_2) == 1:
-                        return union_result_2[0]
-                    
-                    else:
-                        # TODO: Handle the situation where after three chords and only three chords of history have been
-                        # played, the key is still ambiguous. Right now we are just returning the first value in this 
-                        # iteration's resultant union operation
-                        return union_result_2[0]
-        
+            scale_counter = Counter()
+            
+            for frame in frames:
+                intersection = current_frame.intersection(frame)
+                scale_counter.update(intersection)
+                
+            most_common_scale, occurrences = scale_counter.most_common(1)[0]
+           
+            return most_common_scale
         else:
-            logging.warning("potential_keys is equal to either [] or None meaning that the key was either unable to \
-                            be classified, or scales have not been built out to support this chord yet")
+            logging.warning(f"Queue is not yet populated with at least {self.QUEUE_SIZE} elements. Play at least 5 different chords to use this feature.")
+            return None
+    
 
     def get_intervals(self, notes: list[int]):
         """Determine the intervals between notes
