@@ -3,10 +3,12 @@ import sys
 import time
 
 import pyautogui
-from pyscreeze import ImageNotFoundException
-from pyautogui import ImageNotFoundException
 
 
+# TODO: Create close_loop_midi().
+# TODO: Create remove_all_ports() and be sure to click on the top line at the end so it matches the PNGs.
+# TODO: Create install script to install all script dependencies.
+# TODO: Look into containerizing the script.
 class CreatePorts():
 
     def __init__(self):
@@ -17,7 +19,9 @@ class CreatePorts():
         
         # Images
         self.loop_midi_initialized = os.path.join(self.images_dir, 'LoopMidiInitialized.PNG')
+        self.loop_midi_initialized_2 = os.path.join(self.images_dir, 'LoopMidiInitialized_2.PNG')
         self.loop_midi_uninitialized = os.path.join(self.images_dir, 'LoopMidiUninitialized.PNG')
+        self.loop_midi_uninitialized_2 = os.path.join(self.images_dir, 'LoopMidiUninitialized_2.PNG')
         self.minus_button = os.path.join(self.images_dir, 'MinusButton.PNG')
         self.new_port_name = os.path.join(self.images_dir, 'NewPortName.PNG')
         self.new_port_name_unhighlighted = os.path.join(self.images_dir, 'NewPortNameUnhighlighted.PNG')
@@ -56,8 +60,42 @@ class CreatePorts():
             else:
                 return False
         except:
-            print(f"Could not find {self.loop_midi_uninitialized}")
-            return False
+            try:
+                position = pyautogui.locateOnScreen(self.loop_midi_uninitialized_2)
+                if position:
+                    print(f"Image {self.loop_midi_uninitialized_2} found at position: {position}")
+                    return True
+                else:
+                    return False
+            except:
+                print(f"Could not find {self.loop_midi_uninitialized_2}")
+                return False
+            
+    def is_loop_midi_initialized(self):
+        """Check to see if the ports have already been initialized
+
+        Returns:
+            bool: True if the ports have already been initialized and False otherwise
+        """
+
+        try:
+            position = pyautogui.locateOnScreen(self.loop_midi_initialized)
+            if position:
+                print(f"Image {self.loop_midi_initialized} found at position: {position}")
+                return True
+            else:
+                return False
+        except:
+            try:
+                position = pyautogui.locateOnScreen(self.loop_midi_initialized_2)
+                if position:
+                    print(f"Image {self.loop_midi_initialized_2} found at position: {position}")
+                    return True
+                else:
+                    return False
+            except:
+                print(f"Could not find {self.loop_midi_initialized_2}")
+                return False
         
     def get_new_port_name_textbox_position(self):
         """_summary_
@@ -116,18 +154,30 @@ class CreatePorts():
         # Click on the new position
         pyautogui.click()
 
-          
+    def run_create_ports(self):
+        """Create ports in loopMIDI if loopMIDI has been installed and is uninitialized
+        If it is already initialized then just print a message to the user saying it has already been initialized.
+
+        Raises:
+            Exception: If loopMIDI has not been installed
+        """
+
+        self.open_loop_midi()
+        installed = self.is_loop_midi_installed()
+
+        initialized = self.is_loop_midi_initialized()
+
+        if installed and not initialized:
+            port_name_position = create_ports.get_new_port_name_textbox_position()
+            for i in range(16):
+                self._fill_in_port_information(port_name_position, i)
+                self.add_port(port_name_position, 110, 10)
+        elif initialized:
+            print("loopMIDI ports have already been initialized.")
+        else:
+            raise Exception("Error: loopMIDI has not been installed.")
 
 if __name__ == "__main__":
     create_ports = CreatePorts()
-    create_ports.open_loop_midi()
-
-    installed = create_ports.is_loop_midi_installed()
-    print(installed)
-
-    port_name_position = create_ports.get_new_port_name_textbox_position()
-    print(port_name_position)
-
-    create_ports._fill_in_port_information(port_name_position, 0)
-    create_ports.add_port(port_name_position, 110, 10)
+    create_ports.run_create_ports()
 
