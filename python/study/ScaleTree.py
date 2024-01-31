@@ -78,12 +78,7 @@ class ScaleTree:
 if __name__ == "__main__":
     
     st = ScaleTree(scale_length=12)
-    df = st.generate_combinations_dataframe(scale_degree=5, max_interval=4)
-    
-    # Set option for viewing large df's without truncated console output
-    pd.set_option('display.max_rows', None)
-    
     st.generate_scales(max_degree=8, max_interval=[2, 3, 4], num_consecutive_ones=0, disp=True)
-    # print(df)
+
     
 
