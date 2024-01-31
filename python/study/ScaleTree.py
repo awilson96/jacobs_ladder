@@ -29,7 +29,7 @@ class ScaleTree:
 
         return valid_combinations_df
     
-    def list_num_scales_per_degree(self, max_degree: int, max_interval: int | list[int], disp=False):
+    def generate_scales(self, max_degree: int, max_interval: int | list[int], num_consecutive_ones: None | int = None, disp=False):
         """Given a max degree, and a max interval list all possible scales from degree 2 to max degree with interval
         sizes which range from 1 to max interval. Optionally display the number of rows as output by setting disp to True.
         Output is piped to named csv files in the ~/Jacobs-Ladder/python/study/possible_scales directory.
@@ -46,7 +46,13 @@ class ScaleTree:
         if type(max_interval) == int:
             for degree in range(2, max_degree + 1):
                 df = self.generate_combinations_dataframe(scale_degree=degree, max_interval=max_interval)
-                df.to_csv(f"./possible_scales/md_2-{max_degree}_mi_1-{max_interval}.csv", ",", index=False)
+                
+                if num_consecutive_ones is not None:
+                    # Create a mask to exclude rows with more than num_consecutive_ones consecutive ones
+                    consecutive_ones_mask = df.apply(lambda row: sum('11' in ''.join(map(str, row[i:i+2])) for i in range(len(row)-1)) <= num_consecutive_ones, axis=1)
+                    df = df[consecutive_ones_mask]
+                    
+                df.to_csv(f"./possible_scales/md_2-{degree}_mi_1-{max_interval}_nco_{num_consecutive_ones}.csv", ",", index=False)
                 if disp: 
                     print(f"For scales of degree {degree} with max interval size {max_interval} there are {df.shape[0]} possible scales")
                 
@@ -55,7 +61,13 @@ class ScaleTree:
                 if disp: print()
                 for degree in range(2, max_degree + 1):
                     df = self.generate_combinations_dataframe(scale_degree=degree, max_interval=interval)
-                    df.to_csv(f"./possible_scales/degree_{degree}_interval_{interval}.csv", ",", index=False)
+                    
+                    if num_consecutive_ones is not None:
+                        # Create a mask to exclude rows with more than num_consecutive_ones consecutive ones
+                        consecutive_ones_mask = df.apply(lambda row: sum('11' in ''.join(map(str, row[i:i+2])) for i in range(len(row)-1)) <= num_consecutive_ones, axis=1)
+                        df = df[consecutive_ones_mask]
+                    
+                    df.to_csv(f"./possible_scales/degree_{degree}_interval_{interval}_nco_{num_consecutive_ones}.csv", ",", index=False)
                     if disp:
                         print(f"For scales of degree {degree} with max interval size {interval} there are {df.shape[0]} possible scales") 
         else:
@@ -71,7 +83,7 @@ if __name__ == "__main__":
     
     
     
-    st.list_num_scales_per_degree(max_degree=8, max_interval=[2, 3, 4], disp=True)
+    st.generate_scales(max_degree=8, max_interval=[2, 3, 4], num_consecutive_ones=0, disp=True)
     # print(df)
     
 
