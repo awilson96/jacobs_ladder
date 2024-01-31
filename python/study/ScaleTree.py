@@ -29,33 +29,49 @@ class ScaleTree:
 
         return valid_combinations_df
     
-    def list_num_scales_per_degree(self, max_degree: int, max_interval: int | list[int]):
+    def list_num_scales_per_degree(self, max_degree: int, max_interval: int | list[int], disp=False):
+        """Given a max degree, and a max interval list all possible scales from degree 2 to max degree with interval
+        sizes which range from 1 to max interval. Optionally display the number of rows as output by setting disp to True.
+        Output is piped to named csv files in the ~/Jacobs-Ladder/python/study/possible_scales directory.
+
+        Args:
+            max_degree (int): The max number of notes in the scale you want to generate csv files for
+            max_interval (int | list[int]): The largest interval you would ever want in your scale.
+            disp (bool, optional): If true display ouput otherwise don't. Defaults to False.
+        """
+        
         if max_degree < 2 or max_degree > 24:
             ValueError("Valid range for max_degree is 2-24")
             
         if type(max_interval) == int:
             for degree in range(2, max_degree + 1):
                 df = self.generate_combinations_dataframe(scale_degree=degree, max_interval=max_interval)
-                print(f"For scales of degree {degree} with max interval size {max_interval} there are {df.shape[0]} possible scales")
+                df.to_csv(f"./possible_scales/md_2-{max_degree}_mi_1-{max_interval}.csv", ",", index=False)
+                if disp: 
+                    print(f"For scales of degree {degree} with max interval size {max_interval} there are {df.shape[0]} possible scales")
+                
         elif type(max_interval) == list:
-            for degree in range(2, max_degree + 1):
-                print()
-                for interval in max_interval:
+            for interval in max_interval:
+                if disp: print()
+                for degree in range(2, max_degree + 1):
                     df = self.generate_combinations_dataframe(scale_degree=degree, max_interval=interval)
-                    print(f"For scales of degree {degree} with max interval size {interval} there are {df.shape[0]} possible scales")
+                    df.to_csv(f"./possible_scales/degree_{degree}_interval_{interval}.csv", ",", index=False)
+                    if disp:
+                        print(f"For scales of degree {degree} with max interval size {interval} there are {df.shape[0]} possible scales") 
         else:
             ValueError("max_interval must either be an integer or a list of integers")
 
 if __name__ == "__main__":
     
-    st = ScaleTree(9)
+    st = ScaleTree(scale_length=12)
     df = st.generate_combinations_dataframe(scale_degree=5, max_interval=4)
-    
     
     # Set option for viewing large df's without truncated console output
     pd.set_option('display.max_rows', None)
     
-    st.list_num_scales_per_degree(max_degree=8, max_interval=4)
-    print(df)
+    
+    
+    st.list_num_scales_per_degree(max_degree=8, max_interval=[2, 3, 4], disp=True)
+    # print(df)
     
 
