@@ -7,7 +7,7 @@ class ScaleTree:
     """
     
     def __init__(self, scale_length: int = 12):
-        self.num_octave_divisions = scale_length
+        self.scale_length = scale_length
         
     def generate_combinations_dataframe(self, scale_degree: int, max_interval: int):
         """Generate all combinations of scales within a scale degree to some max interval size and return a dataframe.
@@ -18,13 +18,13 @@ class ScaleTree:
 
         Returns:
             pd.Dataframe: a dataframe with scales of degree scale_degree with data from 1 to max_interval whose rows must sum to 
-            self.num_octave_divisions - 1.
+            self.scale_length - 1.
         """
 
         column_combinations = product(range(1, max_interval + 1), repeat=scale_degree-1)
         df = pd.DataFrame(column_combinations, columns=[f'Column_{i+1}' for i in range(scale_degree-1)])
         
-        mask = (df.sum(axis=1) < self.num_octave_divisions)
+        mask = (df.sum(axis=1) < self.scale_length)
         valid_combinations_df = df[mask]
 
         return valid_combinations_df
@@ -48,8 +48,9 @@ class ScaleTree:
                 df = self.generate_combinations_dataframe(scale_degree=degree, max_interval=max_interval)
                 
                 if num_consecutive_ones is not None:
-                    # Create a mask to exclude rows with more than num_consecutive_ones consecutive ones
-                    consecutive_ones_mask = df.apply(lambda row: sum('11' in ''.join(map(str, row[i:i+2])) for i in range(len(row)-1)) <= num_consecutive_ones, axis=1)
+                    # Create a mask to exclude rows with more than num_consecutive_ones consecutive ones while accounting for wrap-around effect
+                    consecutive_ones_mask = df.apply(lambda row: (sum('11' in ''.join(map(str, row[i:i+2])) 
+                                                     for i in range(len(row)-1)) + (row[0] == 1 and self.scale_length - len(row) == 1)) <= num_consecutive_ones, axis=1)
                     df = df[consecutive_ones_mask]
                     
                 df.to_csv(f"./possible_scales/md_2-{degree}_mi_1-{max_interval}_nco_{num_consecutive_ones}.csv", ",", index=False)
@@ -63,8 +64,9 @@ class ScaleTree:
                     df = self.generate_combinations_dataframe(scale_degree=degree, max_interval=interval)
                     
                     if num_consecutive_ones is not None:
-                        # Create a mask to exclude rows with more than num_consecutive_ones consecutive ones
-                        consecutive_ones_mask = df.apply(lambda row: sum('11' in ''.join(map(str, row[i:i+2])) for i in range(len(row)-1)) <= num_consecutive_ones, axis=1)
+                        consecutive_ones_mask = df.apply(lambda row: (sum('11' in ''.join(map(str, row[i:i+2])) 
+                                                         for i in range(len(row)-1)) + (row[0] == 1 and self.scale_length - len(row) == 1)) <= num_consecutive_ones, axis=1)
+
                         df = df[consecutive_ones_mask]
                     
                     df.to_csv(f"./possible_scales/degree_{degree}_interval_{interval}_nco_{num_consecutive_ones}.csv", ",", index=False)
@@ -80,8 +82,6 @@ if __name__ == "__main__":
     
     # Set option for viewing large df's without truncated console output
     pd.set_option('display.max_rows', None)
-    
-    
     
     st.generate_scales(max_degree=8, max_interval=[2, 3, 4], num_consecutive_ones=0, disp=True)
     # print(df)
