@@ -1,6 +1,7 @@
 from itertools import product
 
 import pandas as pd
+import os
 
 
 class ScaleTree:
@@ -9,6 +10,7 @@ class ScaleTree:
     
     def __init__(self, scale_length: int = 12):
         self.scale_length = scale_length
+        self.filepath = os.path.join(os.path.dirname(__file__), "possible_scales")
         
     def generate_combinations_dataframe(self, scale_degree: int, max_interval: int):
         """Generate all combinations of scales within a scale degree to some max interval size and return a dataframe.
@@ -75,7 +77,8 @@ class ScaleTree:
                         mask = consecutive_ones_mask & ~wrap_around_mask & ~wrap_around_mask2 & ~max_interval_mask
                         df = df.loc[mask]
                     
-                    df.to_csv(f"./possible_scales/degree_{degree}_interval_{interval}_nco_{num_consecutive_ones}.csv", ",", index=False)
+                    filepath = os.path.join(self.filepath, f"degree_{degree}_interval_{interval}_nco_{num_consecutive_ones}.csv")
+                    df.to_csv(filepath, ",", index=False)
                     if disp:
                         print(f"For scales of degree {degree} with max interval size {interval} there are {df.shape[0]} possible scales") 
         else:
