@@ -1,5 +1,6 @@
+from itertools import product
+
 import pandas as pd
-from itertools import product 
 
 
 class ScaleTree:
@@ -50,8 +51,8 @@ class ScaleTree:
                 if num_consecutive_ones is not None:
                     # Create a mask to exclude rows with more than num_consecutive_ones consecutive ones while accounting for wrap-around effect
                     consecutive_ones_mask = df.apply(lambda row: (sum('11' in ''.join(map(str, row[i:i+2])) 
-                                                     for i in range(len(row)-1)) + (row[0] == 1 and self.scale_length - len(row) == 1)) <= num_consecutive_ones, axis=1)
-                    df = df[consecutive_ones_mask]
+                                                     for i in range(len(row)-1))) <= num_consecutive_ones, axis=1)
+                    df = df[consecutive_ones_mask].reset_index(drop=True)
                     
                 df.to_csv(f"./possible_scales/md_2-{degree}_mi_1-{max_interval}_nco_{num_consecutive_ones}.csv", ",", index=False)
                 if disp: 
@@ -65,9 +66,11 @@ class ScaleTree:
                     
                     if num_consecutive_ones is not None:
                         consecutive_ones_mask = df.apply(lambda row: (sum('11' in ''.join(map(str, row[i:i+2])) 
-                                                         for i in range(len(row)-1)) + (row[0] == 1 and self.scale_length - len(row) == 1)) <= num_consecutive_ones, axis=1)
-
-                        df = df[consecutive_ones_mask]
+                                                         for i in range(len(row)-1))) <= num_consecutive_ones, axis=1)
+                        
+                        wrap_around_mask = df.apply(lambda row: sum(row) == self.scale_length-1 and row[0] == 1, axis=1)
+                        mask = consecutive_ones_mask & ~wrap_around_mask
+                        df = df.loc[mask]
                     
                     df.to_csv(f"./possible_scales/degree_{degree}_interval_{interval}_nco_{num_consecutive_ones}.csv", ",", index=False)
                     if disp:
@@ -78,7 +81,7 @@ class ScaleTree:
 if __name__ == "__main__":
     
     st = ScaleTree(scale_length=12)
-    st.generate_scales(max_degree=8, max_interval=[2, 3, 4], num_consecutive_ones=0, disp=True)
+    st.generate_scales(max_degree=8, max_interval=[2, 3, 4, 5, 6], num_consecutive_ones=0, disp=True)
 
     
 
