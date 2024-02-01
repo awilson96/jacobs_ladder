@@ -14,31 +14,21 @@ class ScaleClassifier:
         pass
     
     def read_csv_files(self):
-        # Get the directory of the script using __file__
         script_directory = os.path.dirname(os.path.abspath(__file__))
-
-        # Construct the path to the CSV files directory
         csv_directory = os.path.join(script_directory, "possible_scales")
-
-        # Initialize an empty dictionary to store dataframes
+        
         dfs = {}
-
-        # Loop through all files in the directory
         for filename in os.listdir(csv_directory):
             if filename.endswith(".csv"):
-                # Construct the full path to the CSV file
                 file_path = os.path.join(csv_directory, filename)
-
-                # Read the CSV file into a dataframe
                 df = pd.read_csv(file_path)
 
-                # Check if the dataframe has any data
                 if not df.empty:
-                    # Remove the file extension to get the dataframe name
                     df_name = os.path.splitext(filename)[0]
-
-                    # Add the dataframe to the dictionary
                     dfs[df_name] = df
+                    
+                else:
+                    os.remove(file_path)
 
         return dfs.keys()
 
