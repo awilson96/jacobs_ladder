@@ -30,7 +30,7 @@ class MidiController:
     """
 
     def __init__(
-        self, input_port="jacobs_ladder 9", output_ports=list(map(str, range(16)))
+        self, input_port="jacobs_ladder 18", output_ports=list(map(str, range(16)))
     ):
         """
         Class Constructor creates a MidiController object.
@@ -146,25 +146,23 @@ class MidiController:
                     instance_index:     int                 = self.in_use_indices[note]
                     if not instance_index:
                         logging.warning(f"no instances are left! {self.instance_index}")
-            self.in_use_indices[note]:  dict[int, int]      = instance_index
+            self.in_use_indices[note]                       = instance_index
             self.midi_out_ports[instance_index].send_message([status, note, velocity])
             heapq.heappush(self.message_heap, [note, instance_index, status, velocity])
             
             chord:       str                                = self.music_theory.determine_chord(self.message_heap)
             key:         str                                = self.music_theory.determine_key(self.message_heap)
-            action_list: list[tuple(list[int], int)] | None = self.just_intonation.pitch_adjust_chord(self.message_heap, chord)
+            action_list                                     = self.just_intonation.pitch_adjust_chord(self.message_heap, chord)
+            
+            print(f"Chord: {chord}\n")
             
             if action_list:
                 for action in action_list:
+                    print(action)
                     pitch_bend_message, instance_idx = action
                     self.midi_out_ports[instance_idx].send_message(pitch_bend_message)
 
-            print(f"chord: \t{chord}")
-            print(f"key: \t{key}")
-            print()
-
             logging.debug(f"NOTE_ON")
-            logging.debug(f"chord {chord}")
             logging.debug(f"message {status, note, velocity}")
             logging.debug(f"self.sustain {self.sustain}")
             logging.debug(f"self.sustained_notes {self.sustained_notes}")

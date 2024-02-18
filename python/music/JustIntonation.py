@@ -59,24 +59,24 @@ class JustIntonation:
         notes = [note[0] for note in sorted_message_heap]
         instance_indices = [indices[1] for indices in sorted_message_heap]
 
-        if chord is not None:
-            if "Major Triad" in chord:
-                action1 = (
-                    self.get_pitch_bend_message(sorted_message_heap[1], Pitch.major_third.value),
-                    instance_indices[1],
-                )
-                action2 = (
-                    self.get_pitch_bend_message(sorted_message_heap[2], Pitch.perfect_fifth.value),
-                    instance_indices[2],
-                )
-                # TODO: keep state of detuned instances to be used by the recenter frequency function
-                # self.detuned_instances.append(instance_indices[1])
-                # self.detuned_instances.append(instance_indices[2])
-                # self.detuned_instances = list(set(self.detuned_instances))
+        # if chord is not None:
+        #     if "Major Triad" in chord:
+        #         action1 = (
+        #             self.get_pitch_bend_message(sorted_message_heap[1], Pitch.major_third.value),
+        #             instance_indices[1],
+        #         )
+        #         action2 = (
+        #             self.get_pitch_bend_message(sorted_message_heap[2], Pitch.perfect_fifth.value),
+        #             instance_indices[2],
+        #         )
+        #         # TODO: keep state of detuned instances to be used by the recenter frequency function
+        #         # self.detuned_instances.append(instance_indices[1])
+        #         # self.detuned_instances.append(instance_indices[2])
+        #         # self.detuned_instances = list(set(self.detuned_instances))
 
-                return [action1, action2]
-        else:
-            pass
+        #         return [action1, action2]
+        # else:
+        #     pass
 
     def recenter_frequency(self, message_heap: list[list], instance_index: int):
         """Used to recenter the base frequencies of instances which are no longer in use
