@@ -4,6 +4,7 @@ from collections import Counter
 from ..utilities.DataClasses import Scale
 from ..utilities.Dictionaries import get_midi_notes
 from ..utilities.Queue import InOutQueue
+from .chord_definitions.TriadDefinitions import TriadDefinitions
 from .scales.HarmonicMajorScales import get_harmonic_major_scales
 from .scales.HarmonicMinorScales import get_harmonic_minor_scales
 from .scales.MajorScales import get_major_scales
@@ -29,6 +30,9 @@ class MusicTheory:
         self.harmonic_minor_scales: list[Scale]                 = get_harmonic_minor_scales()
         self.major_scales:          list[Scale]                 = get_major_scales()
         self.melodic_minor_scales:  list[Scale]                 = get_melodic_minor_scales()
+        
+        # Used for matching triads in a more robust way
+        self.triad_definitions = TriadDefinitions()
 
         # History of at most the last 5 lists of candidate keys used to determine the key uniquely at a given point in time
         # TODO: Determine the optimum lookback period (more than 5, less than 5?)
@@ -59,7 +63,7 @@ class MusicTheory:
         elif len(intervals) == 1:
             diads:                  str                   = self.get_diad(intervals)
             logging.debug(f"Diads: {diads}")
-            return f"{diads[0]}"
+            return f"{diads}"
             
         elif len(intervals) == 2:
             triad:                  list[str]             = self.get_triad(intervals, notes)
@@ -236,13 +240,18 @@ class MusicTheory:
         root, branch, leaf = notes
         root, branch, leaf = self.int_note[root], self.int_note[branch], self.int_note[leaf]
         
+        if self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.major_triad):
+            return f"{root} Major Triad"        # Major (C, E, G) or (C, G, E)
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.major_triad_1st_inv):
+            return f"{leaf}/{root}"             # Major 1st Inversion (E, G, C)
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.major_triad_1st_inv_var):
+            return f"{branch}/{root}"           # Major 1st Inversion (E, C, G)
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.major_triad_2nd_inv):
+            return f"{branch}/{root}"           # Major 2nd Inversion (G, C, E)
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.major_triad_2nd_inv_var):
+            return f"{leaf}/{root}"             # Major 2nd Inversion (G, E, C)
+        
         match intervals:
-            case [4, 3] | [7, 9]:
-                return f"{root} Major Triad"        # Major
-            case [3, 5]:
-                return f"{leaf}/{root}"             # Major 1st Inversion
-            case [5, 4]:
-                return f"{branch}/{root}"           # Major 2nd Inversion
             case [3, 4]:
                 return f"{root}m"                   # Minor
             case [4, 5]:
