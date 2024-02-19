@@ -112,6 +112,7 @@ class MusicTheory:
                 if is_sublist:
                     candidate_keys.append(scale.name)
         
+        # print(candidate_keys)
                 
         self.history.enqueue(candidate_keys)
         return self.find_most_common_scale()
@@ -250,26 +251,34 @@ class MusicTheory:
             return f"{branch}/{root}"           # Major 2nd Inversion (G, C, E)
         elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.major_triad_2nd_inv_var):
             return f"{leaf}/{root}"             # Major 2nd Inversion (G, E, C)
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.minor_triad):
+            return f"{root}m"                   # Minor (C, Eb, G)
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.minor_triad_1st_inv):
+            return f"{leaf}m/{root}"            # Minor 1st Inversion (Eb, G, C)
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.minor_triad_1st_inv_var):
+            return f"{branch}m/{root}"          # Minor 1st Inversion (Eb, C, G)
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.minor_triad_2nd_inv):
+            return f"{branch}m/{root}"          # Minor 2nd Inversion (G, C, Eb)
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.minor_triad_2nd_inv_var):
+            return f"{leaf}m/{root}"            # Minor 2nd Inversion (G, Eb, C)
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.add2):
+            return f"{root}add(2)"              # Add 2 chord
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.diminished):
+            return f"{root}dim"                 # Diminished (C, Eb, Gb) or (C, Gb, Eb)
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.augmented):
+            return f"{root}aug"                 # Augmented (C, E, Ab) or (C, Ab, E)
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.eleven_sus4):
+            return f"{root}11sus4"              # Quartal chord (stacking fourths)
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.sus2):
+            return f"{root}sus2"                # Suspended 2
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.nine_chord):
+            return f"{root}9"                   # 9 chord with no third
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.sus4):
+            return f"{root}sus4"                # Suspended 4
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.eleven_chord):
+            return f"{root}11"                  # 11 chord with no third
         
         match intervals:
-            case [3, 4]:
-                return f"{root}m"                   # Minor
-            case [4, 5]:
-                return f"{leaf}m/{root}"            # Minor 1st Inversion
-            case [5, 3]:
-                return f"{branch}m/{root}"          # Minor 2nd Inversion
-            case [2, 2]:
-                return f"{root}add(2)"              # Add 2 chord
-            case [3, 3]:
-                return f"{root}dim"                 # Diminished
-            case [4, 4]:
-                return f"{root}aug"                 # Augmented
-            case [5, 5]:
-                return f"{root}11sus4"              # Quartal chord (stacking fourths)
-            case [2, 5] | [7, 7]:
-                return f"{root}sus2"                # Suspended 2
-            case [5, 2]:
-                return f"{root}sus4"                # Suspended 4
             case [7, 3]:
                 return f"{branch}7 Sus"             # Dominant with no 3rd
             case [3, 2]:

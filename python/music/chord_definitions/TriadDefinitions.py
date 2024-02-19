@@ -1,5 +1,7 @@
 import numpy as np
 
+
+# TODO: Make a method which reduces the intervals to only the unique notes
 class TriadDefinitions:
     
     def __init__(self):
@@ -8,6 +10,20 @@ class TriadDefinitions:
         self.major_triad_1st_inv_var = self.determine_valid_interval_sets(intervals=[8, 7])
         self.major_triad_2nd_inv = self.determine_valid_interval_sets(intervals=[5, 4])
         self.major_triad_2nd_inv_var = self.determine_valid_interval_sets(intervals=[9, 8])
+        self.minor_triad = self.determine_valid_interval_sets(intervals=[[3, 4], [7, 8]]) 
+        self.minor_triad_1st_inv = self.determine_valid_interval_sets(intervals=[4, 5]) 
+        self.minor_triad_1st_inv_var = self.determine_valid_interval_sets(intervals=[9, 7]) 
+        self.minor_triad_2nd_inv = self.determine_valid_interval_sets(intervals=[5, 3]) 
+        self.minor_triad_2nd_inv_var = self.determine_valid_interval_sets(intervals=[8, 9]) 
+        self.add2 = self.determine_valid_interval_sets(intervals=[2, 2]) 
+        self.diminished = self.determine_valid_interval_sets(intervals=[[3, 3], [6, 9]]) 
+        self.augmented = self.determine_valid_interval_sets(intervals=[[4, 4], [8, 8]]) 
+        self.eleven_sus4 = self.determine_valid_interval_sets(intervals=[[5, 5], [10, 7]]) 
+        self.sus2 = self.determine_valid_interval_sets(intervals=[2, 5]) 
+        self.nine_chord = self.determine_valid_interval_sets(intervals=[7, 7]) 
+        self.sus4 = self.determine_valid_interval_sets(intervals=[5, 2]) 
+        self.eleven_chord = self.determine_valid_interval_sets(intervals=[7, 10]) 
+        
     
     def determine_valid_interval_sets(self, intervals: list[int]):
         """Determine all of the possible triad chord types given a first and second interval
