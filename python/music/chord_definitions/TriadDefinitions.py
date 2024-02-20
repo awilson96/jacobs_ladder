@@ -1,7 +1,6 @@
 import numpy as np
 
 
-# TODO: Make a method which reduces the intervals to only the unique notes
 class TriadDefinitions:
     
     def __init__(self):
@@ -23,6 +22,21 @@ class TriadDefinitions:
         self.nine_chord = self.determine_valid_interval_sets(intervals=[7, 7]) 
         self.sus4 = self.determine_valid_interval_sets(intervals=[5, 2]) 
         self.eleven_chord = self.determine_valid_interval_sets(intervals=[7, 10]) 
+        self.dominant_no_third = self.determine_valid_interval_sets(intervals=[7, 3]) 
+        self.dominant_no_third_1st_inv = self.determine_valid_interval_sets(intervals=[3, 2])
+        self.dominant_no_third_2nd_inv = self.determine_valid_interval_sets(intervals=[2, 7])
+        self.dominant_no_fifth = self.determine_valid_interval_sets(intervals=[4, 6])
+        self.dominant_no_fifth_1st_inv = self.determine_valid_interval_sets(intervals=[6, 2])
+        self.dominant_no_fifth_2nd_inv = self.determine_valid_interval_sets(intervals=[2, 4])
+        self.min6 = self.determine_valid_interval_sets(intervals=[3, 6])
+        self.min6_1st_inv = self.determine_valid_interval_sets(intervals=[6, 3])
+        self.maj7_no_third = self.determine_valid_interval_sets(intervals=[7, 4])
+        self.maj7_no_third_1st_inv = self.determine_valid_interval_sets(intervals=[4, 1])
+        self.maj7_no_third_2nd_inv = self.determine_valid_interval_sets(intervals=[1, 7])
+        self.maj7_no_fifth = self.determine_valid_interval_sets(intervals=[4, 7])
+        self.maj7_no_fifth_1st_inv = self.determine_valid_interval_sets(intervals=[7, 1])
+        self.maj7_no_fifth_2nd_inv = self.determine_valid_interval_sets(intervals=[1, 4])
+        self.sus = self.determine_valid_interval_sets(intervals=[7, 5])
         
     
     def determine_valid_interval_sets(self, intervals: list[int]):
