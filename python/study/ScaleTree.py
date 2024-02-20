@@ -62,8 +62,10 @@ class ScaleTree:
                                                      for i in range(len(row)-1))) <= num_consecutive_ones, axis=1)
                     df = df[consecutive_ones_mask].reset_index(drop=True)
                     
+                filepath = os.path.join(self.filepath, f"md_2-{degree}_mi_1-{max_interval}_nco_{num_consecutive_ones}.csv")
+                    
                 if df.shape[0] > 0:
-                    df.to_csv(f"./possible_scales/md_2-{degree}_mi_1-{max_interval}_nco_{num_consecutive_ones}.csv", ",", index=False)
+                    df.to_csv(filepath, ",", index=False)
                 if disp: 
                     print(f"For scales of degree {degree} with max interval size {max_interval} there are {df.shape[0]} possible scales")
                 
@@ -92,11 +94,13 @@ class ScaleTree:
                         print(f"For scales of degree {degree} with max interval size {interval} there are {df.shape[0]} possible scales") 
         else:
             ValueError("max_interval must either be an integer or a list of integers")
+            
+    
 
 if __name__ == "__main__":
     
-    st = ScaleTree(scale_length=12)
-    st.generate_scales(max_degree=8, max_interval=[2, 3, 4, 5, 6], num_consecutive_ones=0, disp=True)
+    st = ScaleTree(scale_length=24)
+    st.generate_scales(max_degree=4, max_interval=11, num_consecutive_ones=1, disp=True)
 
     
 
