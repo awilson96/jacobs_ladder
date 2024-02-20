@@ -49,7 +49,7 @@ class MusicTheory:
         Returns:
             str: stringified description of the chord that was played
         """
-        sorted_message_heap:        list[list[int]]             = sorted(message_heap, key=lambda x: x[0])
+        sorted_message_heap:        list[list[int]]             = self.remove_harmonically_redundant_intervals(message_heap=message_heap)
         notes:                      list[int]                   = [note[0] for note in sorted_message_heap]
         instance_indices:           list[int]                   = [indices[1] for indices in sorted_message_heap]
         
@@ -61,17 +61,17 @@ class MusicTheory:
         if len(intervals) == 0:
             return f" "
         elif len(intervals) == 1:
-            diads:                  str                   = self.get_diad(intervals)
-            logging.debug(f"Diads: {diads}")
-            return f"{diads}"
+            diads:                  str                         = self.get_diad(intervals)
+            logging.debug(f"Diads: {diads}")      
+            return f"{diads}"      
             
-        elif len(intervals) == 2:
-            triad:                  list[str]             = self.get_triad(intervals, notes)
-            logging.debug(f"Triad: {triad}")
-            return triad
+        elif len(intervals) == 2:      
+            triad:                  list[str]                   = self.get_triad(intervals, notes)
+            logging.debug(f"Triad: {triad}")      
+            return triad      
         
-        elif len(intervals) == 3:
-            tetrad:                 list[str]             = self.get_tetrad(intervals, notes)
+        elif len(intervals) == 3:      
+            tetrad:                 list[str]                   = self.get_tetrad(intervals, notes)
             logging.debug(f"Tetrad: {tetrad}")
             return tetrad
         else:
@@ -242,7 +242,7 @@ class MusicTheory:
         root, branch, leaf = self.int_note[root], self.int_note[branch], self.int_note[leaf]
         
         if self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.major_triad):
-            return f"{root} Major Triad"        # Major (C, E, G) or (C, G, E)
+            return f"{root} Maj"                # Major (C, E, G) or (C, G, E)
         elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.major_triad_1st_inv):
             return f"{leaf}/{root}"             # Major 1st Inversion (E, G, C)
         elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.major_triad_1st_inv_var):
@@ -380,3 +380,31 @@ class MusicTheory:
             
         tetrad: str = ""
         return tetrad
+    
+    def remove_harmonically_redundant_intervals(self, message_heap: list[list[int]]):
+        """Take in a message heap and return a sorted message heap with redundant harmonies excluded 
+
+        Args:
+            message_heap (list[list[int]]): a message heap of the form [[note, instance_index, status, velocity], ...] 
+
+        Returns:
+            list[list[int]]: a sorted message heap with redundant harmonies removed
+        """
+        
+        sorted_message_heap:        list[list[int]]             = sorted(message_heap, key=lambda x: x[0])
+        instance_indices:           list[int]                   = [indices[1] for indices in sorted_message_heap]
+        
+        unique_instances = []
+        instances_to_remove = []
+        for index, instance in enumerate(instance_indices):
+            if instance not in unique_instances:
+                unique_instances.append(instance)
+            else:
+                instances_to_remove.append(index)
+                
+        harmonically_unique_message_heap = []
+        for index, message in enumerate(sorted_message_heap):
+            if index not in instances_to_remove:
+                harmonically_unique_message_heap.append(message)
+                
+        return harmonically_unique_message_heap
