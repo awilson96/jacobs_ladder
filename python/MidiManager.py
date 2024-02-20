@@ -245,7 +245,6 @@ class MidiController:
         Returns:
             int: returns the instance index if the current note is an octave multiple of an active note and None otherwise
         """
-        # TODO: Refactor determine octave so that it always hands out unique indices
         notes:              int                         = list(map(lambda sublist: sublist[0], self.message_heap))
         instance:           int                         = list(map(lambda sublist: sublist[1], self.message_heap))
 
@@ -278,7 +277,7 @@ class MidiController:
         try:
             print("Listening for MIDI messages. Press Ctrl+C to exit.")
             while True:
-                message:    tuple(list[int], float)     = self.midi_in.get_message()
+                message:    tuple[list[int], float]     = self.midi_in.get_message()
                 time.sleep(0.001)
         except KeyboardInterrupt:
             print("Exiting...")
