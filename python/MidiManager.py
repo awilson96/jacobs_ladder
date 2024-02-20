@@ -146,6 +146,7 @@ class MidiController:
                     instance_index:     int                 = self.in_use_indices[note]
                     if not instance_index:
                         logging.warning(f"no instances are left! {self.instance_index}")
+                        
             self.in_use_indices[note]                       = instance_index
             self.midi_out_ports[instance_index].send_message([status, note, velocity])
             heapq.heappush(self.message_heap, [note, instance_index, status, velocity])
@@ -181,7 +182,7 @@ class MidiController:
                         del self.message_heap[index]
                         break
                 heapq.heapify(self.message_heap)
-                if note not in [sublist[0] for sublist in self.message_heap]:
+                if instance_index not in [sublist[1] for sublist in self.message_heap]:
                     if instance_index not in self.instance_index:
                         heapq.heappush(self.instance_index, instance_index)
                     del self.in_use_indices[note]
@@ -190,6 +191,9 @@ class MidiController:
                 heapq.heappush(
                     self.sustained_notes, [note, instance_index, status, velocity]
                 )
+            
+            chord = self.music_theory.determine_chord(self.message_heap)
+            print(f"Chord: {chord}\n")
 
             logging.debug(f"NOTE_OFF")
             logging.debug(f"message {status, note, velocity}")
@@ -241,6 +245,7 @@ class MidiController:
         Returns:
             int: returns the instance index if the current note is an octave multiple of an active note and None otherwise
         """
+        # TODO: Refactor determine octave so that it always hands out unique indices
         notes:              int                         = list(map(lambda sublist: sublist[0], self.message_heap))
         instance:           int                         = list(map(lambda sublist: sublist[1], self.message_heap))
 
