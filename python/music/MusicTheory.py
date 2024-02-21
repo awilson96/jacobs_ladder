@@ -305,8 +305,34 @@ class MusicTheory:
             return f"{leaf}maj7/{root}"         # Major 7 no 5th 1st Inversion
         elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.maj7_no_fifth_2nd_inv):
             return f"{branch}maj7/{root}"       # Major 7 no 5th 2nd Inversion
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.mush):
+            return f"{root} mush"               # Mush
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.maj79):
+            return f"{root} maj7/9"             # Major 7/9 no third no fifth
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.maj79_1st_inv):
+            return f"{leaf} maj7/9/{root}"      # Major 7/9 no third no fifth 1st inversion
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.maj79_2nd_inv):
+            return f"{branch} maj7/9/{root}"    # Major 7/9 no third no fifth 2nd inversion
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.dim_maj7_no_fifth):
+            return f"{root} dim maj7"           # Diminished major 7 with no fifth
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.dim_maj7_no_fifth_1st_inv):
+            return f"{leaf} dim maj7/{root}"    # Diminished major 7 with no fifth 1st inversion
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.dim_maj7_no_fifth_2nd_inv):
+            return f"{root} phryg"              # Diminished major 7 with no fifth 2nd inversion
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.sus_maj47):
+            return f"{root}maj7 sus4 "          # Suspended 4th with a major 7th 
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.sus_maj47_1st_inv):
+            return f"{leaf}maj7 sus4/{root}"    # Suspended 4th with a major 7th 1st inversion
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.sus_maj47_2nd_inv):
+            return f"{branch}maj7 sus4/{root}"  # Suspended 4th with a major 7th 2nd inversion
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.maj7_flat5):
+            return f"{root}maj7\u266d5"         # Major 7 flat 5
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.maj7_flat5_1st_inv):
+            return f"{leaf}maj7\u266d5/{root}"  # Major 7 flat 5 1st inversion
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.maj7_flat5_2nd_inv):
+            return f"{branch}maj7\u266d5/{root}"# Major 7 flat 5 2nd inversion
         
-        triad: str = ""
+        triad: str = " "
         return triad
     
     def get_tetrad(self, intervals: list[int], notes: list[int]):
