@@ -115,6 +115,7 @@ class MusicTheory:
         # print(candidate_keys)
                 
         self.history.enqueue(candidate_keys)
+        key = self.find_most_common_scale()
         return self.find_most_common_scale()
         
     def find_most_common_scale(self):
@@ -127,23 +128,26 @@ class MusicTheory:
         history = self.history.get_queue()       
         if len(history) >= self.QUEUE_SIZE:
             oldest_frame, older_frame, middle_frame, previous_frame, current_frame = history
-            
             current_frame = set(current_frame)
             previous_frame = set(previous_frame)
             middle_frame = set(middle_frame)
             older_frame = set(older_frame)
             oldest_frame = set(oldest_frame)
-            
+
             frames = [previous_frame, middle_frame, older_frame, oldest_frame]
-            
+
             scale_counter = Counter()
-            
+
             for frame in frames:
                 intersection = current_frame.intersection(frame)
-                scale_counter.update(intersection)
-                
+                if intersection != set():
+                    scale_counter.update(intersection)
+                else:
+                    intersection = ["unknown"]
+                    scale_counter.update(intersection)
+
             most_common_scale, occurrences = scale_counter.most_common(1)[0]
-           
+
             return most_common_scale
         else:
             logging.warning(f"Queue is not yet populated with at least {self.QUEUE_SIZE} elements. Play at least 5 different chords to use this feature.")
@@ -331,8 +335,20 @@ class MusicTheory:
             return f"{leaf}maj7\u266d5/{root}"  # Major 7 flat 5 1st inversion
         elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.maj7_flat5_2nd_inv):
             return f"{branch}maj7\u266d5/{root}"# Major 7 flat 5 2nd inversion
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.majmin):
+            return f"{root}maj min"             # Major Minor
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.aug_maj7_3rd_inv_no_third):
+            return f"{branch}aug/{root}"        # Major Minor 1st inversion
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.aug_maj7_no_third):
+            return f"{root}aug maj7"            # Augmented maj7
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.sus67):
+            return f"{root}maj7 sus(add6)"      # Suspened maj7 add 6
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.min_add2_no_fifth):
+            return f"{root}min(add2)"           # Minor add 2
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.min_add2_no_fifth_1st_inv):
+            return f"{leaf}min(add2)/{root}"    # Min add2 1st inversion
         
-        triad: str = " "
+        triad: str = "chord not found"
         return triad
     
     def get_tetrad(self, intervals: list[int], notes: list[int]):
