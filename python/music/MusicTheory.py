@@ -347,6 +347,12 @@ class MusicTheory:
             return f"{root}min(add2)"           # Minor add 2
         elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.min_add2_no_fifth_1st_inv):
             return f"{leaf}min(add2)/{root}"    # Min add2 1st inversion
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.min7_no5):
+            return f"{root}min7(no5)"           # Min7 no 5th
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.sus56):
+            return f"{root}sus6"                # Sus chord add 6
+        elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.min7_no5_2nd_inv):
+            return f"{branch}min7(no5)/{root}"  # Min7 no 5th 2nd inversion
         
         triad: str = "chord not found"
         return triad
