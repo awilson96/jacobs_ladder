@@ -61,6 +61,7 @@ class MusicTheory:
         if len(intervals) == 0:
             return f" "
         elif len(intervals) == 1:
+            return None
             diads:                  str                         = self.get_diad(intervals)
             logging.debug(f"Diads: {diads}")      
             return f"{diads}"      
@@ -71,6 +72,7 @@ class MusicTheory:
             return triad      
         
         elif len(intervals) == 3:      
+            return None
             tetrad:                 list[str]                   = self.get_tetrad(intervals, notes)
             logging.debug(f"Tetrad: {tetrad}")
             return tetrad
@@ -435,9 +437,8 @@ class MusicTheory:
             return f"{leaf}min9(no5)/{root}"          # Minor 9 no fifth 1st inversion
         elif self.triad_definitions.query(interval_set=intervals, valid_interval_set=self.triad_definitions.min9_no5_2nd_inv):
             return f"{branch}min9(no5)/{root}"        # Minor 9 no fifth 2nd inversion
-        
-        triad: str = "chord not found"
-        return triad
+    
+        return None
     
     def get_tetrad(self, intervals: list[int], notes: list[int]):
         """

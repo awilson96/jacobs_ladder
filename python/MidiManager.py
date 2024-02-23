@@ -155,7 +155,10 @@ class MidiController:
             key:         str                                = self.music_theory.determine_key(self.message_heap)
             action_list                                     = self.just_intonation.pitch_adjust_chord(self.message_heap, chord)
             
-            print(f"Chord: {chord}")
+            if chord:
+                print(f"Chord: {chord}")
+            else:
+                print("FAILED")
             
             if action_list:
                 for action in action_list:
