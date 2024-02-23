@@ -1,6 +1,7 @@
 import logging
 import time
 import threading
+import numpy as np
 
 import rtmidi
 
@@ -70,8 +71,10 @@ class MidiInjector:
         Args:
             note (int): The note number corresponding to the key you want to send a note off message for
         """
-        note_off = [128, note, 127]
-        self.midi_out.send_message(note_off)
+        note_off = [[128 + channel, note, 80] for channel in range(16)]
+        for notes in note_off:
+            print(notes)
+            self.midi_out.send_message(notes)
 
     def send_sustain_pedal_high(self):
         """Send a sustain pedal message (sustain pedal is held down)"""
@@ -117,6 +120,24 @@ class MidiInjector:
         time.sleep(0.5)
         for note in note_list:
             self.send_note_off(note)
+            
+    def play_chord_by_intervals(self, interval_list):
+        """Play a chord by sending note-on messages for the specified notes and holding them for 2 seconds
+
+        Args:
+            interval_list (list[int]): A list of intervals for constructing the chord
+        """
+        base_note = 60
+        note_list = [base_note] + [base_note + interval for interval in list(np.cumsum(interval_list))]
+        
+        for note in note_list:
+            self.send_note_on(note, 80)
+
+        time.sleep(0.05)
+
+        for note in note_list:
+            self.send_note_off(note)
+       
 
     def testPlayDistinctNotes(self):
         """
@@ -154,12 +175,28 @@ class MidiInjector:
         # Start the threads
         thread_overlapping_notes.start()
         thread_sustain_pedal.start()
+        
+    def testIntervalSets(self):
+        interval_sets = [[4, 3], [7, 9], [3, 5], [8, 7], [5, 4], [9, 8], [3, 4], [7, 8], [4, 5], [9, 7], [5, 3], [8, 9], [2, 2], 
+                         [2, 8], [8, 2], [3, 3], [6, 9], [4, 4], [8, 8], [5, 5], [10, 7], [2, 5], [7, 7], [5, 2], [7, 10], [7, 3], 
+                         [3, 2], [2, 7], [4, 6], [6, 2], [2, 4], [3, 6], [6, 3], [7, 4], [4, 1], [1, 7], [4, 7], [7, 1], [1, 4], 
+                         [1, 1], [1, 10], [10, 1], [11, 2], [2, 11], [11, 11],[2, 9], [9, 1], [1, 2], [3, 8], [8, 1], [1, 3], 
+                         [5, 6], [6, 1], [1, 5], [6, 5], [5, 1], [1, 6], [3, 1], [1, 8], [8, 3], [9, 2], [2, 1], [1, 9], [3, 7], 
+                         [7, 2], [2, 3], [4, 2], [2, 6], [6, 4], [11, 3], [3, 10], [10, 11], [4, 9], [4, 10], [4, 11], [5, 8], 
+                         [5, 9], [5, 10], [5, 11], [6, 7], [6, 8], [6, 10], [6, 11], [7, 2], [7, 6], [7, 11], [8, 5], [8, 6], 
+                         [8, 10], [8, 11], [9, 4], [9, 5], [9, 6], [9, 9], [9, 10], [9, 11], [10, 3], [10, 4], [10, 5], [10, 6], 
+                         [10, 8], [10, 9], [10, 10], [11, 2], [11, 4], [11, 5], [11, 6], [11, 7], [11, 8], [11, 9], [11, 10]]
+        
+        for interval_set in interval_sets:
+            self.play_chord_by_intervals(interval_list=interval_set)
+
 
 def main():
     midi_injector = MidiInjector()
-    midi_injector.testPlayDistinctNotes()
-    midi_injector.testPlayOverlappingNotes()
-    midi_injector.testPlayOverlappingNotesWithSustain()
+    # midi_injector.testPlayDistinctNotes()
+    # midi_injector.testPlayOverlappingNotes()
+    # midi_injector.testPlayOverlappingNotesWithSustain()
+    midi_injector.testIntervalSets()
 
 
 if __name__ == "__main__":
