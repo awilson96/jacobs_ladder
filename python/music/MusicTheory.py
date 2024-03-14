@@ -23,7 +23,7 @@ logging.basicConfig(
 )
 
 class MusicTheory:
-    def __init__(self):
+    def __init__(self, shared_memory_index: int):
         # Dictionary to convert int midi notes into letter notes assuming all flats for ease of logic
         self.int_note:              dict[int, str]              = get_midi_notes()
         
@@ -43,11 +43,10 @@ class MusicTheory:
         
         # Jacob's Ladder
         self.keys = np.array([''] * 28, dtype="<U20")
-        print(self.keys.shape)
-        self.shm = shared_memory.SharedMemory(name="shared_key", create=True, size=self.keys.nbytes)
+        self.shm = shared_memory.SharedMemory(name="shared_key" + str(shared_memory_index), create=True, size=self.keys.nbytes)
         
     def close_shared_memory(self):
-        print("Closing and unlinking 'shared_key'.")
+        print(f"Closing and unlinking '{self.shm.name}'.")
         self.shm.close()
         self.shm.unlink()
 
@@ -126,7 +125,7 @@ class MusicTheory:
             if is_sublist:
                 candidate_keys.append(scale.name)
                 
-        print(candidate_keys)
+        # print(candidate_keys)
         
         if candidate_keys:
             for i in range(len(self.keys)):

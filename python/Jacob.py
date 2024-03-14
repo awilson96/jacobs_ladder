@@ -1,26 +1,35 @@
-from .test.MidiInjector import MidiInjector
+import threading
+import time
+from multiprocessing import shared_memory
+
+import numpy as np
+
+from .MidiManager import MidiController
 from .music.scales.HarmonicMajorScales import get_harmonic_major_scales_dict
 from .music.scales.HarmonicMinorScales import get_harmonic_minor_scales_dict
 from .music.scales.MajorScales import get_major_scales_dict
 from .music.scales.MelodicMinorScales import get_melodic_minor_scales_dict
+from .test.MidiInjector import MidiInjector
 from .utilities.DataClasses import Scale
 from .utilities.Dictionaries import get_midi_notes
 
-from multiprocessing import shared_memory
-import numpy as np
-import psutil
-import time
 
 class JacobsLadder:
     
     def __init__(self):
-        self.midi_injector = MidiInjector()
+        self.midi_injector = MidiInjector(output_port="jacob")
+        self.midi_controller_thread = threading.Thread(target=self.initialize_midi_controller)
+        self.midi_controller_thread.start()
+        time.sleep(1)
+        
         self.harm_maj_scales = get_harmonic_major_scales_dict()
         self.harm_min_scales = get_harmonic_minor_scales_dict()
         self.maj_scales      = get_major_scales_dict()
         self.mel_min_scales  = get_melodic_minor_scales_dict()
         
-        self.shared_key = shared_memory.SharedMemory(name='shared_key', create=False)
+        self.shared_key = shared_memory.SharedMemory(name='shared_key1', create=False)
+        self.terminate1 = shared_memory.SharedMemory(name='terminate1', create=False)
+        self.terminate2 = shared_memory.SharedMemory(name='terminate2', create=False)
         self.menu()
         
     def access_shared_key(self):
@@ -54,6 +63,9 @@ class JacobsLadder:
         except KeyboardInterrupt:
             print("Exiting...")
             
+    def initialize_midi_controller(self):
+        self.midi_controller = MidiController(input_port="jacob", output_ports=list(map(str, range(12, 24))))
+            
     def key_generator(self, keys_list: list):
         for key in keys_list:
             new_keys = list(np.ndarray((28,), dtype="<U20", buffer=self.shared_key.buf))
@@ -66,24 +78,36 @@ class JacobsLadder:
                 
         
     def menu(self):
-        while True:
-            print("Choose from the following options:")
-            print("1. Play active scales")
-            print("Quit/Q")
-      
-            choice = input("Enter your choice: ").lower()
+        try:
+            while True:
+                print("Choose from the following options:")
+                print("1. Play active scales")
+                print("Quit/Q")
+        
+                choice = input("Enter your choice: ").lower()
 
-            if choice == "1":
-                self.access_shared_key()
-                
-            elif choice == "quit" or choice == "q":
-                print("Exiting the program.")
-                self.shared_key.close()
-                self.shared_key.unlink()
-                break
-            else:
-                print("Invalid choice. Please choose again.")
-                
+                if choice == "1":
+                    self.access_shared_key()
+                    
+                elif choice == "quit" or choice == "q":
+                    print("Exiting the program.")
+                    self.terminate_midi_controller()
+                    break
+                else:
+                    print("Invalid choice. Please choose again.")
+        except KeyboardInterrupt:
+            print("Exiting...")
+            self.terminate_midi_controller()
+            
+    def terminate_midi_controller(self):
+        self.terminate1.buf[0] = 1
+        self.terminate2.buf[0] = 1
+        self.terminate1.close()
+        self.terminate1.unlink()
+        self.terminate2.close()
+        self.terminate2.unlink()
+        self.shared_key.close()
+        self.shared_key.unlink()
                 
 if __name__ == "__main__":
     jl = JacobsLadder()
