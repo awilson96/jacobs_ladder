@@ -19,3 +19,7 @@ def get_harmonic_minor_scales():
     return [C_Harmonic_Minor, Db_Harmonic_Minor, D_Harmonic_Minor, Eb_Harmonic_Minor, 
             E_Harmonic_Minor, F_Harmonic_Minor, Gb_Harmonic_Minor, G_Harmonic_Minor, 
             Ab_Harmonic_Minor, A_Harmonic_Minor, Bb_Harmonic_Minor, B_Harmonic_Minor]
+    
+def get_harmonic_minor_scales_dict():
+    scales = get_harmonic_minor_scales()
+    return {scale.name: scale.notes for scale in scales}

@@ -126,14 +126,9 @@ class MusicTheory:
             if is_sublist:
                 candidate_keys.append(scale.name)
         
-        print(candidate_keys, "\n")
-        
         if candidate_keys:
-            print(f"len of for loop: {len(self.keys)}")
-            print(f"len of candidate_keys {len(candidate_keys)}")
             for i in range(len(self.keys)):
                 if i >= len(candidate_keys):
-                    print(f"i was: {i}")
                     self.keys[i:] = ""
                     break
                 self.keys[i] = candidate_keys[i]

@@ -18,3 +18,7 @@ B_Major = Scale("B Ionian", ["B", "D\u266d", "E\u266d", "E", "G\u266d", "A\u266d
 def get_major_scales():
     return [C_Major, Db_Major, D_Major, Eb_Major, E_Major, F_Major, 
             Gb_Major, G_Major, Ab_Major, A_Major, Bb_Major, B_Major]
+    
+def get_major_scales_dict():
+    scales = get_major_scales()
+    return {scale.name: scale.notes for scale in scales}

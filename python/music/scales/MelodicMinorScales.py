@@ -19,3 +19,6 @@ def get_melodic_minor_scales():
     return [C_Melodic_Minor, Db_Melodic_Minor, D_Melodic_Minor, Eb_Melodic_Minor, E_Melodic_Minor, F_Melodic_Minor, 
             Gb_Melodic_Minor, G_Melodic_Minor, Ab_Melodic_Minor, A_Melodic_Minor, Bb_Melodic_Minor, B_Melodic_Minor]
 
+def get_melodic_minor_scales_dict():
+    scales = get_melodic_minor_scales()
+    return {scale.name: scale.notes for scale in scales}
