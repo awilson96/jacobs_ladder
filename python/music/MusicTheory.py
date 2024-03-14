@@ -1,5 +1,7 @@
 import logging
 from collections import Counter
+from multiprocessing import shared_memory
+import numpy as np
 
 from ..utilities.DataClasses import Scale
 from ..utilities.Dictionaries import get_midi_notes
@@ -38,6 +40,16 @@ class MusicTheory:
         # TODO: Determine the optimum lookback period (more than 5, less than 5?)
         self.QUEUE_SIZE = 5
         self.history = InOutQueue(self.QUEUE_SIZE)
+        
+        # Jacob's Ladder
+        self.keys = np.array([''] * 28, dtype="<U20")
+        print(self.keys.shape)
+        self.shm = shared_memory.SharedMemory(name="shared_key", create=True, size=self.keys.nbytes)
+        
+    def close_shared_memory(self):
+        print("Closing and unlinking 'shared_key'.")
+        self.shm.close()
+        self.shm.unlink()
 
     def determine_chord(self, message_heap: list[list[int]]):
         """Based on the currently active notes in the message_heap, determine the chord
@@ -100,21 +112,34 @@ class MusicTheory:
             is_sublist = all(element in scale.notes for element in unique_notes) 
             if is_sublist:
                 candidate_keys.append(scale.name)
-        if len(candidate_keys) < 7:
-            for scale in self.harmonic_minor_scales:
-                is_sublist = all(element in scale.notes for element in unique_notes) 
-                if is_sublist:
-                    candidate_keys.append(scale.name)
-            for scale in self.harmonic_major_scales:
-                is_sublist = all(element in scale.notes for element in unique_notes) 
-                if is_sublist:
-                    candidate_keys.append(scale.name)
-            for scale in self.melodic_minor_scales:
-                is_sublist = all(element in scale.notes for element in unique_notes) 
-                if is_sublist:
-                    candidate_keys.append(scale.name)
+    
+        for scale in self.harmonic_minor_scales:
+            is_sublist = all(element in scale.notes for element in unique_notes) 
+            if is_sublist:
+                candidate_keys.append(scale.name)
+        for scale in self.harmonic_major_scales:
+            is_sublist = all(element in scale.notes for element in unique_notes) 
+            if is_sublist:
+                candidate_keys.append(scale.name)
+        for scale in self.melodic_minor_scales:
+            is_sublist = all(element in scale.notes for element in unique_notes) 
+            if is_sublist:
+                candidate_keys.append(scale.name)
         
-        # print(candidate_keys)
+        print(candidate_keys, "\n")
+        
+        if candidate_keys:
+            print(f"len of for loop: {len(self.keys)}")
+            print(f"len of candidate_keys {len(candidate_keys)}")
+            for i in range(len(self.keys)):
+                if i >= len(candidate_keys):
+                    print(f"i was: {i}")
+                    self.keys[i:] = ""
+                    break
+                self.keys[i] = candidate_keys[i]
+        
+            buf = np.ndarray(self.keys.shape, dtype=self.keys.dtype, buffer=self.shm.buf)
+            buf[:] = self.keys[:]
                 
         self.history.enqueue(candidate_keys)
         key = self.find_most_common_scale()

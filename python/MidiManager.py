@@ -30,7 +30,7 @@ class MidiController:
     """
 
     def __init__(
-        self, input_port="jacobs_ladder 18", output_ports=list(map(str, range(16)))
+        self, input_port="jacobs_ladder 8", output_ports=list(map(str, range(16)))
     ):
         """
         Class Constructor creates a MidiController object.
@@ -75,6 +75,7 @@ class MidiController:
         # Initialize MIDI input port
         try:
             available_input_ports:      list[str]   = self.midi_in.get_ports()
+            print(available_input_ports)
             input_port_index:           int         = None
             for port in available_input_ports:
                 if port.startswith(self.input_port):
@@ -156,9 +157,8 @@ class MidiController:
             action_list                                     = self.just_intonation.pitch_adjust_chord(self.message_heap, chord)
             
             if chord:
-                print(f"Chord: {chord}")
-            else:
-                print("FAILED")
+                pass
+                # print(f"chord: {chord}")
             
             if action_list:
                 for action in action_list:
@@ -196,7 +196,7 @@ class MidiController:
                 )
             
             chord = self.music_theory.determine_chord(self.message_heap)
-            print(f"Chord: {chord}")
+            # print(f"Chord: {chord}")
 
             logging.debug(f"NOTE_OFF")
             logging.debug(f"message {status, note, velocity}")
@@ -286,6 +286,7 @@ class MidiController:
             print("Exiting...")
         finally:
             self.close_ports()
+            self.music_theory.close_shared_memory()
 
 
 def main():
