@@ -4,6 +4,7 @@ from .music.scales.HarmonicMinorScales import get_harmonic_minor_scales_dict
 from .music.scales.MajorScales import get_major_scales_dict
 from .music.scales.MelodicMinorScales import get_melodic_minor_scales_dict
 from .utilities.DataClasses import Scale
+from .utilities.Dictionaries import get_midi_notes
 
 from multiprocessing import shared_memory
 import numpy as np
@@ -28,10 +29,11 @@ class JacobsLadder:
             while True:
                 
                 keys = list(np.ndarray((28,), dtype="<U20", buffer=self.shared_key.buf))
-                keys = [key for key in keys if key != '']
-                
+                keys = sorted([key for key in keys if key != ''])
+
                 if keys != previous_keys:
-                    for key in keys:
+                    key_gen = self.key_generator(keys_list=keys)
+                    for key in key_gen:
                         print(f"key {key}")
                         if key in self.maj_scales.keys():
                             scale = self.maj_scales[key]
@@ -43,16 +45,25 @@ class JacobsLadder:
                             scale = self.mel_min_scales[key]
                             
                         full_scale = self.midi_injector.create_scale(scale=Scale(name=key, notes=scale))
-                        self.midi_injector.play_scale(note_list=full_scale[24:36], dur_list=[0.2] * len(full_scale[24:36]))
-                        
-        
+                        reduced_scale = self.midi_injector.reduce_scale(full_scale=full_scale, starting_note=key.split(" ")[0], num_octaves=1)
+                        print(reduced_scale)
+                        self.midi_injector.play_scale(note_list=full_scale[24:32], dur_list=[0.3] * len(full_scale[24:36]))
+                    
                     previous_keys = keys
                 time.sleep(0.01)
         except KeyboardInterrupt:
             print("Exiting...")
-        finally:
-            self.shared_key.close()
-            self.shared_key.unlink()
+            
+    def key_generator(self, keys_list: list):
+        for key in keys_list:
+            new_keys = list(np.ndarray((28,), dtype="<U20", buffer=self.shared_key.buf))
+            new_keys = sorted([key for key in new_keys if key != ''])
+            if keys_list != new_keys:
+                print(f"keys_list {keys_list}\n\n")
+                print(f"new_keys {new_keys} \n\n")
+                break
+            yield key
+                
         
     def menu(self):
         while True:
@@ -67,9 +78,12 @@ class JacobsLadder:
                 
             elif choice == "quit" or choice == "q":
                 print("Exiting the program.")
+                self.shared_key.close()
+                self.shared_key.unlink()
                 break
             else:
                 print("Invalid choice. Please choose again.")
+                
                 
 if __name__ == "__main__":
     jl = JacobsLadder()

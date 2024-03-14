@@ -125,6 +125,8 @@ class MusicTheory:
             is_sublist = all(element in scale.notes for element in unique_notes) 
             if is_sublist:
                 candidate_keys.append(scale.name)
+                
+        print(candidate_keys)
         
         if candidate_keys:
             for i in range(len(self.keys)):

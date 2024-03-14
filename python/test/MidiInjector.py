@@ -137,6 +137,19 @@ class MidiInjector:
             
         full_scale = [num for num in full_scale if lowest_note <= num <= highest_note]
         return sorted(full_scale)
+    
+    def reduce_scale(self, full_scale, starting_note, num_octaves):
+   
+        starting_note_index = self.find_starting_index(starting_note)
+        starting_octave_start_index = starting_note_index - starting_note_index % 12
+        reduced_scale = full_scale[starting_octave_start_index:starting_octave_start_index + num_octaves * 12]
+        
+        return reduced_scale
+    
+    def find_starting_index(self, starting_note):
+        starting_note_indices = [midi_note for midi_note, note_name in self.int_note.items() if note_name == starting_note]
+        closest_note = min(starting_note_indices, key=lambda x: abs(x - 24))
+        return closest_note
 
     def play_chord(self, note_list):
         """Play a chord by sending note-on messages for the specified notes and holding them for 2 seconds
