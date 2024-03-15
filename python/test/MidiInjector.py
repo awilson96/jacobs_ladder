@@ -148,7 +148,7 @@ class MidiInjector:
     
     def find_starting_index(self, starting_note):
         starting_note_indices = [midi_note for midi_note, note_name in self.int_note.items() if note_name == starting_note]
-        closest_note = min(starting_note_indices, key=lambda x: abs(x - 37))
+        closest_note = min(starting_note_indices, key=lambda x: abs(x - 61))
         return closest_note
 
     def play_chord(self, note_list):
