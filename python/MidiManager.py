@@ -70,7 +70,6 @@ class MidiController:
         # Process Managment
         terminate = np.array(0, dtype=np.int8)
         self.terminate = shared_memory.SharedMemory(name="terminate" + str(self.shared_memory_index), create=True, size=terminate.nbytes)
-        print(self.terminate.name)
 
         # Sustain pedal management
         self.sustain = False
@@ -100,7 +99,6 @@ class MidiController:
             input_port_index = None
             for port in available_input_ports:
                 if port.split(" ")[0] == (self.input_port):
-                    print(port)
                     input_port_index = available_input_ports.index(port)
                     break
             if input_port_index is not None:
@@ -295,6 +293,7 @@ class MidiController:
             while self.terminate.buf[0] == 0:
                 message = self.midi_in.get_message()
                 time.sleep(0.001)
+            self.turn_off_all_notes()
         except KeyboardInterrupt:
             print("Exiting...")
             self.turn_off_all_notes()

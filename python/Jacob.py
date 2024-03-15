@@ -20,7 +20,7 @@ class JacobsLadder:
         self.midi_injector = MidiInjector(output_port="jacob")
         self.midi_controller_thread = threading.Thread(target=self.initialize_midi_controller)
         self.midi_controller_thread.start()
-        time.sleep(1)
+        time.sleep(0.1)
         
         self.harm_maj_scales = get_harmonic_major_scales_dict()
         self.harm_min_scales = get_harmonic_minor_scales_dict()
@@ -43,7 +43,7 @@ class JacobsLadder:
                 if keys != previous_keys:
                     key_gen = self.key_generator(keys_list=keys)
                     for key in key_gen:
-                        print(f"key {key}")
+                        print(f"{key}")
                         if key in self.maj_scales.keys():
                             scale = self.maj_scales[key]
                         elif key in self.harm_maj_scales.keys():
@@ -55,8 +55,7 @@ class JacobsLadder:
                             
                         full_scale = self.midi_injector.create_scale(scale=Scale(name=key, notes=scale))
                         reduced_scale = self.midi_injector.reduce_scale(full_scale=full_scale, starting_note=key.split(" ")[0], num_octaves=1)
-                        print(reduced_scale)
-                        self.midi_injector.play_scale(note_list=full_scale[24:32], dur_list=[0.3] * len(full_scale[24:36]))
+                        self.midi_injector.play_scale(note_list=reduced_scale, dur_list=[0.3] * len(reduced_scale))
                     
                     previous_keys = keys
                 time.sleep(0.01)
@@ -71,8 +70,6 @@ class JacobsLadder:
             new_keys = list(np.ndarray((28,), dtype="<U20", buffer=self.shared_key.buf))
             new_keys = sorted([key for key in new_keys if key != ''])
             if keys_list != new_keys:
-                print(f"keys_list {keys_list}\n\n")
-                print(f"new_keys {new_keys} \n\n")
                 break
             yield key
                 
@@ -100,7 +97,6 @@ class JacobsLadder:
             self.terminate_midi_controller()
             
     def terminate_midi_controller(self):
-        self.terminate1.buf[0] = 1
         self.terminate2.buf[0] = 1
         self.terminate1.close()
         self.terminate1.unlink()

@@ -56,11 +56,8 @@ class MidiInjector:
             RuntimeError: If the port cannot be found, this funtion raises an error
         """
         try:
-            available_output_ports = [
-                port.split(" ", 1)[0] for port in self.midi_out.get_ports()
-            ]
+            available_output_ports = [port.split(" ", 1)[0] for port in self.midi_out.get_ports()]
             index = available_output_ports.index(self.output_ports)
-            print(f'Opening port "{self.output_ports}" on index {index}')
             self.midi_out.open_port(index)
 
         except (ValueError, rtmidi._rtmidi.SystemError):
@@ -139,16 +136,19 @@ class MidiInjector:
         return sorted(full_scale)
     
     def reduce_scale(self, full_scale, starting_note, num_octaves):
-   
-        starting_note_index = self.find_starting_index(starting_note)
-        starting_octave_start_index = starting_note_index - starting_note_index % 12
-        reduced_scale = full_scale[starting_octave_start_index:starting_octave_start_index + num_octaves * 12]
+        starting_note = self.find_starting_index(starting_note)
+        full_scale_index = full_scale.index(starting_note)
+        print(f"starting_note {starting_note}")
+        print(f"full_scale_index {full_scale_index}")
+        reduced_scale = full_scale[full_scale_index:full_scale_index + ((num_octaves * 7) + 1)]
+        print(f"reduced_scale {reduced_scale}")
+        print()
         
         return reduced_scale
     
     def find_starting_index(self, starting_note):
         starting_note_indices = [midi_note for midi_note, note_name in self.int_note.items() if note_name == starting_note]
-        closest_note = min(starting_note_indices, key=lambda x: abs(x - 24))
+        closest_note = min(starting_note_indices, key=lambda x: abs(x - 37))
         return closest_note
 
     def play_chord(self, note_list):
