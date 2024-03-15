@@ -27,6 +27,7 @@ class JacobsLadder:
         self.mel_min_scales  = get_melodic_minor_scales_dict()
         
         self.shared_key = shared_memory.SharedMemory(name='shared_key1', create=False)
+        self.messages = shared_memory.SharedMemory(name='messages1', create=False)
         self.terminate1 = shared_memory.SharedMemory(name='terminate1', create=False)
         self.terminate2 = shared_memory.SharedMemory(name='terminate2', create=False)
         self.menu()
@@ -48,6 +49,8 @@ class JacobsLadder:
             while True:
                 print("Choose from the following options:")
                 print("1. Play active scales")
+                print("2. Display active keys")
+                print("3. Print messages")
                 print("Quit/Q")
         
                 choice = input("Enter your choice: ").lower()
@@ -66,6 +69,34 @@ class JacobsLadder:
                             self.play_active_scales(speed)
                         else:
                             print("Speed must be between 0.009 and 2.0")
+                
+                elif choice == "2":
+                    try:
+                        previous_keys = None
+                        while True:
+                            keys = list(np.ndarray((28,), dtype="<U20", buffer=self.shared_key.buf))
+                            keys = sorted([key for key in keys if key != ''])
+                            if keys != previous_keys:
+                                print(keys)
+                                
+                            previous_keys = keys
+                            
+                    except KeyboardInterrupt:
+                        print("Exitting...")
+                
+                elif choice == "3":
+                    try:
+                        previous_messages = None
+                        while True:
+                            messages = self.parse_messages()
+                            if messages:
+                                if messages != previous_messages:
+                                    print(messages)
+                                    
+                            previous_messages = messages
+                            
+                    except KeyboardInterrupt:
+                        print("Exitting...")
 
                 elif choice == "quit" or choice == "q":
                     print("Exiting the program.")
@@ -76,6 +107,21 @@ class JacobsLadder:
         except KeyboardInterrupt:
             print("Exiting...")
             self.terminate_midi_controller()
+            
+    def parse_messages(self):
+        messages = np.ndarray((313, 4), dtype=np.int32, buffer=self.messages.buf)
+   
+        index = 0
+        for arr in messages:
+            index += 1
+            if np.array_equal(arr, [0, 0, 0, 0]):
+                index -= 1 
+                break
+
+        filtered_messages = messages[:index, :].tolist()
+        filtered_messages = [mes for mes in filtered_messages if mes != [0, 0, 0, 0]]
+        if filtered_messages:
+            return filtered_messages
             
     def play_active_scales(self, playback_speed: float):
         previous_keys=None
@@ -109,12 +155,15 @@ class JacobsLadder:
             
     def terminate_midi_controller(self):
         self.terminate2.buf[0] = 1
+        self.messages.close()
+        self.messages.unlink()
+        self.shared_key.close()
+        self.shared_key.unlink()
         self.terminate1.close()
         self.terminate1.unlink()
         self.terminate2.close()
         self.terminate2.unlink()
-        self.shared_key.close()
-        self.shared_key.unlink()
+        
                 
 if __name__ == "__main__":
     jl = JacobsLadder()

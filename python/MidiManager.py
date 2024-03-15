@@ -176,6 +176,8 @@ class MidiController:
                     print(action)
                     pitch_bend_message, instance_idx = action
                     self.midi_out_ports[instance_idx].send_message(pitch_bend_message)
+                    
+            self.music_theory.share_messages(message_heap=self.message_heap)
 
             logging.debug(f"NOTE_ON")
             logging.debug(f"message {status, note, velocity}")
@@ -208,6 +210,8 @@ class MidiController:
             
             chord = self.music_theory.determine_chord(self.message_heap)
             # print(f"Chord: {chord}")
+            
+            self.music_theory.share_messages(message_heap=self.message_heap)
 
             logging.debug(f"NOTE_OFF")
             logging.debug(f"message {status, note, velocity}")
@@ -220,11 +224,11 @@ class MidiController:
         elif status in range(176, 192) and note == 64:
             if velocity == 127:
                 self.sustain = True
-                for instance_index in range(16):
+                for instance_index in range(12):
                     self.midi_out_ports[instance_index].send_message([status, 64, 127])
             elif velocity == 0:
                 self.sustain = False
-                for instance_index in range(16):
+                for instance_index in range(12):
                     self.midi_out_ports[instance_index].send_message([status, 64, 0])
                 for sus_note in self.sustained_notes:
                     instance_index = self.in_use_indices[sus_note[0]]

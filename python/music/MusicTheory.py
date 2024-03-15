@@ -6,6 +6,7 @@ import numpy as np
 from ..utilities.DataClasses import Scale
 from ..utilities.Dictionaries import get_midi_notes
 from ..utilities.Queue import InOutQueue
+from ..utilities.SharedMemory import list_of_lists_to_numpy
 from .chord_definitions.TriadDefinitions import TriadDefinitions
 from .scales.HarmonicMajorScales import get_harmonic_major_scales
 from .scales.HarmonicMinorScales import get_harmonic_minor_scales
@@ -43,12 +44,23 @@ class MusicTheory:
         
         # Jacob's Ladder
         self.keys = np.array([''] * 28, dtype="<U20")
-        self.shm = shared_memory.SharedMemory(name="shared_key" + str(shared_memory_index), create=True, size=self.keys.nbytes)
+        self.messages = np.array((10, 4), dtype=np.int32)
+        self.shared_key = shared_memory.SharedMemory(name="shared_key" + str(shared_memory_index), create=True, size=self.keys.nbytes)
+        self.messages = shared_memory.SharedMemory(name="messages" + str(shared_memory_index), create=True, size=5008)
+        
+    def share_messages(self, message_heap: list[list[int]]):
+        data = list_of_lists_to_numpy(message_heap)
+        self.messages.buf[:] = np.zeros_like(self.messages.buf)
+        buf = np.ndarray(data.shape, dtype=data.dtype, buffer=self.messages.buf)
+        buf[:] = data[:]
         
     def close_shared_memory(self):
-        print(f"Closing and unlinking '{self.shm.name}'.")
-        self.shm.close()
-        self.shm.unlink()
+        print(f"Closing and unlinking '{self.shared_key.name}'.")
+        self.shared_key.close()
+        self.shared_key.unlink()
+        print(f"Closing and unlinking '{self.messages.name}'.")
+        self.messages.close()
+        self.messages.unlink()
 
     def determine_chord(self, message_heap: list[list[int]]):
         """Based on the currently active notes in the message_heap, determine the chord
@@ -124,8 +136,6 @@ class MusicTheory:
             is_sublist = all(element in scale.notes for element in unique_notes) 
             if is_sublist:
                 candidate_keys.append(scale.name)
-                
-        # print(candidate_keys)
         
         if candidate_keys:
             for i in range(len(self.keys)):
@@ -134,7 +144,7 @@ class MusicTheory:
                     break
                 self.keys[i] = candidate_keys[i]
         
-            buf = np.ndarray(self.keys.shape, dtype=self.keys.dtype, buffer=self.shm.buf)
+            buf = np.ndarray(self.keys.shape, dtype=self.keys.dtype, buffer=self.shared_key.buf)
             buf[:] = self.keys[:]
                 
         self.history.enqueue(candidate_keys)
