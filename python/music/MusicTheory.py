@@ -24,7 +24,7 @@ logging.basicConfig(
 )
 
 class MusicTheory:
-    def __init__(self, shared_memory_index: int):
+    def __init__(self, shared_memory_index: int, print_chords: bool = False):
         # Dictionary to convert int midi notes into letter notes assuming all flats for ease of logic
         self.int_note:              dict[int, str]              = get_midi_notes()
         
@@ -43,7 +43,7 @@ class MusicTheory:
         self.history = InOutQueue(self.QUEUE_SIZE)
         
         # Jacob's Ladder
-        self.print_chords = False
+        self.print_chords = print_chords
         self.keys = np.array([''] * 28, dtype="<U20")
         self.messages = np.array((10, 4), dtype=np.int32)
         self.shared_key = shared_memory.SharedMemory(name="shared_key" + str(shared_memory_index), create=True, size=self.keys.nbytes)
