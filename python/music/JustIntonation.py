@@ -1,7 +1,6 @@
 import logging
 
 from ..utilities.Enums import Pitch
-from .MusicTheory import get_intervals
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
@@ -17,7 +16,26 @@ logging.basicConfig(
 class JustIntonation:
     def __init__(self):
         self.detuned_instances = []
-        self.center_frequency = 8192  # No tuning
+        self.center_frequency = 8192
+        self.previous_message_heap = []
+        
+    def get_intervals(self, notes: list[int]):
+        """Determine the intervals between notes
+
+        Args:
+            notes (list[int]): A list of unsorted integer notes
+
+        Returns:
+            list[int]: A sorted list of the intervals from the lowest note to the highest note
+        """
+        intervals:                  list[int]             = []
+
+        sorted_notes = sorted(notes)
+        if len(sorted_notes) > 1:
+            for idx in range(len(sorted_notes) - 1):
+                intervals.append(notes[idx + 1] - notes[idx])
+
+        return intervals
 
     def get_pitch_bend_message(self, message_heap_elem: list, pitch_bend_amount: int):
         """
@@ -59,8 +77,11 @@ class JustIntonation:
         sorted_message_heap = sorted(message_heap, key=lambda x: x[0])
         notes = [note[0] for note in sorted_message_heap]
         instance_indices = [indices[1] for indices in sorted_message_heap]
-        intervals = get_intervals(notes=notes)
-
+        intervals = self.get_intervals(notes=notes)
+        
+        self.previous_message_heap = message_heap
+        
+    def pitch_adjust_triad(self, chord: str):
         if "major_triad" in chord:
             # Major (C, E, G) or (C, G, E)
             pass
@@ -357,4 +378,7 @@ class JustIntonation:
             message_heap (list[list]): a list of notes with their metadata [note, instance_index, status, velocity]
             instance_index (int): the instance index of the note which has received the note off message
         """
+        pass
+    
+    def remove_note(self, instance_index: int):
         pass

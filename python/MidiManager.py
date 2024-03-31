@@ -166,11 +166,7 @@ class MidiController:
             chord = self.music_theory.determine_chord(self.message_heap)
             key = self.music_theory.determine_key(self.message_heap)
             action_list = self.just_intonation.pitch_adjust_chord(self.message_heap, chord)
-            
-            if chord:
-                pass
-                # print(f"chord: {chord}")
-            
+ 
             if action_list:
                 for action in action_list:
                     print(action)
@@ -204,13 +200,9 @@ class MidiController:
                     del self.in_use_indices[note]
 
             else:
-                heapq.heappush(
-                    self.sustained_notes, [note, instance_index, status, velocity]
-                )
+                heapq.heappush(self.sustained_notes, [note, instance_index, status, velocity])
             
             chord = self.music_theory.determine_chord(self.message_heap)
-            # print(f"Chord: {chord}")
-            
             self.music_theory.share_messages(message_heap=self.message_heap)
 
             logging.debug(f"NOTE_OFF")
