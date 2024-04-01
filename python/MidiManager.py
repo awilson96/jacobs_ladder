@@ -76,6 +76,7 @@ class MidiController:
         self.sustained_notes = []
 
         # Tuning management
+        self.tuning = False
         self.just_intonation = JustIntonation()
         
         # Music theory management
@@ -165,7 +166,8 @@ class MidiController:
             
             chord = self.music_theory.determine_chord(self.message_heap)
             key = self.music_theory.determine_key(self.message_heap)
-            pitch_adjust_message = self.just_intonation.pitch_adjust_chord(self.message_heap, chord)
+            if self.tuning:
+                pitch_adjust_message = self.just_intonation.pitch_adjust_chord(self.message_heap, chord)
  
             if pitch_adjust_message:
                 print(pitch_adjust_message)
@@ -271,8 +273,10 @@ class MidiController:
         It is useful when handling hanging MIDI messages, and it's used to silence all output by sending ALL_NOTES_OFF message to all instances
         """
         all_notes_off_message = [176, 123, 0]
+        retune_to_center_frequency = [224, 0, 64]
         for instance_index in range(12):
             self.midi_out_ports[instance_index].send_message(all_notes_off_message)
+            self.midi_out_ports[instance_index].send_message(retune_to_center_frequency)
 
     def set_midi_callback(self):
         """This function filters the output to the console based on the filter function"""
