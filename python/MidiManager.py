@@ -79,7 +79,7 @@ class MidiController:
         self.just_intonation = JustIntonation()
         
         # Music theory management
-        self.music_theory = MusicTheory(shared_memory_index=self.shared_memory_index)
+        self.music_theory = MusicTheory(shared_memory_index=self.shared_memory_index, print_chords=False)
         
         self.set_midi_callback()
         self.start_listening()
@@ -165,13 +165,12 @@ class MidiController:
             
             chord = self.music_theory.determine_chord(self.message_heap)
             key = self.music_theory.determine_key(self.message_heap)
-            action_list = self.just_intonation.pitch_adjust_chord(self.message_heap, chord)
+            pitch_adjust_message = self.just_intonation.pitch_adjust_chord(self.message_heap, chord)
  
-            if action_list:
-                for action in action_list:
-                    print(action)
-                    pitch_bend_message, instance_idx = action
-                    self.midi_out_ports[instance_idx].send_message(pitch_bend_message)
+            if pitch_adjust_message:
+                print(pitch_adjust_message)
+                pitch_bend_message, instance_idx = pitch_adjust_message
+                self.midi_out_ports[instance_idx].send_message(pitch_bend_message)
                     
             self.music_theory.share_messages(message_heap=self.message_heap)
 

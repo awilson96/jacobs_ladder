@@ -85,7 +85,7 @@ class MusicTheory:
         if len(intervals) == 0:
             return f" "
         elif len(intervals) == 1:
-            diads:                  str                         = self.get_diad(intervals)
+            diads = self.get_diad(intervals)
             if self.print_chords: print(diads)
             logging.debug(f"Diads: {diads}")      
             return f"{diads}"      
@@ -138,7 +138,6 @@ class MusicTheory:
                 candidate_keys.append(scale.name)
         
         if candidate_keys:
-            # print(candidate_keys)
             for i in range(len(self.keys)):
                 if i >= len(candidate_keys):
                     self.keys[i:] = ""
@@ -197,13 +196,14 @@ class MusicTheory:
         Returns:
             list[int]: A sorted list of the intervals from the lowest note to the highest note
         """
-        intervals:                  list[int]             = []
+        intervals = []
 
         sorted_notes = sorted(notes)
         if len(sorted_notes) > 1:
             for idx in range(len(sorted_notes) - 1):
                 intervals.append(notes[idx + 1] - notes[idx])
 
+        
         return intervals
 
     def get_diad(self, intervals: list[int]):
