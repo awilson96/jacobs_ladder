@@ -138,7 +138,7 @@ class MusicTheory:
                 candidate_keys.append(scale.name)
         
         if candidate_keys:
-            print(candidate_keys)
+            # print(candidate_keys)
             for i in range(len(self.keys)):
                 if i >= len(candidate_keys):
                     self.keys[i:] = ""

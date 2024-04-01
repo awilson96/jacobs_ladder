@@ -28,7 +28,7 @@ class JustIntonation:
         Returns:
             list[int]: A sorted list of the intervals from the lowest note to the highest note
         """
-        intervals:                  list[int]             = []
+        intervals = []
 
         sorted_notes = sorted(notes)
         if len(sorted_notes) > 1:
@@ -42,7 +42,7 @@ class JustIntonation:
         Gets the formed MIDI pitch bend message to be sent by the MidiManager
 
         Args:
-            message_heap_elem (list): a message_heap list of the form [note, instance_index, status, velocity]
+            message_heap_elem (list): a singular message_heap list represnting a single note plus metadata of the form [note, instance_index, status, velocity]
             pitch_bend_amount (int): number from 0-16383, 8192 is no tuning, 0 is max tune down, 16383 is max tune up
         """
 
@@ -73,13 +73,82 @@ class JustIntonation:
         Returns:
             list[tuple(pitch_bend_message, instance_index)]: a list of actions in the form of pitch bend messages to be sent by certain instance indices.
         """
+        
+        print(self.previous_message_heap)
+        print(message_heap)
 
+        previous_set = {tuple(item) for item in self.previous_message_heap}
+        current_set = {tuple(item) for item in message_heap}
+        difference_set = current_set - previous_set
+        difference_list = [list(item) for item in difference_set]
+        
+        # If current set contains the exact tuple from the previous set resulting in an empty set when set subtracted
+        if not difference_list: 
+            difference_list = message_heap
+            
+        print(f"difference_list {difference_list[0]}")
+        print()
+        
         sorted_message_heap = sorted(message_heap, key=lambda x: x[0])
         notes = [note[0] for note in sorted_message_heap]
         instance_indices = [indices[1] for indices in sorted_message_heap]
         intervals = self.get_intervals(notes=notes)
         
-        self.previous_message_heap = message_heap
+        if len(intervals) == 1:
+            self.pitch_adjust_diad(chord=chord)
+        elif len(intervals) == 2:
+            pass
+        elif len(intervals) == 3:
+            pass
+        else:
+            pass
+        
+        self.previous_message_heap = message_heap.copy()
+        
+    def pitch_adjust_diad(self, chord):
+        if "Minor 2" in chord:
+            return Pitch.minor_second_down.value
+        elif "Major 2" in chord:
+            pass
+        elif "Minor 3" in chord:
+            pass
+        elif "Major 3" in chord:
+            pass
+        elif "Perfect 4" in chord:
+            pass
+        elif "Tritone" in chord:
+            pass
+        elif "Perfect 5" in chord:
+            pass
+        elif "Minor 6" in chord:
+            pass
+        elif "Major 6" in chord:
+            pass
+        elif "Minor 7" in chord:
+            pass
+        elif "Major 7" in chord:
+            pass
+        elif "Octave" in chord:
+            pass
+        elif "Minor 9" in chord:
+            pass
+        elif "Major 9" in chord:
+            pass
+        elif "Minor 10" in chord:
+            pass
+        elif "Major 10" in chord:
+            pass
+        elif "Major 11" in chord:
+            pass
+        elif "Sharp 11" in chord:
+            pass
+        elif "Minor 13" in chord:
+            pass
+        elif "Major 13" in chord:
+            pass
+        else:
+            print("Unknown diad interval")
+
         
     def pitch_adjust_triad(self, chord: str):
         if "major_triad" in chord:

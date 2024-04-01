@@ -21,6 +21,7 @@ class Pitch(Enum):
     major_sixth_up = 7553      # 5/3
     minor_seventh_up = 8032    # 9/5
     major_seventh_up = 7713    # 15/8
+    
     minor_second_down = 8712     # 15/16
     major_second_down = 8352     # 8/9
     minor_third_down = 8860      # 5/6
