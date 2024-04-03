@@ -1,4 +1,5 @@
 import logging
+from collections import Counter
 
 from ..utilities.Enums import Pitch
 
@@ -15,9 +16,12 @@ logging.basicConfig(
 
 class JustIntonation:
     def __init__(self):
-        self.detuned_instances = []
         self.center_frequency = 8192
-        self.previous_message_heap = []
+        self.count = 0
+        self.detuned_instances = []
+        self.tuning_message = [] 
+        self.previous_message_heap = [[60, 0, 144, 127, 0]]
+        self.root = {}
         
     def get_intervals(self, notes: list[int]):
         """Determine the intervals between notes
@@ -62,7 +66,7 @@ class JustIntonation:
 
         return pitch_bend_message
 
-    def pitch_adjust_chord(self, message_heap: list[list], chord=None):
+    def pitch_adjust_chord(self, message_heap: list[list], current_msg: list, chord=None):
         """Adjust the pitch of individual notes within a given chord
         If the chord is unknown then it will be tuned using intervals instead
 
@@ -74,42 +78,34 @@ class JustIntonation:
             list[tuple(pitch_bend_message, instance_index)]: a list of actions in the form of pitch bend messages to be sent by certain instance indices.
         """
 
-        previous_set = {tuple(item) for item in self.previous_message_heap}
-        current_set = {tuple(item) for item in message_heap}
-        difference_set = current_set - previous_set
-        difference_list = [list(item) for item in difference_set]
-        difference_list = difference_list[0]
+        self.count += 1
+        previous_notes = [msg[0] for msg in self.previous_message_heap]
+        previous_instances = [msg[1] for msg in self.previous_message_heap]
+        previous_counts = [msg[4] for msg in self.previous_message_heap]
         
-        # If current set contains the exact tuple from the previous set resulting in an empty set when set subtracted
-        if not difference_list: 
-            difference_list = message_heap
-            
-        note, instance_index, status, velocity = difference_list        
-        sorted_message_heap = sorted(message_heap, key=lambda x: x[0])
-        notes = [note[0] for note in sorted_message_heap]
-        instance_indices = [indices[1] for indices in sorted_message_heap]
-        intervals = self.get_intervals(notes=notes)
+        min_prev_counts_index = previous_counts.index(min(previous_counts))
+        self.root = [previous_notes[min_prev_counts_index], previous_instances[min_prev_counts_index], previous_counts[min_prev_counts_index]]
+    
+        current_note, instance_index, status, velocity = current_msg
+        current_count = self.count
         
-        is_min = note == min(notes)
-        is_max = note == max(notes)
+        interval = self.get_intervals(notes=[self.root[0], current_note])
+        print(interval)
         
-        if len(intervals) == 1:
-            if is_max: pitch = self.get_diad_pitch(chord=chord, direction="up")
-            elif is_min: pitch = self.get_diad_pitch(chord=chord, direction="down")
-            message = self.get_pitch_bend_message(message_heap_elem=difference_list, pitch_bend_amount=pitch)
-            return (message, instance_index)
-            
-        elif len(intervals) == 2:
-            if is_max:
-                self.get_triad_pitch(chord=chord, direction="up")
-            elif is_min:
-                self.get_triad_pitch(chord=chord, direction="down")
-        elif len(intervals) == 3:
-            pass
+        index = 0
+        for i, msg in enumerate(message_heap):
+            if msg == current_msg:
+                index = i
+                
+        message_heap[index].append(self.count)
+        
+        if instance_index in previous_instances:
+            print("Current note in previous notes")
         else:
-            pass
+            print("Current note is not in previous notes")
         
         self.previous_message_heap = message_heap.copy()
+        print()
         
     def get_diad_pitch(self, chord: str, direction: str):
         if "Minor 2" in chord and direction == "up":

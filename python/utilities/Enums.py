@@ -10,7 +10,7 @@ class Pitch(Enum):
         Enum (int): The analog pitch value between 0 and 16383 where 8192 represents no tuning, 0 down a whole step and
         16383 represents going up a whole step.
     """
-    minor_second_up = 8192                  # 16/15   9153
+    minor_second_up = 9153                  # 16/15
     major_second_up = 8512                  # 9/8
     minor_third_up = 9473                   # 6/5
     major_third_up = 7070                   # 5/4

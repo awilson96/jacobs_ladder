@@ -24,7 +24,6 @@ logging.basicConfig(
 warnings.filterwarnings("ignore", message="RtMidiIn::getNextMessage.*user callback.*")
 
 
-# TODO: Add type hints to variables
 class MidiController:
     """
     This is a Midi Keyboard interface which allows for the manipulation of real time Midi data.
@@ -76,7 +75,7 @@ class MidiController:
         self.sustained_notes = []
 
         # Tuning management
-        self.tuning = False
+        self.tuning = True
         self.just_intonation = JustIntonation()
         
         # Music theory management
@@ -167,10 +166,10 @@ class MidiController:
             chord = self.music_theory.determine_chord(self.message_heap)
             key = self.music_theory.determine_key(self.message_heap)
             if self.tuning:
-                pitch_adjust_message = self.just_intonation.pitch_adjust_chord(self.message_heap, chord)
+                pitch_adjust_message = self.just_intonation.pitch_adjust_chord(message_heap=self.message_heap, 
+                                                                               current_msg=[note, instance_index, status, velocity], chord=chord)
  
             if pitch_adjust_message:
-                print(pitch_adjust_message)
                 pitch_bend_message, instance_idx = pitch_adjust_message
                 self.midi_out_ports[instance_idx].send_message(pitch_bend_message)
                     
