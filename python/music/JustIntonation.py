@@ -17,11 +17,16 @@ logging.basicConfig(
 class JustIntonation:
     def __init__(self):
         self.center_frequency = 8192
-        self.count = 0
-        self.detuned_instances = []
-        self.tuning_message = [] 
-        self.previous_message_heap = [[60, 0, 144, 127, 0]]
-        self.root = {}
+        self.pitch_table = {key: 8192 for key in range(-11, 12)}
+        self.previous_root = [60, 0, 8192]
+        self.root = [60, 0, 8192]
+        
+        self.calculate_pitch_table(offset=0)
+        
+    def calculate_pitch_table(self, offset):
+        temp_pitch_table = self.pitch_table.copy()
+        for key, value in temp_pitch_table.items():
+            self.pitch_table[key] = self.get_diad_pitch(interval=key) + offset
         
     def get_intervals(self, notes: list[int]):
         """Determine the intervals between notes
@@ -39,6 +44,11 @@ class JustIntonation:
             for idx in range(len(sorted_notes) - 1):
                 intervals.append(notes[idx + 1] - notes[idx])
 
+        if len(intervals) == 1:
+            if intervals[0] >= 0:
+                return intervals[0] % 12
+            else:
+                return -1 * (intervals[0] % 12)
         return intervals
 
     def get_pitch_bend_message(self, message_heap_elem: list, pitch_bend_amount: int):
@@ -77,116 +87,79 @@ class JustIntonation:
         Returns:
             list[tuple(pitch_bend_message, instance_index)]: a list of actions in the form of pitch bend messages to be sent by certain instance indices.
         """
-
-        self.count += 1
-        previous_notes = [msg[0] for msg in self.previous_message_heap]
-        previous_instances = [msg[1] for msg in self.previous_message_heap]
-        previous_counts = [msg[4] for msg in self.previous_message_heap]
         
-        min_prev_counts_index = previous_counts.index(min(previous_counts))
-        self.root = [previous_notes[min_prev_counts_index], previous_instances[min_prev_counts_index], previous_counts[min_prev_counts_index]]
-    
-        current_note, instance_index, status, velocity = current_msg
-        current_count = self.count
+        current_note, instance_index, _, _ = current_msg
+        if len(message_heap) == 1:
+             
+            interval = self.get_intervals(notes=[self.root[0], current_note])
+            offset = self.pitch_table[interval] - self.center_frequency
+            self.calculate_pitch_table(offset=offset)
+            self.root = (current_note, instance_index, self.pitch_table[interval])
+            print(f"current_note {current_note}")
+            print(f"instance_index {instance_index}")
+            print(f"interval {interval}")
+            print(f"offset {offset}")
+            print(self.pitch_table)
+            print(self.root)
+            print()
         
+        # Get the interval between the current root and the current note for possible tuning
         interval = self.get_intervals(notes=[self.root[0], current_note])
-        print(interval)
-        
-        index = 0
-        for i, msg in enumerate(message_heap):
-            if msg == current_msg:
-                index = i
-                
-        message_heap[index].append(self.count)
-        
-        if instance_index in previous_instances:
-            print("Current note in previous notes")
-        else:
-            print("Current note is not in previous notes")
-        
-        self.previous_message_heap = message_heap.copy()
+        pitch = self.pitch_table[interval]
+        pitch_bend_message = self.get_pitch_bend_message(message_heap_elem=current_msg, pitch_bend_amount=pitch)
+        print(f"interval {interval}")
+        print(f"pitch {pitch}")
+        print(f"pitch_bend_message {pitch_bend_message}")
         print()
+        return pitch_bend_message, instance_index
         
-    def get_diad_pitch(self, chord: str, direction: str):
-        if "Minor 2" in chord and direction == "up":
-            return Pitch.minor_second_up.value
-        elif "Minor 2" in chord and direction == "down":
-            return Pitch.minor_second_down.value
-        elif "Major 2" in chord and direction == "up":
-            return Pitch.major_second_up.value
-        elif "Major 2" in chord and direction == "down":
-            return Pitch.major_second_down.value
-        elif "Minor 3" in chord and direction == "up":
-            return Pitch.minor_third_up.value
-        elif "Minor 3" in chord and direction == "down":
-            return Pitch.minor_third_down.value
-        elif "Major 3" in chord and direction == "up":
-            return Pitch.major_third_up.value
-        elif "Major 3" in chord and direction == "down":
-            return Pitch.major_third_down.value
-        elif "Perfect 4" in chord and direction == "up":
-            return Pitch.perfect_fourth_up.value
-        elif "Perfect 4" in chord and direction == "down":
-            return Pitch.perfect_fourth_down.value
-        elif "Tritone" in chord and direction == "up":
-            return Pitch.tritone_up.value
-        elif "Tritone" in chord and direction == "down":
-            return Pitch.tritone_down.value
-        elif "Perfect 5" in chord and direction == "up":
-            return Pitch.perfect_fifth_up.value
-        elif "Perfect 5" in chord and direction == "down":
-            return Pitch.perfect_fifth_down.value
-        elif "Minor 6" in chord and direction == "up":
-            return Pitch.minor_sixth_up.value
-        elif "Minor 6" in chord and direction == "down":
-            return Pitch.minor_sixth_down.value
-        elif "Major 6" in chord and direction == "up":
-            return Pitch.major_sixth_up.value
-        elif "Major 6" in chord and direction == "down":
-            return Pitch.major_sixth_down.value
-        elif "Minor 7" in chord and direction == "up":
-            return Pitch.minor_seventh_up.value
-        elif "Minor 7" in chord and direction == "down":
-            return Pitch.minor_seventh_down.value
-        elif "Major 7" in chord and direction == "up":
-            return Pitch.major_seventh_up.value
-        elif "Major 7" in chord and direction == "down":
-            return Pitch.major_seventh_down.value
-        elif "Octave" in chord:
+    def get_diad_pitch(self, interval: int):
+        if interval == 0:
             return Pitch.octave.value
-        elif "Minor 9" in chord and direction == "up":
+        if interval == 1:
             return Pitch.minor_second_up.value
-        elif "Minor 9" in chord and direction == "down":
+        elif interval == -1:
             return Pitch.minor_second_down.value
-        elif "Major 9" in chord and direction == "up":
+        elif interval == 2:
             return Pitch.major_second_up.value
-        elif "Major 9" in chord and direction == "down":
+        elif interval == -2:
             return Pitch.major_second_down.value
-        elif "Minor 10" in chord and direction == "up":
+        elif interval == 3:
             return Pitch.minor_third_up.value
-        elif "Minor 10" in chord and direction == "down":
+        elif interval == -3:
             return Pitch.minor_third_down.value
-        elif "Major 10" in chord and direction == "up":
+        elif interval == 4:
             return Pitch.major_third_up.value
-        elif "Major 10" in chord and direction == "down":
+        elif interval == -4:
             return Pitch.major_third_down.value
-        elif "Major 11" in chord and direction == "up":
+        elif interval == 5:
             return Pitch.perfect_fourth_up.value
-        elif "Major 11" in chord and direction == "down":
+        elif interval == -5:
             return Pitch.perfect_fourth_down.value
-        elif "Sharp 11" in chord and direction == "up":
+        elif interval == 6:
             return Pitch.tritone_up.value
-        elif "Sharp 11" in chord and direction == "down":
+        elif interval == -6:
             return Pitch.tritone_down.value
-        elif "Minor 13" in chord and direction == "up":
+        elif interval == 7:
+            return Pitch.perfect_fifth_up.value
+        elif interval == -7:
+            return Pitch.perfect_fifth_down.value
+        elif interval == 8:
             return Pitch.minor_sixth_up.value
-        elif "Minor 13" in chord and direction == "down":
+        elif interval == -8:
             return Pitch.minor_sixth_down.value
-        elif "Major 13" in chord and direction == "up":
+        elif interval == 9:
             return Pitch.major_sixth_up.value
-        elif "Major 13" in chord and direction == "down":
+        elif interval == -9:
             return Pitch.major_sixth_down.value
-
+        elif interval == 10:
+            return Pitch.minor_seventh_up.value
+        elif interval == -10:
+            return Pitch.minor_seventh_down.value
+        elif interval == 11:
+            return Pitch.major_seventh_up.value
+        elif interval == -11:
+            return Pitch.major_seventh_down.value
         
     def get_triad_pitch(self, chord: str):
         if "major_triad" in chord:
