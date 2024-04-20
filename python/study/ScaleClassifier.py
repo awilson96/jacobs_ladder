@@ -11,7 +11,7 @@ from .ScaleTree import ScaleTree
 class ScaleClassifier:
     
     def __init__(self):
-        pass
+        self.df_dict = self.read_csv_files()
     
     def read_csv_files(self):
         self.script_directory = os.path.dirname(os.path.abspath(__file__))
@@ -29,11 +29,20 @@ class ScaleClassifier:
                     
                 else:
                     os.remove(file_path)
-
         return dfs
+    
+    def convert_intervals(self, starting_note: int):
+        
+        scale_list = []
+        for df_name, df in self.df_dict.items():
+            for index, row in df.iterrows():
+                remainder = list(map(lambda x: x + starting_note, list(row.cumsum())))
+                scale = [starting_note]
+                scale.extend(remainder)
+                print(scale)
 
 if __name__ == "__main__":
     
+    pd.set_option('display.max_rows', None)
     sc = ScaleClassifier()
-    dataframes_dict = sc.read_csv_files()
-    df = dataframes_dict["degree_4_interval_4_nco_0"]
+    sc.convert_intervals(starting_note=60)
