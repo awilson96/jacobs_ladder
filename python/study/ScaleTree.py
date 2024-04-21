@@ -129,7 +129,6 @@ class ScaleTree:
             ValueError("max_interval must either be an integer or a list of integers")
 
 if __name__ == "__main__":
-    
     st = ScaleTree(scale_length=12)
-    st.generate_scales(max_degree=8, max_interval=3, num_consecutive_ones=0, disp=True)
+    st.generate_scales(max_degree=8, max_interval=3, num_consecutive_ones=1, disp=True)
 

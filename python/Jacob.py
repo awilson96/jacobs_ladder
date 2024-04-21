@@ -9,6 +9,7 @@ from .music.scales.HarmonicMajorScales import get_harmonic_major_scales_dict
 from .music.scales.HarmonicMinorScales import get_harmonic_minor_scales_dict
 from .music.scales.MajorScales import get_major_scales_dict
 from .music.scales.MelodicMinorScales import get_melodic_minor_scales_dict
+from .study.ScaleClassifier import ScaleClassifier
 from .test.MidiInjector import MidiInjector
 from .utilities.DataClasses import Scale
 
@@ -17,6 +18,7 @@ class JacobsLadder:
     
     def __init__(self):
         self.midi_injector = MidiInjector(output_port="jacob")
+        self.scale_classifier = ScaleClassifier()
         self.midi_controller_thread = threading.Thread(target=self.initialize_midi_controller)
         self.midi_controller_thread.start()
         time.sleep(0.1)
@@ -51,6 +53,7 @@ class JacobsLadder:
                 print("1. Play active scales")
                 print("2. Display active keys")
                 print("3. Print messages")
+                print("4. Play generated scales")
                 print("Quit/Q")
         
                 choice = input("Enter your choice: ").lower()
@@ -94,6 +97,36 @@ class JacobsLadder:
                                     print(messages)
                                     
                             previous_messages = messages
+                            
+                    except KeyboardInterrupt:
+                        print("Exitting...")
+                        
+                elif choice == "4":
+                    print("Choose from the following options:")
+                    print("1. Play scale version")
+                    print("2. Play chord version")
+                    try:
+                        selection = input("Enter your selection: ")
+                        scales = self.scale_classifier.convert_intervals(starting_note=60)
+                        if selection == "1":
+                            for scale in scales:
+                                self.midi_injector.play_scale(note_list=scale, dur_list=[0.20]*len(scale))
+                                self.midi_injector.play_scale(note_list=scale[::-1][1:-1], dur_list=[0.20]*len(scale))
+                        elif selection == "2":
+                            num_voices = input("Enter the number of voices: ")
+                            if int(num_voices) > 0 and int(num_voices) <= 4:
+                                for scale in scales:
+                                    harmonized_scale = self.scale_classifier.create_harmonized_scale(scale=scale, num_voices=int(num_voices))
+                                    for harmony in harmonized_scale:
+                                        self.midi_injector.play_chord(note_list=harmony, duration=0.25, velocity=50)
+                                    for harmony in harmonized_scale[::-1][1:-1]:
+                                        self.midi_injector.play_chord(note_list=harmony, duration=0.25, velocity=50)
+                                    
+                            else:
+                                print("Invalid number of voices: choose a number between 1 and 4.")
+                        else:
+                            print("Invalid selection")
+                        
                             
                     except KeyboardInterrupt:
                         print("Exitting...")

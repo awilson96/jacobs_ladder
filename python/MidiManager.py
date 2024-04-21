@@ -75,7 +75,7 @@ class MidiController:
         self.sustained_notes = []
 
         # Tuning management
-        self.tuning = True
+        self.tuning = False
         self.just_intonation = JustIntonation()
         
         # Music theory management
@@ -167,7 +167,9 @@ class MidiController:
             key = self.music_theory.determine_key(self.message_heap)
             if self.tuning:
                 pitch_adjust_message = self.just_intonation.pitch_adjust_chord(message_heap=self.message_heap, 
-                                                                               current_msg=[note, instance_index, status, velocity], chord=chord)
+                                                                               current_msg=[note, instance_index, status, velocity], 
+                                                                               dt=dt, 
+                                                                               chord=chord)
  
             if pitch_adjust_message:
                 pitch_bend_message, instance_idx = pitch_adjust_message

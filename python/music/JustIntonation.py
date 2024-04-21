@@ -76,7 +76,7 @@ class JustIntonation:
 
         return pitch_bend_message
 
-    def pitch_adjust_chord(self, message_heap: list[list], current_msg: list, chord=None):
+    def pitch_adjust_chord(self, message_heap: list[list], current_msg: list, dt: float, chord=None):
         """Adjust the pitch of individual notes within a given chord
         If the chord is unknown then it will be tuned using intervals instead
 
@@ -87,10 +87,10 @@ class JustIntonation:
         Returns:
             list[tuple(pitch_bend_message, instance_index)]: a list of actions in the form of pitch bend messages to be sent by certain instance indices.
         """
+        print(f"dt {dt}")
         
         current_note, instance_index, _, _ = current_msg
         if len(message_heap) == 1:
-             
             interval = self.get_intervals(notes=[self.root[0], current_note])
             offset = self.pitch_table[interval] - self.center_frequency
             self.calculate_pitch_table(offset=offset)
@@ -102,6 +102,13 @@ class JustIntonation:
             print(self.pitch_table)
             print(self.root)
             print()
+            
+        # TODO: Handle different ordering of notes by using dt from MidiController 
+        
+        if dt <= 0.01:
+            print("fast")
+        else:
+            pass
         
         # Get the interval between the current root and the current note for possible tuning
         interval = self.get_intervals(notes=[self.root[0], current_note])

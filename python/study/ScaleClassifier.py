@@ -32,17 +32,36 @@ class ScaleClassifier:
         return dfs
     
     def convert_intervals(self, starting_note: int):
-        
         scale_list = []
         for df_name, df in self.df_dict.items():
             for index, row in df.iterrows():
                 remainder = list(map(lambda x: x + starting_note, list(row.cumsum())))
                 scale = [starting_note]
                 scale.extend(remainder)
-                print(scale)
+                scale_list.append(scale)
+                
+        return scale_list
+    
+    def create_harmonized_scale(self, scale: list, num_voices: int):
+        starting_note = scale[0]
+        scale_original = scale.copy()
+        scale_pattern = [note - starting_note for note in scale]
+        extension = [scale[-1] + note for note in scale_pattern]
+        scale.extend(extension[1:])
+        
+        chord_scale = []
+        for index in range(len(scale_original)):
+            chord = []
+            for num_voc in range(0, int(num_voices)*2, 2):
+                chord.append(scale[index+num_voc])
+            chord_scale.append(chord)
+            
+        return chord_scale
 
 if __name__ == "__main__":
-    
     pd.set_option('display.max_rows', None)
     sc = ScaleClassifier()
-    sc.convert_intervals(starting_note=60)
+    scales = sc.convert_intervals(starting_note=60)
+    my_scale = scales[0]
+    chord_scale = sc.create_harmonized_scale(scale=my_scale, num_voices=3)
+    print(chord_scale)

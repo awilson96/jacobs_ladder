@@ -151,15 +151,15 @@ class MidiInjector:
         closest_note = min(starting_note_indices, key=lambda x: abs(x - 61))
         return closest_note
 
-    def play_chord(self, note_list):
+    def play_chord(self, note_list: list, duration: float, velocity: int):
         """Play a chord by sending note-on messages for the specified notes and holding them for 2 seconds
 
         Args:
             note_list (list[int]): A list of notes you would like to play simultaneously
         """
         for note in note_list:
-            self.send_note_on(note, 127)
-        time.sleep(0.5)
+            self.send_note_on(note, int(velocity))
+        time.sleep(float(duration))
         for note in note_list:
             self.send_note_off(note)
             
@@ -237,10 +237,6 @@ class MidiInjector:
 
 def main():
     midi_injector = MidiInjector()
-    # midi_injector.testPlayDistinctNotes()
-    # midi_injector.testPlayOverlappingNotes()
-    # midi_injector.testPlayOverlappingNotesWithSustain()
-    # midi_injector.testIntervalSets()
 
     midi_injector.play_scale(midi_injector.harmonic_major_scales[0].notes + ["C"], [0.10] * (len(midi_injector.harmonic_major_scales[0].notes)+1))
     midi_injector.play_scale(reversed(midi_injector.harmonic_major_scales[0].notes[1:]), [0.12] * (len(midi_injector.harmonic_major_scales[0].notes)+1))
