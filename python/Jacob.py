@@ -110,17 +110,19 @@ class JacobsLadder:
                         scales = self.scale_classifier.convert_intervals(starting_note=60)
                         if selection == "1":
                             for scale in scales:
-                                self.midi_injector.play_scale(note_list=scale, dur_list=[0.20]*len(scale))
-                                self.midi_injector.play_scale(note_list=scale[::-1][1:-1], dur_list=[0.20]*len(scale))
+                                for _ in range(2):
+                                    self.midi_injector.play_scale(note_list=scale, dur_list=[0.20]*len(scale))
+                                    self.midi_injector.play_scale(note_list=scale[::-1][1:-1], dur_list=[0.20]*len(scale))
                         elif selection == "2":
                             num_voices = input("Enter the number of voices: ")
-                            if int(num_voices) > 0 and int(num_voices) <= 4:
+                            if int(num_voices) > 0 and int(num_voices) <= 5:
                                 for scale in scales:
                                     harmonized_scale = self.scale_classifier.create_harmonized_scale(scale=scale, num_voices=int(num_voices))
-                                    for harmony in harmonized_scale:
-                                        self.midi_injector.play_chord(note_list=harmony, duration=0.25, velocity=50)
-                                    for harmony in harmonized_scale[::-1][1:-1]:
-                                        self.midi_injector.play_chord(note_list=harmony, duration=0.25, velocity=50)
+                                    for _ in range(2):
+                                        for harmony in harmonized_scale:
+                                            self.midi_injector.play_chord(note_list=harmony, duration=0.15, velocity=50)
+                                        for harmony in harmonized_scale[::-1][1:-1]:
+                                            self.midi_injector.play_chord(note_list=harmony, duration=0.15, velocity=50)
                                     
                             else:
                                 print("Invalid number of voices: choose a number between 1 and 4.")

@@ -46,8 +46,9 @@ class ScaleClassifier:
         starting_note = scale[0]
         scale_original = scale.copy()
         scale_pattern = [note - starting_note for note in scale]
-        extension = [scale[-1] + note for note in scale_pattern]
-        scale.extend(extension[1:])
+        for _ in range(2):
+            extension = [scale[-1] + note for note in scale_pattern]
+            scale.extend(extension[1:])
         
         chord_scale = []
         for index in range(len(scale_original)):
