@@ -10,6 +10,11 @@ class ScaleTree:
     """
     
     def __init__(self, scale_length: int = 12):
+        """Constructor for the ScaleTree class
+
+        Args:
+            scale_length (int, optional): Length of the scale under consideration. Defaults to 12.
+        """
         self.scale_length = scale_length
         self.filepath = os.path.join(os.path.dirname(__file__), "possible_scales")
         if os.path.exists(self.filepath):
@@ -24,6 +29,14 @@ class ScaleTree:
             os.makedirs(self.filepath)
             
     def create_shifted_copies(self, row: list):
+        """Create all shifted copies of a given scale. Used to eliminate shifted copies of a scale.
+
+        Args:
+            row (list): an N note scale in the form of a list
+
+        Returns:
+            list[list]: a list of shifted scale copies
+        """
         shifted_copies = []
         for _ in range(len(row)):
             end = row.pop()
@@ -40,10 +53,10 @@ class ScaleTree:
         Args:
             scale_degree (int): Size of the scale in number of notes.
             max_interval (int): The max interval you wish to be present in the scale.
+            max_consecutive_ones (int): The maximum number of consecutive half steps you wish to be present in the scale
 
         Returns:
-            pd.Dataframe: a dataframe with scales of degree scale_degree with data from 1 to max_interval whose rows must sum to 
-            self.scale_length - 1.
+            pd.Dataframe: a dataframe with scales of degree scale_degree with data from 1 to max_interval whose rows must sum to self.scale_length - 1.
         """
         pd.set_option("display.max_rows", None)
 
@@ -98,6 +111,7 @@ class ScaleTree:
         Args:
             max_degree (int): The max number of notes in the scale you want to generate csv files for
             max_interval (int | list[int]): The largest interval you would ever want in your scale.
+            num_consecutive_ones (int, optional): The maximum number of consecutive half steps you wish to be present in the scale. Defaults to 0.
             disp (bool, optional): If true display ouput otherwise don't. Defaults to False.
         """
         
