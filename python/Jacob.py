@@ -73,19 +73,36 @@ class JacobsLadder:
                 choice = input("Enter your choice: ").lower()
 
                 if choice == "1":
+                    print("Choose from the following options:")
+                    print("1. Play scale version")
+                    print("2. Play chord version")
+                    selection = input("Enter your selection: ")
                     while True:
                         speed = input("Enter the playback speed in ms or press q to exit: ")
-                        if speed == '':
-                            self.play_active_scales(0.15)
-                            continue
-                        elif speed.lower() in ["q", "quit"]:
-                            break
+                        if speed.lower() in ["q", "quit"]:
+                                break
+                        if selection == "1":
+                            if speed == '':
+                                self.play_active_scales(0.15)
+                                continue
+                            speed = float(speed)
+                            if 0.009 <= speed <= 2.0:
+                                self.play_active_scales(speed)
+                            else:
+                                print("Speed must be between 0.009 and 2.0")
+
+                        elif selection == "2":
+                            num_voices = input("Enter the number of voices: ")
+                            num_voices = int(num_voices)
+                            if num_voices <= 1 or num_voices > 5:
+                                print("Invalid number of voices, choose a number between 2 and 5!")
+                            elif speed == '':
+                                self.play_active_scales(playback_speed=0.15, num_voices=num_voices)
+                            else:
+                                self.play_active_scales(playback_speed=float(speed), num_voices=num_voices)
+                            
                     
-                        speed = float(speed)
-                        if 0.009 <= speed <= 2.0:
-                            self.play_active_scales(speed)
-                        else:
-                            print("Speed must be between 0.009 and 2.0")
+                        
                 
                 elif choice == "2":
                     try:
@@ -121,9 +138,11 @@ class JacobsLadder:
                     print("2. Play chord version")
                     try:
                         selection = input("Enter your selection: ")
+                        # TODO: Use the most recently played note instead of hard-coding 60
                         scales = self.scale_classifier.convert_intervals(starting_note=60)
                         if selection == "1":
                             for scale in scales:
+                                print(scale)
                                 for _ in range(2):
                                     self.midi_injector.play_scale(note_list=scale, dur_list=[0.20]*len(scale))
                                     self.midi_injector.play_scale(note_list=scale[::-1][1:-1], dur_list=[0.20]*len(scale))
@@ -132,6 +151,7 @@ class JacobsLadder:
                             if int(num_voices) > 0 and int(num_voices) <= 5:
                                 for scale in scales:
                                     harmonized_scale = self.scale_classifier.create_harmonized_scale(scale=scale, num_voices=int(num_voices))
+                                    print(scale)
                                     for _ in range(2):
                                         for harmony in harmonized_scale:
                                             self.midi_injector.play_chord(note_list=harmony, duration=0.15, velocity=50)
@@ -177,7 +197,7 @@ class JacobsLadder:
         if filtered_messages:
             return filtered_messages
             
-    def play_active_scales(self, playback_speed: float):
+    def play_active_scales(self, playback_speed: float, num_voices=1):
         """Play all scales which are congruent with the currently held down notes as the notes evolve and change.  If the currently
         held down notes change, then change the set of scales played over those notes.  Useful in determining harmonic possibilities of a chord.
 
@@ -205,7 +225,12 @@ class JacobsLadder:
                             
                         full_scale = self.midi_injector.create_scale(scale=Scale(name=key, notes=scale))
                         reduced_scale = self.midi_injector.reduce_scale(full_scale=full_scale, starting_note=key.split(" ")[0], num_octaves=1)
-                        self.midi_injector.play_scale(note_list=reduced_scale, dur_list=[playback_speed] * len(reduced_scale))
+                        if num_voices == 1:
+                            self.midi_injector.play_scale(note_list=reduced_scale, dur_list=[playback_speed] * len(reduced_scale))
+                        elif num_voices > 1 and num_voices <= 5:
+                            harmonized_scale = self.scale_classifier.create_harmonized_scale(scale=reduced_scale, num_voices=num_voices)
+                            for harmony in harmonized_scale:
+                                self.midi_injector.play_chord(note_list=harmony, duration=playback_speed, velocity=60)
                     
                     previous_keys = keys
                 time.sleep(0.01)
