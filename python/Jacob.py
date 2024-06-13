@@ -10,11 +10,15 @@ from .music.scales.HarmonicMinorScales import get_harmonic_minor_scales_dict
 from .music.scales.MajorScales import get_major_scales_dict
 from .music.scales.MelodicMinorScales import get_melodic_minor_scales_dict
 from .study.ScaleClassifier import ScaleClassifier
-from .test.MidiInjector import MidiInjector
+from .legacy.MidiInjector import MidiInjector
 from .utilities.DataClasses import Scale
 
 
 class JacobsLadder:
+    """
+    Jacob is a Class which was built as a tool for learning. The tool provides a menu for displaying information and interacting with the user in real time.
+    The class uses a shared memory buffer to snoop on message traffic published by the MidiManager class and use that data to assist the user with various tasks.
+    """
     
     def __init__(self):
         self.midi_injector = MidiInjector(output_port="jacob")
@@ -35,9 +39,18 @@ class JacobsLadder:
         self.menu()
             
     def initialize_midi_controller(self):
+        """Initializes a MidiController instance in a separate thread for interacting with the user in real time"""
         self.midi_controller = MidiController(input_port="jacob", output_ports=list(map(str, range(12, 24))))
             
     def key_generator(self, keys_list: list):
+        """Creates a scale generator yielding a list of notes 
+
+        Args:
+            keys_list (list): a list of scales in the shared memory buffer in the form of strings
+
+        Yields:
+            list: A scale in the form of a list of Midi notes
+        """
         for key in keys_list:
             new_keys = list(np.ndarray((28,), dtype="<U20", buffer=self.shared_key.buf))
             new_keys = sorted([key for key in new_keys if key != ''])
@@ -47,6 +60,7 @@ class JacobsLadder:
                 
         
     def menu(self):
+        """Main control loop for siplaying menu options to the user"""
         try:
             while True:
                 print("Choose from the following options:")
@@ -144,6 +158,11 @@ class JacobsLadder:
             self.terminate_midi_controller()
             
     def parse_messages(self):
+        """Convert messages from nd-arrays in the shared memory buffer to actual MidiManager messages
+
+        Returns:
+            list[list]: a list of MidiManager messages placed in the shared memeory buffer
+        """
         messages = np.ndarray((313, 4), dtype=np.int32, buffer=self.messages.buf)
    
         index = 0
@@ -159,10 +178,15 @@ class JacobsLadder:
             return filtered_messages
             
     def play_active_scales(self, playback_speed: float):
+        """Play all scales which are congruent with the currently held down notes as the notes evolve and change.  If the currently
+        held down notes change, then change the set of scales played over those notes.  Useful in determining harmonic possibilities of a chord.
+
+        Args:
+            playback_speed (float): the number of miliseconds to play each note for in the scale
+        """
         previous_keys=None
         try:
             while True:
-                
                 keys = list(np.ndarray((28,), dtype="<U20", buffer=self.shared_key.buf))
                 keys = sorted([key for key in keys if key != ''])
 
@@ -189,6 +213,7 @@ class JacobsLadder:
             print("Exiting...")
             
     def terminate_midi_controller(self):
+        """Terminate all incoming and outgoing connections to Jacob and safely shut down"""
         self.terminate2.buf[0] = 1
         self.messages.close()
         self.messages.unlink()

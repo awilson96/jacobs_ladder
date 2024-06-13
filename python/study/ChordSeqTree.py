@@ -1,6 +1,10 @@
 import itertools
 
 class ChordSeqTree:
+    """
+    List the possible combinations of a group of chords.  This study utility is useful for iterating through the 
+    possible chord combinations that are possible for a given list of chords.
+    """
     
     def __init__(self):
         pass

@@ -24,6 +24,10 @@ logging.basicConfig(
 )
 
 class MusicTheory:
+    """
+    The MusicTheory Class is used to encapsulate the fundamentals of music theory to perform activities such as chord recognition and display, potential scales which can be played over currently 
+    suspended notes, representing chords in the simplest harmonic form possible, and key determination.
+    """
     def __init__(self, shared_memory_index: int, print_chords: bool = False):
         # Dictionary to convert int midi notes into letter notes assuming all flats for ease of logic
         self.int_note:              dict[int, str]              = get_midi_notes()
@@ -50,12 +54,20 @@ class MusicTheory:
         self.messages = shared_memory.SharedMemory(name="messages" + str(shared_memory_index), create=True, size=5008)
         
     def share_messages(self, message_heap: list[list[int]]):
+        """Publish messages to a shared memory location for external viewing using the Jacob class
+
+        Args:
+            message_heap (list[list[int]]): messages created by the MidiManager which contain a list of lists with the following features [[note, instance_index, status, velocity], ...]
+        """
         data = list_of_lists_to_numpy(message_heap)
         self.messages.buf[:] = np.zeros_like(self.messages.buf)
         buf = np.ndarray(data.shape, dtype=data.dtype, buffer=self.messages.buf)
         buf[:] = data[:]
         
     def close_shared_memory(self):
+        """
+        Used to clean up the shared memory buffer by closing and unlinking the connection between the MidiManager and Jacob Classes.
+        """
         print(f"Closing and unlinking '{self.shared_key.name}'.")
         self.shared_key.close()
         self.shared_key.unlink()

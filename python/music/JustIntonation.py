@@ -15,6 +15,10 @@ logging.basicConfig(
 
 
 class JustIntonation:
+    """
+    Just Intonation is a class used for pitch manipulating individual notes such that the outcome of each chord and/or melodic sequence remains in perfect pitch with the currenlty suspended notes.
+    The secondary goal of the class is to ensure that after silence, new notes must be in pitch with the previously played notes creating pitch drift as would be expected in true Just Intonation.
+    """
     def __init__(self):
         self.center_frequency = 8192
         self.pitch_table = {key: 8192 for key in range(-11, 12)}
@@ -121,9 +125,17 @@ class JustIntonation:
         return pitch_bend_message, instance_index
         
     def get_diad_pitch(self, interval: int):
+        """Given an interval between two notes, return the analog pitch value expressed as a range from 0-16383 
+
+        Args:
+            interval (int): intervalic distance between two notes
+
+        Returns:
+            int: analog value of pitch drift needed to correctly shift the pitch value of the note to its justly tuned form 
+        """
         if interval == 0:
             return Pitch.octave.value
-        if interval == 1:
+        elif interval == 1:
             return Pitch.minor_second_up.value
         elif interval == -1:
             return Pitch.minor_second_down.value
@@ -169,6 +181,11 @@ class JustIntonation:
             return Pitch.major_seventh_down.value
         
     def get_triad_pitch(self, chord: str):
+        """Unused currently, may come in handy later
+
+        Args:
+            chord (str): the chord's name expressed as a string.  For list of strings, see get_triad in MusicTheory Class
+        """
         if "major_triad" in chord:
             # Major (C, E, G) or (C, G, E)
             pass
@@ -465,7 +482,4 @@ class JustIntonation:
             message_heap (list[list]): a list of notes with their metadata [note, instance_index, status, velocity]
             instance_index (int): the instance index of the note which has received the note off message
         """
-        pass
-    
-    def remove_note(self, instance_index: int):
         pass
