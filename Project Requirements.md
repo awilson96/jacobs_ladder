@@ -82,18 +82,23 @@
 
 ## Containerize:
 - Requirements:
-  - Build the code inside of a C++ container
-  - Determine whether to use Linux or PC
-  - Determine what languages to use within the container
+  - Determine how to create a compatible environment such that the software is extensible to all 3 plateforms: Windows, MAC/OS, and Linux.
 
 ## Retune:
 - Requirements:
   - This module must retune the notes played by the user to the justly tuned intervals found in nature
-  - This module must be configurable as it is in Scala
-  - The module should have an option to adjust for pitch drift
+  - This module must be configurable as it is in Scala to accept different pitch patterns
+  - The module should have an option to adjust for pitch drift, and this should be the default option
   - This module should have the option to be standalone so that it can be used with different devices
   - Create a startup menu that asks the user what device they would like to connect to
     - This MIDI writer should be sending notes to the output device of the user's choosing, not some natively built sound by Windows or Linux.
+  - There should be a tuning option which drifts the chord from equal temperment to just intonation while accounting for the pitch drift.
+    - One way this could be done is by having some recenter frequency method which keeps track of the global pitch drift
+  - Something else that must be accounted for is the ability to check the bounds of possible pitch drift moves and either increase the MIDI note number or decrease the note number
+    - This increase of the note number must also account for the fact that the bounds fo the note range (21-108) must also be checked.
+    - As another contingency there will come a point where after many hours of playing the pitch has drifted enough in one direction that the keyboard will need to be reset in some way
+      - This could be done by alerting the user that the key is going to shift down 5 half steps on the next silence
+      - Another way to handle this would be to run until the user chooses to reset this feature themselves through a toggle on their keyboard
 
 ## Jacob:
 - Requirements:
@@ -135,3 +140,10 @@
       - The main purpose of Jacob is to create novel music, not for him to reproduce another person’s music.
       - Jacob will have the functionality to just play back certain famous songs upon request but that is not the first priority.
     - More to come
+
+## Menu Features
+- Show potential scales which can be played over currently held down notes
+- Play potential scales based on currently held down notes
+- Play a scale using chords specifying the number of voices
+  - Cycle through a set of these scales with individual notes or with chords
+- Display the chord as a string representation of the currently held down notes to the terminal
