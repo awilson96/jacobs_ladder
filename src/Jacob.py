@@ -5,13 +5,13 @@ from multiprocessing import shared_memory
 import numpy as np
 
 from .MidiManager import MidiController
-from .music.scales.HarmonicMajorScales import get_harmonic_major_scales_dict
-from .music.scales.HarmonicMinorScales import get_harmonic_minor_scales_dict
-from .music.scales.MajorScales import get_major_scales_dict
-from .music.scales.MelodicMinorScales import get_melodic_minor_scales_dict
-from .study.ScaleClassifier import ScaleClassifier
-from .legacy.MidiInjector import MidiInjector
-from .utilities.DataClasses import Scale
+from HarmonicMajorScales import get_harmonic_major_scales_dict
+from HarmonicMinorScales import get_harmonic_minor_scales_dict
+from MajorScales import get_major_scales_dict
+from MelodicMinorScales import get_melodic_minor_scales_dict
+from ScaleClassifier import ScaleClassifier
+from MidiInjector import MidiInjector
+from DataClasses import Scale
 
 
 class JacobsLadder:

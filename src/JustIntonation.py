@@ -1,7 +1,7 @@
 import logging
 from collections import Counter
 
-from ..utilities.Enums import Pitch
+from Enums import Pitch
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"

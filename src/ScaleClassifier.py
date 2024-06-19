@@ -2,7 +2,7 @@ import os
 
 import pandas as pd
 
-from ..utilities.DataClasses import Scale
+from DataClasses import Scale
 from .ScaleTree import ScaleTree
 
 # TODO: Read in dfs to classify scales according to mode.
