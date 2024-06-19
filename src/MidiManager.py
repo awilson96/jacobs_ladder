@@ -7,8 +7,8 @@ from multiprocessing import shared_memory
 import numpy as np
 import rtmidi
 
-from JustIntonation import JustIntonation
-from MusicTheory import MusicTheory
+from .JustIntonation import JustIntonation
+from .MusicTheory import MusicTheory
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"

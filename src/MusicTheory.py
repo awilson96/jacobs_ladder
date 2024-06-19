@@ -3,15 +3,15 @@ from collections import Counter
 from multiprocessing import shared_memory
 import numpy as np
 
-from DataClasses import Scale
-from Dictionaries import get_midi_notes
-from Queue import InOutQueue
-from SharedMemory import list_of_lists_to_numpy
-from TriadDefinitions import TriadDefinitions
-from HarmonicMajorScales import get_harmonic_major_scales
-from HarmonicMinorScales import get_harmonic_minor_scales
-from MajorScales import get_major_scales
-from MelodicMinorScales import get_melodic_minor_scales
+from .DataClasses import Scale
+from .Dictionaries import get_midi_notes
+from .Queue import InOutQueue
+from .SharedMemory import list_of_lists_to_numpy
+from .TriadDefinitions import TriadDefinitions
+from .HarmonicMajorScales import get_harmonic_major_scales
+from .HarmonicMinorScales import get_harmonic_minor_scales
+from .MajorScales import get_major_scales
+from .MelodicMinorScales import get_melodic_minor_scales
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"

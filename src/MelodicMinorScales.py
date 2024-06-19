@@ -1,4 +1,4 @@
-from DataClasses import Scale
+from .DataClasses import Scale
 
 
 # Melodic Minor Scales

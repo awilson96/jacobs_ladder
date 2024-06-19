@@ -2,12 +2,13 @@ import logging
 import time
 import threading
 import numpy as np
-from Dictionaries import get_midi_notes
-from MajorScales import get_major_scales
-from MelodicMinorScales import get_melodic_minor_scales
-from HarmonicMajorScales import get_harmonic_major_scales
-from HarmonicMinorScales import get_harmonic_minor_scales
-from DataClasses import Scale
+
+from .Dictionaries import get_midi_notes
+from .MajorScales import get_major_scales
+from .MelodicMinorScales import get_melodic_minor_scales
+from .HarmonicMajorScales import get_harmonic_major_scales
+from .HarmonicMinorScales import get_harmonic_minor_scales
+from .DataClasses import Scale
 
 import rtmidi
 
