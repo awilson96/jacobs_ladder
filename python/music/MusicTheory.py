@@ -18,7 +18,7 @@ __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
 __date__ = "November 11th 2023 (creation)"
 
 logging.basicConfig(
-    filename="./logs/MidiManager.log",
+    filename="./logs/MusicTheory.log",
     level=logging.DEBUG,
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
@@ -88,18 +88,14 @@ class MusicTheory:
         sorted_message_heap:        list[list[int]]             = self.remove_harmonically_redundant_intervals(message_heap=message_heap)
         notes:                      list[int]                   = [note[0] for note in sorted_message_heap]
         instance_indices:           list[int]                   = [indices[1] for indices in sorted_message_heap]
-        
-        logging.debug(f"Notes: {notes}")
 
         intervals:                  list[int]                   = self.get_intervals(notes)
-        logging.debug(f"Intervals: {intervals}")
         
         if len(intervals) == 0:
             return f" "
         elif len(intervals) == 1:
             diads = self.get_diad(intervals)
-            if self.print_chords: print(diads)
-            logging.debug(f"Diads: {diads}")      
+            if self.print_chords: print(diads)   
             return f"{diads}"      
             
         elif len(intervals) == 2:      
@@ -109,7 +105,6 @@ class MusicTheory:
         
         elif len(intervals) == 3:      
             tetrad:                 list[str]                   = self.get_tetrad(intervals, notes)
-            logging.debug(f"Tetrad: {tetrad}")
             return tetrad
         else:
             return None

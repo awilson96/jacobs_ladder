@@ -8,7 +8,7 @@ __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
 __date__ = "November 11th 2023 (creation)"
 
 logging.basicConfig(
-    filename="./logs/MidiManager.log",
+    filename="./logs/JustIntonation.log",
     level=logging.DEBUG,
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
@@ -76,7 +76,6 @@ class JustIntonation:
 
         # Log the pitch bend message
         pitch_bend_message = [status_byte, lsb, msb]
-        logging.debug(f"Pitch Bend Message: {pitch_bend_message}")
 
         return pitch_bend_message
 

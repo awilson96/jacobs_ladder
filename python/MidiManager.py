@@ -177,14 +177,6 @@ class MidiController:
                     
             self.music_theory.share_messages(message_heap=self.message_heap)
 
-            logging.debug(f"NOTE_ON")
-            logging.debug(f"message {status, note, velocity}")
-            logging.debug(f"self.sustain {self.sustain}")
-            logging.debug(f"self.sustained_notes {self.sustained_notes}")
-            logging.debug(f"self.instance_index {self.instance_index}")
-            logging.debug(f"self.message_heap {self.message_heap}")
-            logging.debug(f"self.in_use_indices {self.in_use_indices}\n")
-
         elif status in range(128, 144):
             instance_index = self.in_use_indices[note]
             self.midi_out_ports[instance_index].send_message([status, note, velocity])
@@ -206,14 +198,6 @@ class MidiController:
             
             chord = self.music_theory.determine_chord(self.message_heap)
             self.music_theory.share_messages(message_heap=self.message_heap)
-
-            logging.debug(f"NOTE_OFF")
-            logging.debug(f"message {status, note, velocity}")
-            logging.debug(f"self.sustain {self.sustain}")
-            logging.debug(f"self.sustained_notes {self.sustained_notes}")
-            logging.debug(f"self.instance_index {self.instance_index}")
-            logging.debug(f"self.message_heap {self.message_heap}")
-            logging.debug(f"self.in_use_indices {self.in_use_indices}\n")
 
         elif status in range(176, 192) and note == 64:
             if velocity == 127:
