@@ -16,10 +16,20 @@ Bb_Harmonic_Major = Scale("B\u266d Harmonic Major", ["B\u266d", "C", "D", "E\u26
 B_Harmonic_Major = Scale("B Harmonic Major", ["B", "D\u266d", "E\u266d", "E", "G\u266d", "G", "B\u266d"])
 
 def get_harmonic_major_scales():
+    """Getter function for retrieving a list of all possible harmonic major scale objects
+
+    Returns:
+        list[Scale]: a list of harmonic major scale objects
+    """
     return [C_Harmonic_Major, Db_Harmonic_Major, D_Harmonic_Major, Eb_Harmonic_Major, 
             E_Harmonic_Major, F_Harmonic_Major, Gb_Harmonic_Major, G_Harmonic_Major, 
             Ab_Harmonic_Major, A_Harmonic_Major, Bb_Harmonic_Major, B_Harmonic_Major]
     
 def get_harmonic_major_scales_dict():
+    """Getter function for retrieving scale objects as a dictionary 
+
+    Returns:
+        dict: a dictionary of name: list of notes pairs 
+    """
     scales = get_harmonic_major_scales()
     return {scale.name: scale.notes for scale in scales}

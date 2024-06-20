@@ -60,7 +60,7 @@ class JacobsLadder:
                 
         
     def menu(self):
-        """Main control loop for siplaying menu options to the user"""
+        """Main control loop for diplaying menu options to the user"""
         try:
             while True:
                 print("Choose from the following options:")
@@ -223,7 +223,7 @@ class JacobsLadder:
                         elif key in self.mel_min_scales.keys():
                             scale = self.mel_min_scales[key]
                             
-                        full_scale = self.midi_injector.create_scale(scale=Scale(name=key, notes=scale))
+                        full_scale = self.midi_injector.create_full_scale(scale=Scale(name=key, notes=scale))
                         reduced_scale = self.midi_injector.reduce_scale(full_scale=full_scale, starting_note=key.split(" ")[0], num_octaves=1)
                         if num_voices == 1:
                             self.midi_injector.play_scale(note_list=reduced_scale, dur_list=[playback_speed] * len(reduced_scale))

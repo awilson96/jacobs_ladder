@@ -6,8 +6,7 @@ import shutil
 
 
 class ScaleTree:
-    """Create obscure scales which meet certain criterion
-    """
+    """Create obscure scales which meet certain criterion"""
     
     def __init__(self, scale_length: int = 12):
         """Constructor for the ScaleTree class

@@ -29,6 +29,13 @@ class MusicTheory:
     suspended notes, representing chords in the simplest harmonic form possible, and key determination.
     """
     def __init__(self, shared_memory_index: int, print_chords: bool = False):
+        """MusicTheory class takes a shared_memory_index for sharing music theory data with other software components and a flag called print_chords
+        to indicate whether or not to print chords to the console, (defaults to false).
+
+        Args:
+            shared_memory_index (int): This index is used to manage the sharing of memory between at most two possible shared memory locations for orchestrating the sharing of message traffic
+            print_chords (bool, optional): if true print chords to the console, otherwise don't. Defaults to False.
+        """
         # Dictionary to convert int midi notes into letter notes assuming all flats for ease of logic
         self.int_note:              dict[int, str]              = get_midi_notes()
         
@@ -85,11 +92,12 @@ class MusicTheory:
         Returns:
             str: stringified description of the chord that was played
         """
-        sorted_message_heap:        list[list[int]]             = self.remove_harmonically_redundant_intervals(message_heap=message_heap)
-        notes:                      list[int]                   = [note[0] for note in sorted_message_heap]
-        instance_indices:           list[int]                   = [indices[1] for indices in sorted_message_heap]
+        sorted_message_heap: list[list[int]] = self.remove_harmonically_redundant_intervals(message_heap=message_heap)
+        
+        notes: list[int] = [note[0] for note in sorted_message_heap]
+        instance_indices: list[int] = [indices[1] for indices in sorted_message_heap]
 
-        intervals:                  list[int]                   = self.get_intervals(notes)
+        intervals: list[int] = self.get_intervals(notes)
         
         if len(intervals) == 0:
             return f" "
@@ -109,8 +117,7 @@ class MusicTheory:
         else:
             return None
     
-    # TODO: Look into the case where nothing is returned due to the current chord not matching any known scale
-    # TODO: Look into cases where a major scale would just as easily describe the current chord being held, it may be wise to rank major a bit higher
+    
     def determine_key(self, message_heap: list[list[int]]):
         """Determines candidate keys based on the notes that are currently being held down. Then it compares those candidate
         keys to the previous QUEUE_SIZE lists of candidate keys and performs the intersection with the current key and each of the previous lists.

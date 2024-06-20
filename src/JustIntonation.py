@@ -28,6 +28,11 @@ class JustIntonation:
         self.calculate_pitch_table(offset=0)
         
     def calculate_pitch_table(self, offset):
+        """Calculate the new pitch table based on the currently held down notes with respect to the most recently played note
+
+        Args:
+            offset (int): the amount of analog bits to adjust the pitch wheel in order for the pitch bend to track with pitch drift
+        """
         temp_pitch_table = self.pitch_table.copy()
         for key, value in temp_pitch_table.items():
             self.pitch_table[key] = self.get_diad_pitch(interval=key) + offset

@@ -16,9 +16,19 @@ Bb_Major = Scale("B\u266d Ionian", ["B\u266d", "C", "D", "E\u266d", "F", "G", "A
 B_Major = Scale("B Ionian", ["B", "D\u266d", "E\u266d", "E", "G\u266d", "A\u266d", "B\u266d"])
 
 def get_major_scales():
+    """Getter function for retrieving a list of all possible major scale objects
+
+    Returns:
+        list[Scale]: a list of major scale objects
+    """
     return [C_Major, Db_Major, D_Major, Eb_Major, E_Major, F_Major, 
             Gb_Major, G_Major, Ab_Major, A_Major, Bb_Major, B_Major]
     
 def get_major_scales_dict():
+    """Getter function for retrieving scale objects as a dictionary 
+
+    Returns:
+        dict: a dictionary of name: list of notes pairs 
+    """
     scales = get_major_scales()
     return {scale.name: scale.notes for scale in scales}

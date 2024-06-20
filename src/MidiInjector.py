@@ -17,7 +17,7 @@ __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
 __date__ = "November 8th 2023 (creation)"
 
 logging.basicConfig(
-    filename="MidiInjector.log",
+    filename="./logs/MidiInjector.log",
     filemode="w",
     level=logging.DEBUG,
     format="%(asctime)s - %(levelname)s - %(message)s",
@@ -26,7 +26,7 @@ logging.basicConfig(
 
 class MidiInjector:
     """
-    This is a Midi Injector which sends in Midi Data to a specified port for the purpose of testing MidiManager
+    This is a Midi Injector which sends in Midi Data to a specified MIDI port for playing back audio to the user
     """
 
     # TODO: Look into standardizing these ports as well as the port setup.  See if there is a more robust way to use
@@ -35,11 +35,11 @@ class MidiInjector:
     # software into my software package. 
     # TODO: Figure out how to make my software work for other software synths with port support and start writing 
     # interfaces/configuration files to automatically interface with commonly used software.
-    def __init__(self, output_port="jacobs_ladder"):
-        """_summary_
+    def __init__(self, output_port="jacob"):
+        """Given an output MIDI port, the MidiInjector can be used to send MIDI data for the purposes of playing audio back to the user
 
         Args:
-            output_port (str, optional): Name of the output port you want to send Midi data on. Defaults to "jacobs_ladder".
+            output_port (str, optional): Name of the output port you want to send Midi data on. Defaults to "jacob".
         """
         self.midi_out = rtmidi.MidiOut()
         self.output_ports = output_port
@@ -94,16 +94,6 @@ class MidiInjector:
         sustain_pedal_low = [176, 64, 0]
         self.midi_out.send_message(sustain_pedal_low)
 
-    def toggle_sustain_pedal(self, dur):
-        """Toggle the sustain pedal on and off
-
-        Args:
-            dur (float): time in seconds
-        """
-        self.send_sustain_pedal_high()
-        time.sleep(dur)
-        self.send_sustain_pedal_low()
-
     def play_scale(self, note_list, dur_list):
         """Send a list of notes and durations to be played
 
@@ -124,7 +114,15 @@ class MidiInjector:
                 time.sleep(dur)
                 self.send_note_off(note)
                 
-    def create_scale(self, scale: Scale):
+    def create_full_scale(self, scale: Scale):
+        """Given a Scale object, create a full scale with all of the possible notes
+
+        Args:
+            scale (Scale): a scale object which can be used to create the full scale
+
+        Returns:
+            list[int]: a list of integer MIDI notes representing the full scale
+        """
         full_scale = []
         lowest_note = min([key for key, value in self.int_note.items() if value == scale.notes[0]])
         highest_note = max([key for key, value in self.int_note.items() if value == scale.notes[0]])
@@ -137,6 +135,16 @@ class MidiInjector:
         return sorted(full_scale)
     
     def reduce_scale(self, full_scale, starting_note, num_octaves):
+        """TODO: Replace this function with something better
+
+        Args:
+            full_scale (list[int]): A full list of MIDI notes representing a specific scale
+            starting_note (str): The letter name of the note you are interested in starting from in your scale
+            num_octaves (_type_): the number of octaves to include from the starting note
+
+        Returns:
+            list[int]: a reduced scale based on filtering criteria
+        """
         starting_note = self.find_starting_index(starting_note)
         full_scale_index = full_scale.index(starting_note)
         print(f"starting_note {starting_note}")
@@ -148,6 +156,14 @@ class MidiInjector:
         return reduced_scale
     
     def find_starting_index(self, starting_note):
+        """TODO: Replace this function with something better
+
+        Args:
+            starting_note (str): the name of the note you are interested in finding the starting index of
+
+        Returns:
+            int: the closest index to of this note to middle C
+        """
         starting_note_indices = [midi_note for midi_note, note_name in self.int_note.items() if note_name == starting_note]
         closest_note = min(starting_note_indices, key=lambda x: abs(x - 61))
         return closest_note
@@ -180,63 +196,9 @@ class MidiInjector:
 
         for note in note_list:
             self.send_note_off(note)
-       
-
-    def testPlayDistinctNotes(self):
-        """
-        Play note on messages followed by note off messages and ensure that instances are allocated correctly
-        """
-
-        note_list = [60, 62, 64, 65, 67, 69, 71, 72]
-        dur_list = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
-        self.play_scale(note_list, dur_list)
-
-    def testPlayOverlappingNotes(self):
-        """
-        Play notes which overlap to test that instances are allocated correctly and that all note on messages have a corresponding note off
-        """
-
-        # Create threads for testPlayDistinctNotes and play_chord
-        thread_distinct_notes = threading.Thread(target=self.testPlayDistinctNotes)
-        c_major_chord = [60, 64, 67]
-        thread_chord = threading.Thread(target=self.play_chord, args=(c_major_chord,))
-
-        # Start the threads
-        thread_distinct_notes.start()
-        thread_chord.start()
-
-    def testPlayOverlappingNotesWithSustain(self):
-        """
-        Play overlapping notes and hold down the sustain pedal releasing it half way through
-        """
-
-        # Create threads for testPlayDistinctNotes and play_chord
-        thread_overlapping_notes = threading.Thread(target=self.testPlayOverlappingNotes)
-        duration = 0.7
-        thread_sustain_pedal = threading.Thread(target=self.toggle_sustain_pedal, args=(duration,))
-        
-        # Start the threads
-        thread_overlapping_notes.start()
-        thread_sustain_pedal.start()
-        
-    def testIntervalSets(self):
-        # interval_sets = [[i, j] for i in range(1, 12) for j in range(1, 12)]
-        
-        interval_sets = [[4, 3], [7, 9], [3, 5], [8, 7], [5, 4], [9, 8], [3, 4], [7, 8], [4, 5], [9, 7], [5, 3], [8, 9], [2, 2], 
-                         [2, 8], [8, 2], [3, 3], [6, 9], [4, 4], [8, 8], [5, 5], [10, 7], [2, 5], [7, 7], [5, 2], [7, 10], [7, 3], 
-                         [3, 2], [2, 7], [4, 6], [6, 2], [2, 4], [3, 6], [6, 3], [7, 4], [4, 1], [1, 7], [4, 7], [7, 1], [1, 4], 
-                         [1, 1], [1, 10], [10, 1], [11, 2], [2, 11], [11, 11],[2, 9], [9, 1], [1, 2], [3, 8], [8, 1], [1, 3], 
-                         [5, 6], [6, 1], [1, 5], [6, 5], [5, 1], [1, 6], [3, 1], [1, 8], [8, 3], [9, 2], [2, 1], [1, 9], [3, 7], 
-                         [7, 2], [2, 3], [4, 2], [2, 6], [6, 4], [11, 3], [3, 10], [10, 11], [4, 9], [4, 10], [4, 11], [5, 8], 
-                         [5, 9], [5, 10], [5, 11], [6, 7], [6, 8], [6, 10], [6, 11], [7, 2], [7, 6], [7, 11], [8, 5], [8, 6], 
-                         [8, 10], [8, 11], [9, 4], [9, 5], [9, 6], [9, 9], [9, 10], [9, 11], [10, 3], [10, 4], [10, 5], [10, 6], 
-                         [10, 8], [10, 9], [10, 10], [11, 2], [11, 4], [11, 5], [11, 6], [11, 7], [11, 8], [11, 9], [11, 10]]
-        
-        for interval_set in interval_sets:
-            self.play_chord_by_intervals(interval_list=interval_set)
 
 
-def main():
+if __name__ == "__main__":
     midi_injector = MidiInjector()
 
     midi_injector.play_scale(midi_injector.harmonic_major_scales[0].notes + ["C"], [0.10] * (len(midi_injector.harmonic_major_scales[0].notes)+1))
@@ -245,11 +207,6 @@ def main():
     midi_injector.play_scale(midi_injector.harmonic_minor_scales[0].notes + ["C"], [0.12] * (len(midi_injector.harmonic_minor_scales[0].notes)+1))
     midi_injector.play_scale(reversed(midi_injector.harmonic_minor_scales[0].notes[1:]), [0.10] * (len(midi_injector.harmonic_minor_scales[0].notes)+1))
         
-    C_Harm_maj_full_scale = midi_injector.create_scale(midi_injector.harmonic_major_scales[0])
+    C_Harm_maj_full_scale = midi_injector.create_full_scale(midi_injector.harmonic_major_scales[0])
     midi_injector.play_scale(C_Harm_maj_full_scale[:-1], [0.20] * (len(C_Harm_maj_full_scale)-1))
     midi_injector.play_scale(reversed(C_Harm_maj_full_scale), [0.20] * len(C_Harm_maj_full_scale))
-    
-
-
-if __name__ == "__main__":
-    main()

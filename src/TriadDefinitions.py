@@ -2,6 +2,8 @@ import numpy as np
 
 
 class TriadDefinitions:
+    """TraidDefinitions are used for classifying as many 3 note chord combinations as possible for the purposes of 
+    chord identification, and display to the user"""
     
     def __init__(self):
         self.major_triad = self.determine_valid_interval_sets(intervals=[[4, 3], [7, 9]])

@@ -9,7 +9,16 @@ class ChordSeqTree:
     def __init__(self):
         pass
     
-    def generate_chord_sequences(self, chords: list, choices: int):
+    def generate_chord_sequences(self, chords: list[str], choices: int):
+        """Generate a list of unique chord combinations 
+
+        Args:
+            chords (list): A list of potential chords
+            choices (int): The total number of chords you want to find combinations for
+
+        Returns:
+            list[list[str]]: All of the chord combinations possible for the given value of choices. 
+        """
         combinations = list(itertools.combinations(chords, choices))
         print(f"With {len(chords)} possible chords and {choices} choices: \nThere are {len(combinations)} possible chord sequences\n")
         

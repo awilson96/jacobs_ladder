@@ -15,4 +15,9 @@ midi_notes = {21: "A", 22: "B\u266d", 23: "B", 24: "C", 25: "D\u266d", 26: "D",
               105: "A", 106: "B\u266d", 107: "B", 108: "C"}
 
 def get_midi_notes():
+    """Return a dictionary of MIDI note: note name key value pairs
+
+    Returns:
+        dict: {MIDI note: note name}
+    """
     return midi_notes

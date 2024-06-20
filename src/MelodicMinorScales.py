@@ -16,9 +16,19 @@ Bb_Melodic_Minor = Scale("B\u266d Melodic Minor", ["B\u266d", "C", "D\u266d", "E
 B_Melodic_Minor = Scale("B Melodic Minor", ["B", "D\u266d", "D", "E", "G\u266d", "A\u266d", "B\u266d"])
 
 def get_melodic_minor_scales():
+    """Getter function for retrieving a list of all possible melodic minor scale objects
+
+    Returns:
+        list[Scale]: a list of melodic minor scale objects
+    """
     return [C_Melodic_Minor, Db_Melodic_Minor, D_Melodic_Minor, Eb_Melodic_Minor, E_Melodic_Minor, F_Melodic_Minor, 
             Gb_Melodic_Minor, G_Melodic_Minor, Ab_Melodic_Minor, A_Melodic_Minor, Bb_Melodic_Minor, B_Melodic_Minor]
 
 def get_melodic_minor_scales_dict():
+    """Getter function for retrieving scale objects as a dictionary 
+
+    Returns:
+        dict: a dictionary of name: list of notes pairs 
+    """
     scales = get_melodic_minor_scales()
     return {scale.name: scale.notes for scale in scales}

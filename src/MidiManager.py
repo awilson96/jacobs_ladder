@@ -15,7 +15,7 @@ __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
 __date__ = "October 12th 2023 (creation)"
 
 logging.basicConfig(
-    filename="../logs/MidiManager.log",
+    filename="./logs/MidiManager.log",
     filemode="w",
     level=logging.DEBUG,
     format="%(asctime)s - %(levelname)s - %(message)s",
@@ -253,9 +253,8 @@ class MidiController:
         return None
 
     def turn_off_all_notes(self):
-        """
-        Utility function used in troubleshooting/debugging
-        It is useful when handling hanging MIDI messages, and it's used to silence all output by sending ALL_NOTES_OFF message to all instances
+        """ Utility function used in troubleshooting/debugging. It is useful when handling hanging MIDI messages, 
+        and it's used to silence all output by sending ALL_NOTES_OFF message to all instances
         """
         all_notes_off_message = [176, 123, 0]
         retune_to_center_frequency = [224, 0, 64]
@@ -268,8 +267,7 @@ class MidiController:
         self.midi_in.set_callback(self.filter)
 
     def start_listening(self):
-        """
-        This is the main control loop where execution takes place.
+        """ This is the main control loop where execution takes place.
         The listener waits for Midi messages and acts according to the filter function
         """
         try:
@@ -286,9 +284,7 @@ class MidiController:
             self.music_theory.close_shared_memory()
             self.terminate.close()
             self.terminate.unlink()
+ 
             
-def main():
-    midi_controller = MidiController()
-
 if __name__ == "__main__":
-    main()
+    midi_controller = MidiController()
