@@ -1,11 +1,11 @@
 note1, note2, note3, note4, note5, scale,
-C, Db, Eb, Fb, Ab, 
-C, Db, Eb, F, Ab, 
-C, Db, Eb, F, A, 
-C, Db, Eb, Gb, Ab, 
-C, Db, Eb, Gb, A, 
-C, Db, Eb, Gb, Bb, 
-C, Db, Eb, G, Ab, 
+C, D, Eb, G, B, C Minor Major (add2) 
+B, C, D, E, G, C (add2) / B
+D, Eb, F, G, B, G Dominant 2nd Inversion b13 
+B, C, D, F, G, G Dominant 1st Inversion 11
+B, C, D, F, Ab, B Diminished b9
+B, C, D, F, A, B Half Diminished b9
+E, F, G, B, C, Major 7 1st Inversion 11
 C, Db, Eb, G, A, 
 C, Db, Eb, G, Bb, 
 C, Db, E, F, Ab, 
@@ -23,4 +23,4 @@ C, Db, F, G, Bb,
 C, Db, F, Ab, Bb, 
 C, D, E, Gb, Ab, 
 C, D, E, Gb, A, 
-C, D, E, G, A, Pentatonic
+C, D, E, G, A, C Pentatonic
