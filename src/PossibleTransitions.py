@@ -1,7 +1,7 @@
 from .MusicTheory import MusicTheory
 
 
-mt = MusicTheory(shared_memory_index=2, print_chords=False)
+mt = MusicTheory(print_chords=False)
 cDb = mt.determine_key([[60, 0, 144, 100], [61, 0, 144, 100]])
 print(f"{cDb=}")
 

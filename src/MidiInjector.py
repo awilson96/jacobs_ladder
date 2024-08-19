@@ -1,6 +1,5 @@
 import logging
 import time
-import threading
 import numpy as np
 
 from .Dictionaries import get_midi_notes

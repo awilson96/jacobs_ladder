@@ -34,3 +34,6 @@ There are a few things that need to be done:
 
 How to Run:
 C:\Users\awilson\OneDrive - COMNEXIA\Documents\Music\Jacobs_Ladder\Jacobs-Ladder> python -m python.MidiManager
+
+How to create an env:
+`conda env create -f environment.yaml`

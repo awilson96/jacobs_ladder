@@ -1,12 +1,9 @@
 import logging
 from collections import Counter
-from multiprocessing import shared_memory
-import numpy as np
 
 from .DataClasses import Scale
 from .Dictionaries import get_midi_notes
 from .Queue import InOutQueue
-from .SharedMemory import list_of_lists_to_numpy
 from .TriadDefinitions import TriadDefinitions
 from .HarmonicMajorScales import get_harmonic_major_scales
 from .HarmonicMinorScales import get_harmonic_minor_scales
@@ -28,12 +25,11 @@ class MusicTheory:
     The MusicTheory Class is used to encapsulate the fundamentals of music theory to perform activities such as chord recognition and display, potential scales which can be played over currently 
     suspended notes, representing chords in the simplest harmonic form possible, and key determination.
     """
-    def __init__(self, shared_memory_index: int, print_chords: bool = False):
-        """MusicTheory class takes a shared_memory_index for sharing music theory data with other software components and a flag called print_chords
-        to indicate whether or not to print chords to the console, (defaults to false).
+    def __init__(self, print_chords: bool = False):
+        """MusicTheory class takes a flag called print_chords to indicate whether or not to print chords to the console, 
+        (defaults to false).
 
         Args:
-            shared_memory_index (int): This index is used to manage the sharing of memory between at most two possible shared memory locations for orchestrating the sharing of message traffic
             print_chords (bool, optional): if true print chords to the console, otherwise don't. Defaults to False.
         """
         # Dictionary to convert int midi notes into letter notes assuming all flats for ease of logic
@@ -55,32 +51,6 @@ class MusicTheory:
         
         # Jacob's Ladder
         self.print_chords = print_chords
-        self.keys = np.array([''] * 28, dtype="<U20")
-        self.messages = np.array((10, 4), dtype=np.int32)
-        self.shared_key = shared_memory.SharedMemory(name="shared_key" + str(shared_memory_index), create=True, size=self.keys.nbytes)
-        self.messages = shared_memory.SharedMemory(name="messages" + str(shared_memory_index), create=True, size=5008)
-        
-    def share_messages(self, message_heap: list[list[int]]):
-        """Publish messages to a shared memory location for external viewing using the Jacob class
-
-        Args:
-            message_heap (list[list[int]]): messages created by the MidiManager which contain a list of lists with the following features [[note, instance_index, status, velocity], ...]
-        """
-        data = list_of_lists_to_numpy(message_heap)
-        self.messages.buf[:] = np.zeros_like(self.messages.buf)
-        buf = np.ndarray(data.shape, dtype=data.dtype, buffer=self.messages.buf)
-        buf[:] = data[:]
-        
-    def close_shared_memory(self):
-        """
-        Used to clean up the shared memory buffer by closing and unlinking the connection between the MidiManager and Jacob Classes.
-        """
-        print(f"Closing and unlinking '{self.shared_key.name}'.")
-        self.shared_key.close()
-        self.shared_key.unlink()
-        print(f"Closing and unlinking '{self.messages.name}'.")
-        self.messages.close()
-        self.messages.unlink()
 
     def determine_chord(self, message_heap: list[list[int]]):
         """Based on the currently active notes in the message_heap, determine the chord
@@ -151,16 +121,6 @@ class MusicTheory:
             if is_sublist:
                 candidate_keys.append(scale.name)
         
-        if candidate_keys:
-            for i in range(len(self.keys)):
-                if i >= len(candidate_keys):
-                    self.keys[i:] = ""
-                    break
-                self.keys[i] = candidate_keys[i]
-        
-            buf = np.ndarray(self.keys.shape, dtype=self.keys.dtype, buffer=self.shared_key.buf)
-            buf[:] = self.keys[:]
-                
         self.history.enqueue(candidate_keys)
         key = self.find_most_common_scale()
         return self.find_most_common_scale()

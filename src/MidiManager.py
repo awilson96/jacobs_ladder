@@ -2,9 +2,7 @@ import heapq
 import logging
 import time
 import warnings
-from multiprocessing import shared_memory
 
-import numpy as np
 import rtmidi
 
 from .JustIntonation import JustIntonation
@@ -48,15 +46,6 @@ class MidiController:
         self.midi_out_ports = [rtmidi.MidiOut() for _ in range(12)]
         self.input_port = input_port
         self.output_ports = output_ports
-        
-        # Shared memory management
-        self.shared_memory_index = None
-        if self.output_ports == list(map(str, range(12))):
-            self.shared_memory_index = 1
-        elif self.output_ports == list(map(str, range(12, 24))):
-            self.shared_memory_index = 2
-        else:
-            ValueError(f"Unsupported port range! {self.output_ports}")
 
         # Create midi in and midi out virtual port objects
         self.initialize_ports()
@@ -65,10 +54,6 @@ class MidiController:
         self.instance_index = list(range(12))
         self.message_heap = [] 
         self.in_use_indices = {}
-        
-        # Process Managment
-        terminate = np.array(0, dtype=np.int8)
-        self.terminate = shared_memory.SharedMemory(name="terminate" + str(self.shared_memory_index), create=True, size=terminate.nbytes)
 
         # Sustain pedal management
         self.sustain = False
@@ -77,9 +62,6 @@ class MidiController:
         # Tuning management
         self.tuning = False
         self.just_intonation = JustIntonation()
-        
-        # Music theory management
-        self.music_theory = MusicTheory(shared_memory_index=self.shared_memory_index, print_chords=False)
         
         self.set_midi_callback()
         self.start_listening()
@@ -281,10 +263,6 @@ class MidiController:
             self.turn_off_all_notes()
         finally:
             self.close_ports()
-            self.music_theory.close_shared_memory()
-            self.terminate.close()
-            self.terminate.unlink()
- 
             
 if __name__ == "__main__":
     midi_controller = MidiController()
