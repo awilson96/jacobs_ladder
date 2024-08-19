@@ -58,6 +58,9 @@ class MidiController:
         # Sustain pedal management
         self.sustain = False
         self.sustained_notes = []
+        
+        # Music Theory
+        self.music_theory = MusicTheory(print_chords=True)
 
         # Tuning management
         self.tuning = False
@@ -156,8 +159,6 @@ class MidiController:
             if pitch_adjust_message:
                 pitch_bend_message, instance_idx = pitch_adjust_message
                 self.midi_out_ports[instance_idx].send_message(pitch_bend_message)
-                    
-            self.music_theory.share_messages(message_heap=self.message_heap)
 
         elif status in range(128, 144):
             instance_index = self.in_use_indices[note]
@@ -179,7 +180,6 @@ class MidiController:
                 heapq.heappush(self.sustained_notes, [note, instance_index, status, velocity])
             
             chord = self.music_theory.determine_chord(self.message_heap)
-            self.music_theory.share_messages(message_heap=self.message_heap)
 
         elif status in range(176, 192) and note == 64:
             if velocity == 127:
@@ -254,10 +254,9 @@ class MidiController:
         """
         try:
             print("Listening for MIDI messages. Press Ctrl+C to exit.")
-            while self.terminate.buf[0] == 0:
+            while True:
                 message = self.midi_in.get_message()
                 time.sleep(0.001)
-            self.turn_off_all_notes()
         except KeyboardInterrupt:
             print("Exiting...")
             self.turn_off_all_notes()

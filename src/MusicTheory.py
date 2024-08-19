@@ -21,9 +21,9 @@ logging.basicConfig(
 )
 
 class MusicTheory:
-    """
-    The MusicTheory Class is used to encapsulate the fundamentals of music theory to perform activities such as chord recognition and display, potential scales which can be played over currently 
-    suspended notes, representing chords in the simplest harmonic form possible, and key determination.
+    """The MusicTheory Class is used to encapsulate the fundamentals of music theory to perform activities such as chord 
+    recognition and display, potential scales which can be played over currently suspended notes, representing 
+    chords in the simplest harmonic form possible, and key determination.
     """
     def __init__(self, print_chords: bool = False):
         """MusicTheory class takes a flag called print_chords to indicate whether or not to print chords to the console, 
