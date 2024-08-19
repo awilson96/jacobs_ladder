@@ -7,6 +7,7 @@ import rtmidi
 
 from .JustIntonation import JustIntonation
 from .MusicTheory import MusicTheory
+from .Udp import UDPSender, UDPReceiver
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
@@ -65,6 +66,13 @@ class MidiController:
         # Tuning management
         self.tuning = False
         self.just_intonation = JustIntonation()
+        
+        # Communication with Jacob
+        if self.output_ports == list(map(str, range(12))):
+            self.udp_receiver = UDPReceiver(host='127.0.0.1', port=50000)
+            self.udp_receiver.start_listener()
+            self.udp_sender = UDPSender(host='127.0.0.1', port=50001)
+            self.udp_sender.send("Initializing connection to Jacob...")
         
         self.set_midi_callback()
         self.start_listening()
