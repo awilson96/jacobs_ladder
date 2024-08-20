@@ -1,3 +1,4 @@
+import argparse
 import heapq
 import logging
 import time
@@ -29,7 +30,8 @@ class MidiController:
 
     def __init__(self, input_port: str = "jacobs_ladder", 
                  output_ports: list = list(map(str, range(12))), 
-                 print: bool = False):
+                 print: bool = False,
+                 tuning: bool = False):
         """Class Constructor creates a MidiController object.  MidiController handles MIDI port management, 
         output port instance management, and sustain pedal management.
 
@@ -59,10 +61,11 @@ class MidiController:
         
         # Set print settings
         self.print = print
-        if self.print: self.logger.info("Printing to the terminal is enabled")
+        self.logger.info("Printing to the terminal is enabled") if self.print else \
+            self.logger.info("Printing to the terminal is disabled")
 
         # Output port instance management
-        self.instance_index = list(range(12))
+        self.instance_index = list(range(12)) if input_port == "jacobs_ladder" else list(range(12, 24))
         self.message_heap = [] 
         self.in_use_indices = {}
 
@@ -72,10 +75,13 @@ class MidiController:
         
         # Music Theory
         self.music_theory = MusicTheory(print=self.print, player=input_port if input_port != "jacobs_ladder" else "User")
+        self.logger.info(f"Initializing MusicTheory...")
 
         # Tuning management
-        self.tuning = False
+        self.tuning = tuning
         self.just_intonation = JustIntonation(player=input_port if input_port != "jacobs_ladder" else "User")
+        self.logger.info("Initializing JustIntonation...")
+        self.logger.info("Tuning is enabled") if self.tuning else self.logger.info("Tuning is disabled")
         
         # Communication with Jacob
         if self.output_ports == list(map(str, range(12))):
@@ -84,8 +90,11 @@ class MidiController:
             self.udp_sender = UDPSender(host='127.0.0.1', port=50001)
             self.logger.info("Initializing connection to Jacob...")
         
+        self.logger.info("Listening for Midi messages...")
         self.set_midi_callback()
         self.start_listening()
+        
+        self.logger.info("Exitting...")
 
     def initialize_ports(self):
         """
@@ -291,4 +300,18 @@ class MidiController:
             self.close_ports()
             
 if __name__ == "__main__":
-    midi_controller = MidiController()
+    # Set up argument parser
+    parser = argparse.ArgumentParser(description="Initialize the MidiController with specific settings.")
+    
+    # Define the flags for print and tuning with default values
+    parser.add_argument('-p', '--print', action='store_true', help="Enable printing to the console.")
+    parser.add_argument('-t', '--tuning', action='store_true', help="Enable tuning.")
+    
+    # Parse arguments
+    args = parser.parse_args()
+    
+    # Initialize MidiController with parsed flags
+    midi_controller = MidiController(
+        print=args.print,
+        tuning=args.tuning
+    )
