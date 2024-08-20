@@ -9,16 +9,11 @@ from .HarmonicMajorScales import get_harmonic_major_scales
 from .HarmonicMinorScales import get_harmonic_minor_scales
 from .MajorScales import get_major_scales
 from .MelodicMinorScales import get_melodic_minor_scales
+from .Logging import setup_logging
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
 __date__ = "November 11th 2023 (creation)"
-
-logging.basicConfig(
-    filename="./logs/MusicTheory.log",
-    level=logging.DEBUG,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
 
 class MusicTheory:
     """The MusicTheory Class is used to encapsulate the fundamentals of music theory to perform activities such as chord 
@@ -32,6 +27,9 @@ class MusicTheory:
         Args:
             print (bool, optional): if true print chords to the console, otherwise don't. Defaults to False.
         """
+        # Setup logging
+        self.logger = setup_logging("MusicTheory")
+        
         # Dictionary to convert int midi notes into letter notes assuming all flats for ease of logic
         self.int_note:              dict[int, str]              = get_midi_notes()
         

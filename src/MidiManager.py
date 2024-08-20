@@ -8,17 +8,11 @@ import rtmidi
 from .JustIntonation import JustIntonation
 from .MusicTheory import MusicTheory
 from .Udp import UDPSender, UDPReceiver
+from .Logging import setup_logging
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
 __date__ = "October 12th 2023 (creation)"
-
-logging.basicConfig(
-    filename="./logs/MidiManager.log",
-    filemode="w",
-    level=logging.DEBUG,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
 
 warnings.filterwarnings("ignore", message="RtMidiIn::getNextMessage.*user callback.*")
 
@@ -43,17 +37,24 @@ class MidiController:
             input_port (str, optional): input port name. Defaults to "jacobs_ladder 2".
             output_ports (list, optional): output port name. Defaults to a list on integers from 0-15.
         """
+        # Set up logging
+        self.logger = setup_logging("MidiController")
+        self.logger.info("Initializing MidiController...")
+        
         # MIDI port management
         self.midi_in = rtmidi.MidiIn()
         self.midi_out_ports = [rtmidi.MidiOut() for _ in range(12)]
         self.input_port = input_port
         self.output_ports = output_ports
+        self.logger.info(f"Input port: {input_port}")
+        self.logger.info(f"Output ports: {output_ports}")
 
         # Create midi in and midi out virtual port objects
         self.initialize_ports()
         
         # Set print settings
         self.print = print
+        if self.print: self.logger.info("Printing to the terminal is enabled")
 
         # Output port instance management
         self.instance_index = list(range(12))

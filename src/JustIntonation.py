@@ -1,17 +1,12 @@
 import logging
 from collections import Counter
+from .Logging import setup_logging
 
 from .Enums import Pitch
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
 __date__ = "November 11th 2023 (creation)"
-
-logging.basicConfig(
-    filename="./logs/JustIntonation.log",
-    level=logging.DEBUG,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
 
 
 class JustIntonation:
@@ -20,6 +15,7 @@ class JustIntonation:
     The secondary goal of the class is to ensure that after silence, new notes must be in pitch with the previously played notes creating pitch drift as would be expected in true Just Intonation.
     """
     def __init__(self):
+        self.logger = setup_logging("JustIntonation")
         self.center_frequency = 8192
         self.pitch_table = {key: 8192 for key in range(-11, 12)}
         self.previous_root = [60, 0, 8192]
