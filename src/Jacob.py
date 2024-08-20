@@ -20,6 +20,7 @@ class JacobsLadder:
         self.midi_injector = MidiInjector(output_port="jacob")
         self.scale_classifier = ScaleClassifier()
         self.midi_controller_thread = threading.Thread(target=self.initialize_midi_controller)
+        self.midi_controller_thread.daemon = True
         self.midi_controller_thread.start()
 
         # Setup communication with player
