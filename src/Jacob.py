@@ -28,7 +28,7 @@ class JacobsLadder:
         self.udp_sender = UDPSender(host='127.0.0.1', port=50000)
         self.udp_sender.send("Initializing connection to player...")
         
-
+        # Get various scales as a dictionary of scale objects
         self.harm_maj_scales = get_harmonic_major_scales_dict()
         self.harm_min_scales = get_harmonic_minor_scales_dict()
         self.maj_scales = get_major_scales_dict()
@@ -159,6 +159,9 @@ class JacobsLadder:
                     print("Invalid choice. Please choose again.")
         except KeyboardInterrupt:
             print("Exiting...")
+        finally:
+            self.udp_receiver.stop()
+            self.udp_sender.stop()
 
     def play_active_scales(self, playback_speed: float, num_voices=1):
         """Play all scales which are congruent with the currently held down notes as the notes evolve and change.  If the currently

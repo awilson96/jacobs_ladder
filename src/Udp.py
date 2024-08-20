@@ -5,31 +5,39 @@ from time import sleep
 
 
 class UDPSender:
-    def __init__(self, host='127.0.0.1', port=50000):
+    def __init__(self, host='127.0.0.1', port=50000, print=False):
+        self.print = print
         self.send_address = (host, port)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     def send(self, data):
+        """Send Udp data to the specified send address
+
+        Args:
+            data (Any): Any data you want to send over Udp
+        """
         try:
             # Serialize the data to JSON format
             message = json.dumps(data)
             self.sock.sendto(message.encode(), self.send_address)
-            print(f"Sent: {data}")
+            if self.print: print(f"Sent: {data}")
         except Exception as e:
-            print(f"Error sending data: {e}")
+            if self.print: print(f"Error sending data: {e}")
 
     def stop(self):
         self.sock.close()
 
 
 class UDPReceiver:
-    def __init__(self, host='127.0.0.1', port=50001):
+    def __init__(self, host='127.0.0.1', port=50001, print=False):
+        self.print = print
         self.receive_address = (host, port)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind(self.receive_address)
         self.running = True
 
     def listen(self):
+        """Listen for Udp messages sent to the receive address"""
         while self.running:
             try:
                 # Set a timeout to avoid blocking indefinitely while waiting for data
@@ -40,17 +48,17 @@ class UDPReceiver:
 
                     # Deserialize the data from JSON format
                     data = json.loads(data.decode())
-                    print(f"Received: {data}")
+                    if self.print: print(f"Received: {data}")
                 except socket.timeout:
                     # If no data is received within the timeout, just loop again
                     continue
             except json.JSONDecodeError:
-                print("Error: Received invalid JSON data.")
+                if self.print: print("Error: Received invalid JSON data.")
             except socket.error as e:
-                print(f"Socket error: {e}")
+                if self.print: print(f"Socket error: {e}")
                 self.running = False
             except Exception as e:
-                print(f"Unexpected error receiving data: {e}")
+                if self.print: print(f"Unexpected error receiving data: {e}")
                 self.running = False
 
     def start_listener(self):

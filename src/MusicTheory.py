@@ -25,12 +25,12 @@ class MusicTheory:
     recognition and display, potential scales which can be played over currently suspended notes, representing 
     chords in the simplest harmonic form possible, and key determination.
     """
-    def __init__(self, print_chords: bool = False):
-        """MusicTheory class takes a flag called print_chords to indicate whether or not to print chords to the console, 
+    def __init__(self, print: bool = False):
+        """MusicTheory class takes a flag called print to indicate whether or not to print chords to the console, 
         (defaults to false).
 
         Args:
-            print_chords (bool, optional): if true print chords to the console, otherwise don't. Defaults to False.
+            print (bool, optional): if true print chords to the console, otherwise don't. Defaults to False.
         """
         # Dictionary to convert int midi notes into letter notes assuming all flats for ease of logic
         self.int_note:              dict[int, str]              = get_midi_notes()
@@ -50,7 +50,7 @@ class MusicTheory:
         self.history = InOutQueue(self.QUEUE_SIZE)
         
         # Jacob's Ladder
-        self.print_chords = print_chords
+        self.print = print
 
     def determine_chord(self, message_heap: list[list[int]]):
         """Based on the currently active notes in the message_heap, determine the chord
@@ -73,16 +73,17 @@ class MusicTheory:
             return f" "
         elif len(intervals) == 1:
             diads = self.get_diad(intervals)
-            if self.print_chords: print(diads)   
+            if self.print: print(diads)   
             return f"{diads}"      
             
         elif len(intervals) == 2:      
             triad_log, triad_internal = self.get_triad(intervals, notes)
-            if self.print_chords: print(triad_log)
+            if self.print: print(triad_log)
             return triad_internal      
         
         elif len(intervals) == 3:      
-            tetrad:                 list[str]                   = self.get_tetrad(intervals, notes)
+            tetrad = self.get_tetrad(intervals, notes)
+            if self.print: print(tetrad)
             return tetrad
         else:
             return None

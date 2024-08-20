@@ -33,10 +33,11 @@ class MidiController:
     All tuning, chord display, and additional features are handled by other submodules.
     """
 
-    def __init__(self, input_port="jacobs_ladder", output_ports=list(map(str, range(12)))):
-        """
-        Class Constructor creates a MidiController object.
-        MidiController handles MIDI port management, output port instance management, and sustain pedal management.
+    def __init__(self, input_port: str = "jacobs_ladder", 
+                 output_ports: list = list(map(str, range(12))), 
+                 print: bool = False):
+        """Class Constructor creates a MidiController object.  MidiController handles MIDI port management, 
+        output port instance management, and sustain pedal management.
 
         Args:
             input_port (str, optional): input port name. Defaults to "jacobs_ladder 2".
@@ -50,6 +51,9 @@ class MidiController:
 
         # Create midi in and midi out virtual port objects
         self.initialize_ports()
+        
+        # Set print settings
+        self.print = print
 
         # Output port instance management
         self.instance_index = list(range(12))
@@ -61,7 +65,7 @@ class MidiController:
         self.sustained_notes = []
         
         # Music Theory
-        self.music_theory = MusicTheory(print_chords=True)
+        self.music_theory = MusicTheory(print=self.print)
 
         # Tuning management
         self.tuning = False
@@ -153,20 +157,28 @@ class MidiController:
                         logging.warning(f"no instances are left! {self.instance_index}")
                         
             self.in_use_indices[note] = instance_index
-            self.midi_out_ports[instance_index].send_message([status, note, velocity])
             heapq.heappush(self.message_heap, [note, instance_index, status, velocity])
             
             chord = self.music_theory.determine_chord(self.message_heap)
             key = self.music_theory.determine_key(self.message_heap)
             if self.tuning:
-                pitch_adjust_message = self.just_intonation.pitch_adjust_chord(message_heap=self.message_heap, 
-                                                                               current_msg=[note, instance_index, status, velocity], 
-                                                                               dt=dt, 
-                                                                               chord=chord)
- 
+                pitch_adjust_message = self.just_intonation.pitch_adjust_chord(
+                                            message_heap=self.message_heap, 
+                                            current_msg=[note, instance_index, status, velocity], 
+                                            dt=dt, 
+                                            chord=chord
+                                            )
+
             if pitch_adjust_message:
                 pitch_bend_message, instance_idx = pitch_adjust_message
                 self.midi_out_ports[instance_idx].send_message(pitch_bend_message)
+                
+            if self.print: 
+                print(chord)
+                print(key)
+                
+            self.midi_out_ports[instance_index].send_message([status, note, velocity])
+            self.udp_sender.send(self.message_heap)
 
         elif status in range(128, 144):
             instance_index = self.in_use_indices[note]
@@ -187,6 +199,7 @@ class MidiController:
             else:
                 heapq.heappush(self.sustained_notes, [note, instance_index, status, velocity])
             
+            self.udp_sender.send(self.message_heap)
             chord = self.music_theory.determine_chord(self.message_heap)
 
         elif status in range(176, 192) and note == 64:
