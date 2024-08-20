@@ -20,7 +20,7 @@ class MusicTheory:
     recognition and display, potential scales which can be played over currently suspended notes, representing 
     chords in the simplest harmonic form possible, and key determination.
     """
-    def __init__(self, print: bool = False):
+    def __init__(self, print: bool = False, player: str = None):
         """MusicTheory class takes a flag called print to indicate whether or not to print chords to the console, 
         (defaults to false).
 
@@ -28,7 +28,11 @@ class MusicTheory:
             print (bool, optional): if true print chords to the console, otherwise don't. Defaults to False.
         """
         # Setup logging
-        self.logger = setup_logging("MusicTheory")
+        if not player:
+            self.logger = setup_logging("MusicTheory")
+        else:
+            mt_string = str(f"MusicTheory{player.capitalize()}")
+            self.logger = setup_logging(mt_string)
         
         # Dictionary to convert int midi notes into letter notes assuming all flats for ease of logic
         self.int_note:              dict[int, str]              = get_midi_notes()

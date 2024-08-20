@@ -38,7 +38,12 @@ class MidiController:
             output_ports (list, optional): output port name. Defaults to a list on integers from 0-15.
         """
         # Set up logging
-        self.logger = setup_logging("MidiController")
+        if input_port == "jacobs_ladder":
+            self.logger = setup_logging("User")
+        elif input_port == "jacob":
+            self.logger = setup_logging("Jacob")
+        else:
+            self.logger = setup_logging(input_port)
         self.logger.info("Initializing MidiController...")
         
         # MIDI port management
@@ -66,18 +71,18 @@ class MidiController:
         self.sustained_notes = []
         
         # Music Theory
-        self.music_theory = MusicTheory(print=self.print)
+        self.music_theory = MusicTheory(print=self.print, player=input_port if input_port != "jacobs_ladder" else "User")
 
         # Tuning management
         self.tuning = False
-        self.just_intonation = JustIntonation()
+        self.just_intonation = JustIntonation(player=input_port if input_port != "jacobs_ladder" else "User")
         
         # Communication with Jacob
         if self.output_ports == list(map(str, range(12))):
             self.udp_receiver = UDPReceiver(host='127.0.0.1', port=50000)
             self.udp_receiver.start_listener()
             self.udp_sender = UDPSender(host='127.0.0.1', port=50001)
-            self.udp_sender.send("Initializing connection to Jacob...")
+            self.logger.info("Initializing connection to Jacob...")
         
         self.set_midi_callback()
         self.start_listening()

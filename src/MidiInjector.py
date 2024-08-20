@@ -8,19 +8,13 @@ from .MelodicMinorScales import get_melodic_minor_scales
 from .HarmonicMajorScales import get_harmonic_major_scales
 from .HarmonicMinorScales import get_harmonic_minor_scales
 from .DataClasses import Scale
+from .Logging import setup_logging
 
 import rtmidi
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
 __date__ = "November 8th 2023 (creation)"
-
-logging.basicConfig(
-    filename="./logs/MidiInjector.log",
-    filemode="w",
-    level=logging.DEBUG,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
 
 
 class MidiInjector:
@@ -40,6 +34,7 @@ class MidiInjector:
         Args:
             output_port (str, optional): Name of the output port you want to send Midi data on. Defaults to "jacob".
         """
+        self.logger = setup_logging(f"MidiInjector{output_port.capitalize()}")
         self.midi_out = rtmidi.MidiOut()
         self.output_ports = output_port
         self.initialize_port()

@@ -9,6 +9,7 @@ from .MelodicMinorScales import get_melodic_minor_scales_dict
 from .ScaleClassifier import ScaleClassifier
 from .MidiInjector import MidiInjector
 from .Udp import UDPSender, UDPReceiver
+from .Logging import setup_logging
 
 
 class JacobsLadder:
@@ -16,6 +17,8 @@ class JacobsLadder:
     interacting with the user in real time."""
 
     def __init__(self):
+        # Setup Logging
+        self.logger = setup_logging("Jacob")
         # Start up a MidiInjector thread for sending midi notes to a separate MidiController for note output
         self.midi_injector = MidiInjector(output_port="jacob")
         self.scale_classifier = ScaleClassifier()
@@ -27,7 +30,7 @@ class JacobsLadder:
         self.udp_receiver = UDPReceiver(host='127.0.0.1', port=50001)
         self.udp_receiver.start_listener()
         self.udp_sender = UDPSender(host='127.0.0.1', port=50000)
-        self.udp_sender.send("Initializing connection to player...")
+        
         
         # Get various scales as a dictionary of scale objects
         self.harm_maj_scales = get_harmonic_major_scales_dict()
