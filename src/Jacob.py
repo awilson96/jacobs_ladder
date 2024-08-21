@@ -92,28 +92,26 @@ class JacobsLadder:
                                     playback_speed=float(speed), num_voices=num_voices)
 
                 elif choice == "2":
+                    previous_keys = None
                     try:
-                        previous_keys = None
                         while True:
-                            # TODO: replace shared memory logic with UDP logic
-                            pass
-
+                            if previous_keys != self.udp_receiver.candidate_keys:
+                                print(self.udp_receiver.candidate_keys)
+                            previous_keys = self.udp_receiver.candidate_keys
+                
                     except KeyboardInterrupt:
-                        print("Exitting...")
+                        print("Exiting...")
 
                 elif choice == "3":
+                    previous_message = None
                     try:
-                        previous_messages = None
                         while True:
-                            messages = self.parse_messages()
-                            if messages:
-                                if messages != previous_messages:
-                                    print(messages)
-
-                            previous_messages = messages
-
+                            if previous_message != self.udp_receiver.messages:
+                                print(self.udp_receiver.messages)
+                            previous_message = self.udp_receiver.messages
+                
                     except KeyboardInterrupt:
-                        print("Exitting...")
+                        print("Exiting...")
 
                 elif choice == "4":
                     print("Choose from the following options:")
