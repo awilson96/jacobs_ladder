@@ -64,8 +64,7 @@ class JacobsLadder:
                     print("2. Play chord version")
                     selection = input("Enter your selection: ")
                     while True:
-                        speed = input(
-                            "Enter the playback speed in ms or press q to exit: ")
+                        speed = input("Enter the playback speed in ms or press q to exit: ")
                         if speed.lower() in ["q", "quit"]:
                             break
                         if selection == "1":
@@ -82,8 +81,7 @@ class JacobsLadder:
                             num_voices = input("Enter the number of voices: ")
                             num_voices = int(num_voices)
                             if num_voices <= 1 or num_voices > 5:
-                                print(
-                                    "Invalid number of voices, choose a number between 2 and 5!")
+                                print("Invalid number of voices, choose a number between 2 and 5!")
                             elif speed == '':
                                 self.play_active_scales(
                                     playback_speed=0.15, num_voices=num_voices)
@@ -120,34 +118,28 @@ class JacobsLadder:
                     try:
                         selection = input("Enter your selection: ")
                         # TODO: Use the most recently played note instead of hard-coding 60
-                        scales = self.scale_classifier.convert_intervals(
-                            starting_note=60)
+                        scales = self.scale_classifier.convert_intervals(starting_note=60)
                         if selection == "1":
                             for scale in scales:
                                 print(scale)
                                 for _ in range(2):
-                                    self.midi_injector.play_scale(
-                                        note_list=scale, dur_list=[0.20]*len(scale))
-                                    self.midi_injector.play_scale(
-                                        note_list=scale[::-1][1:-1], dur_list=[0.20]*len(scale))
+                                    self.midi_injector.play_scale(note_list=scale, dur_list=[0.20]*len(scale))
+                                    self.midi_injector.play_scale(note_list=scale[::-1][1:-1], dur_list=[0.20]*len(scale))
+
                         elif selection == "2":
                             num_voices = input("Enter the number of voices: ")
                             if int(num_voices) > 0 and int(num_voices) <= 5:
                                 for scale in scales:
-                                    harmonized_scale = self.scale_classifier.create_harmonized_scale(
-                                        scale=scale, num_voices=int(num_voices))
+                                    harmonized_scale = self.scale_classifier.create_harmonized_scale(scale=scale, num_voices=int(num_voices))
                                     print(scale)
                                     for _ in range(2):
                                         for harmony in harmonized_scale:
-                                            self.midi_injector.play_chord(
-                                                note_list=harmony, duration=0.15, velocity=50)
+                                            self.midi_injector.play_chord(note_list=harmony, duration=0.15, velocity=50)
                                         for harmony in harmonized_scale[::-1][1:-1]:
-                                            self.midi_injector.play_chord(
-                                                note_list=harmony, duration=0.15, velocity=50)
+                                            self.midi_injector.play_chord(note_list=harmony, duration=0.15, velocity=50)
 
                             else:
-                                print(
-                                    "Invalid number of voices: choose a number between 1 and 4.")
+                                print("Invalid number of voices: choose a number between 1 and 4.")
                         else:
                             print("Invalid selection")
 
