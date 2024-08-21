@@ -65,7 +65,7 @@ class MidiController:
             self.logger.info("Printing to the terminal is disabled")
 
         # Output port instance management
-        self.instance_index = list(range(12)) if input_port == "jacobs_ladder" else list(range(12, 24))
+        self.instance_index = list(range(12))
         self.message_heap = [] 
         self.in_use_indices = {}
 
@@ -175,7 +175,8 @@ class MidiController:
             heapq.heappush(self.message_heap, [note, instance_index, status, velocity])
             
             chord = self.music_theory.determine_chord(self.message_heap)
-            key = self.music_theory.determine_key(self.message_heap)
+            key, candidate_keys = self.music_theory.determine_key(self.message_heap)
+            self.udp_sender.send(candidate_keys)
 
             pitch_adjust_message = None
             if self.tuning:
@@ -193,6 +194,7 @@ class MidiController:
             if self.print: 
                 print(f"{chord=}")
                 print(f"{key=}")
+                print(f"{candidate_keys}")
             
             self.midi_out_ports[instance_index].send_message([status, note, velocity])
             self.udp_sender.send(self.message_heap)

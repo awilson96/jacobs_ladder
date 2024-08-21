@@ -50,6 +50,7 @@ class MusicTheory:
         # TODO: Determine the optimum lookback period (more than 5, less than 5?)
         self.QUEUE_SIZE = 5
         self.history = InOutQueue(self.QUEUE_SIZE)
+        self.key = "C Ionian"
         
         # Jacob's Ladder
         self.print = print_msgs
@@ -102,10 +103,10 @@ class MusicTheory:
         Returns:
             str: a single key which can represent the key of the last few chords played
         """
-        notes:                      list[int]             = [self.int_note[note[0]] for note in message_heap]
-        unique_notes:               list[int]             = list(set(notes))
+        notes = [self.int_note[note[0]] for note in message_heap]
+        unique_notes = list(set(notes))
         
-        candidate_keys:             list[str]             = []
+        candidate_keys = []
         for scale in self.major_scales:
             is_sublist = all(element in scale.notes for element in unique_notes) 
             if is_sublist:
@@ -123,10 +124,10 @@ class MusicTheory:
             is_sublist = all(element in scale.notes for element in unique_notes) 
             if is_sublist:
                 candidate_keys.append(scale.name)
-        
+
         self.history.enqueue(candidate_keys)
-        key = self.find_most_common_scale()
-        return self.find_most_common_scale()
+        return self.find_most_common_scale(), candidate_keys
+    
         
     def find_most_common_scale(self):
         """Uses the InOutQueue to determine out of the previous self.QUEUE_SIZE frames which scale occured the most frequently
@@ -135,7 +136,8 @@ class MusicTheory:
         Returns:
             str | None: most frequently occuring scale if the length of history is greater than self.QUEUE_SIZE and None otherwise
         """
-        history = self.history.get_queue()       
+        history = self.history.get_queue()
+
         if len(history) >= self.QUEUE_SIZE:
             oldest_frame, older_frame, middle_frame, previous_frame, current_frame = history
             current_frame = set(current_frame)
@@ -143,6 +145,10 @@ class MusicTheory:
             middle_frame = set(middle_frame)
             older_frame = set(older_frame)
             oldest_frame = set(oldest_frame)
+
+            # If the same key is still available as a choice then keep the key the same.  Only make changes when necissary
+            if self.key in current_frame and self.key is not None:
+                return self.key
 
             frames = [previous_frame, middle_frame, older_frame, oldest_frame]
 
@@ -156,7 +162,8 @@ class MusicTheory:
                     intersection = ["unknown"]
                     scale_counter.update(intersection)
 
-            most_common_scale, occurrences = scale_counter.most_common(1)[0]
+            most_common_scale, _ = scale_counter.most_common(1)[0]
+            self.key = most_common_scale
 
             return most_common_scale
         else:

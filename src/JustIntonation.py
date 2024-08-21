@@ -1,4 +1,3 @@
-import logging
 from collections import Counter
 from .Logging import setup_logging
 

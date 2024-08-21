@@ -5,8 +5,8 @@ from time import sleep
 
 
 class UDPSender:
-    def __init__(self, host='127.0.0.1', port=50000, print=False):
-        self.print = print
+    def __init__(self, host='127.0.0.1', port=50000, print_msgs=False):
+        self.print = print_msgs
         self.send_address = (host, port)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -29,12 +29,14 @@ class UDPSender:
 
 
 class UDPReceiver:
-    def __init__(self, host='127.0.0.1', port=50001, print=False):
-        self.print = print
+    def __init__(self, host='127.0.0.1', port=50001, print_msgs=False):
+        self.print = print_msgs
         self.receive_address = (host, port)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind(self.receive_address)
         self.running = True
+        self.messages = []
+        self.candidate_keys = []
 
     def listen(self):
         """Listen for Udp messages sent to the receive address"""
@@ -49,6 +51,11 @@ class UDPReceiver:
                     # Deserialize the data from JSON format
                     data = json.loads(data.decode())
                     if self.print: print(f"Received: {data}")
+                    if data and any(isinstance(item, str) for item in data):
+                        self.candidate_keys = data
+                    elif data and any(isinstance(item, list) for item in data):
+                        self.messages = data
+
                 except socket.timeout:
                     # If no data is received within the timeout, just loop again
                     continue

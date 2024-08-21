@@ -27,7 +27,7 @@ class JacobsLadder:
         self.midi_controller_thread.start()
 
         # Setup communication with player
-        self.udp_receiver = UDPReceiver(host='127.0.0.1', port=50001)
+        self.udp_receiver = UDPReceiver(host='127.0.0.1', port=50001, print_msgs=False)
         self.udp_receiver.start_listener()
         self.udp_sender = UDPSender(host='127.0.0.1', port=50000)
         
@@ -177,8 +177,10 @@ class JacobsLadder:
         previous_keys = None
         try:
             while True:
-                # TODO: Replace shared memory implementation with UDP
-                pass
+                if previous_keys != self.udp_receiver.candidate_keys:
+                    print(self.udp_receiver.candidate_keys)
+                previous_keys = self.udp_receiver.candidate_keys
+    
         except KeyboardInterrupt:
             print("Exiting...")
 
