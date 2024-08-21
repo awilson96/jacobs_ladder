@@ -20,7 +20,7 @@ class MusicTheory:
     recognition and display, potential scales which can be played over currently suspended notes, representing 
     chords in the simplest harmonic form possible, and key determination.
     """
-    def __init__(self, print: bool = False, player: str = None):
+    def __init__(self, print_msgs: bool = False, player: str = None):
         """MusicTheory class takes a flag called print to indicate whether or not to print chords to the console, 
         (defaults to false).
 
@@ -52,7 +52,7 @@ class MusicTheory:
         self.history = InOutQueue(self.QUEUE_SIZE)
         
         # Jacob's Ladder
-        self.print = print
+        self.print = print_msgs
 
     def determine_chord(self, message_heap: list[list[int]]):
         """Based on the currently active notes in the message_heap, determine the chord
@@ -160,7 +160,7 @@ class MusicTheory:
 
             return most_common_scale
         else:
-            logging.warning(f"Queue is not yet populated with at least {self.QUEUE_SIZE} elements. Play at least 5 different chords to use this feature.")
+            logging.info(f"Queue is not yet populated with at least {self.QUEUE_SIZE} elements. Play at least 5 different chords to use this feature.")
             return None
     
 

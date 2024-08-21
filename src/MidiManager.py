@@ -30,7 +30,7 @@ class MidiController:
 
     def __init__(self, input_port: str = "jacobs_ladder", 
                  output_ports: list = list(map(str, range(12))), 
-                 print: bool = False,
+                 print_msgs: bool = False,
                  tuning: bool = False):
         """Class Constructor creates a MidiController object.  MidiController handles MIDI port management, 
         output port instance management, and sustain pedal management.
@@ -60,7 +60,7 @@ class MidiController:
         self.initialize_ports()
         
         # Set print settings
-        self.print = print
+        self.print = print_msgs
         self.logger.info("Printing to the terminal is enabled") if self.print else \
             self.logger.info("Printing to the terminal is disabled")
 
@@ -74,7 +74,7 @@ class MidiController:
         self.sustained_notes = []
         
         # Music Theory
-        self.music_theory = MusicTheory(print=self.print, player=input_port if input_port != "jacobs_ladder" else "User")
+        self.music_theory = MusicTheory(print_msgs=self.print, player=input_port if input_port != "jacobs_ladder" else "User")
         self.logger.info(f"Initializing MusicTheory...")
 
         # Tuning management
@@ -176,6 +176,8 @@ class MidiController:
             
             chord = self.music_theory.determine_chord(self.message_heap)
             key = self.music_theory.determine_key(self.message_heap)
+
+            pitch_adjust_message = None
             if self.tuning:
                 pitch_adjust_message = self.just_intonation.pitch_adjust_chord(
                                             message_heap=self.message_heap, 
@@ -187,11 +189,11 @@ class MidiController:
             if pitch_adjust_message:
                 pitch_bend_message, instance_idx = pitch_adjust_message
                 self.midi_out_ports[instance_idx].send_message(pitch_bend_message)
-                
+
             if self.print: 
-                print(chord)
-                print(key)
-                
+                print(f"{chord=}")
+                print(f"{key=}")
+            
             self.midi_out_ports[instance_index].send_message([status, note, velocity])
             self.udp_sender.send(self.message_heap)
 
@@ -312,6 +314,6 @@ if __name__ == "__main__":
     
     # Initialize MidiController with parsed flags
     midi_controller = MidiController(
-        print=args.print,
+        print_msgs=args.print,
         tuning=args.tuning
     )
