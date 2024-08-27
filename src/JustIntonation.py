@@ -92,7 +92,7 @@ class JustIntonation:
         """
         print(f"dt {dt}")
         
-        current_note, instance_index, _, _ = current_msg
+        current_note, instance_index, _, _, tuning = current_msg
         if len(message_heap) == 1:
             interval = self.get_intervals(notes=[self.root[0], current_note])
             offset = self.pitch_table[interval] - self.center_frequency

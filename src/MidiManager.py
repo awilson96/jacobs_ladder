@@ -173,7 +173,7 @@ class MidiController:
                         logging.warning(f"no instances are left! {self.instance_index}")
                         
             self.in_use_indices[note] = instance_index
-            heapq.heappush(self.message_heap, [note, instance_index, status, velocity])
+            heapq.heappush(self.message_heap, [note, instance_index, status, velocity, None])
             
             chord = self.music_theory.determine_chord(self.message_heap)
             key, candidate_keys = self.music_theory.determine_key(self.message_heap)
@@ -183,7 +183,7 @@ class MidiController:
             if self.tuning:
                 pitch_adjust_message = self.just_intonation.pitch_adjust_chord(
                                             message_heap=self.message_heap, 
-                                            current_msg=[note, instance_index, status, velocity], 
+                                            current_msg=[note, instance_index, status, velocity, None], 
                                             dt=dt, 
                                             chord=chord
                                             )
@@ -327,8 +327,13 @@ if __name__ == "__main__":
         except json.JSONDecodeError:
             print(f"Error: File {args.tuning} is not a valid JSON file.")
             exit(1)
-    
-    print(pitch_config)
+            
+    if pitch_config:
+        max_key_length = max(len(key) for key in pitch_config.keys())+1
+        print(f"{'Interval':<{max_key_length}}  Pitch Setting")
+        print('-' * (max_key_length + 16))  # Print a separator line
+        for key, value in pitch_config.items():
+            print(f"{key+":":<{max_key_length}}  {value}")
     
     # Initialize MidiController with parsed flags and static_tuning
     midi_controller = MidiController(
