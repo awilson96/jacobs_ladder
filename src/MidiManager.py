@@ -32,7 +32,8 @@ class MidiController:
     def __init__(self, input_port: str = "jacobs_ladder", 
                  output_ports: list = list(map(str, range(12))), 
                  print_msgs: bool = False,
-                 tuning: dict = None):
+                 tuning: dict = None,
+                 tuning_mode: str = None):
         """Class Constructor creates a MidiController object.  MidiController handles MIDI port management, 
         output port instance management, and sustain pedal management.
 
@@ -80,9 +81,17 @@ class MidiController:
 
         # Tuning management
         self.tuning = tuning
+        self.tuning_mode = tuning_mode
         self.just_intonation = JustIntonation(player=input_port if input_port != "jacobs_ladder" else "User")
         self.logger.info("Initializing JustIntonation...")
-        self.logger.info("Tuning is enabled") if self.tuning else self.logger.info("Tuning is disabled")
+        if self.tuning and self.tuning_mode: 
+            self.logger.info("Tuning is enabled")
+            self.logger.info(f"Mode is set to \"{self.tuning_mode}\" tuning")
+        else:
+            self.logger.info("Tuning is disabled")
+            
+        # Transposition Management
+        self.transpose = 0
         
         # Communication with Jacob
         if self.output_ports == list(map(str, range(12))):
@@ -95,7 +104,7 @@ class MidiController:
         self.set_midi_callback()
         self.start_listening()
         
-        self.logger.info("Exitting...")
+        self.logger.info("Exiting...")
 
     def initialize_ports(self):
         """
@@ -173,7 +182,7 @@ class MidiController:
                         logging.warning(f"no instances are left! {self.instance_index}")
                         
             self.in_use_indices[note] = instance_index
-            heapq.heappush(self.message_heap, [note, instance_index, status, velocity, None])
+            heapq.heappush(self.message_heap, [note + self.transpose, instance_index, status, velocity, None])
             
             chord = self.music_theory.determine_chord(self.message_heap)
             key, candidate_keys = self.music_theory.determine_key(self.message_heap)
@@ -274,6 +283,15 @@ class MidiController:
             if active_note in octaves:
                 return instance[notes.index(active_note)]
         return None
+    
+    def transpose_by(self, amount: int) -> None:
+        """Transpose by a given integer number of notes away from the root up or down
+
+        Args:
+            amount (int): a transposition amount in the range (-12, 12) inclusive
+        """
+        if -12 <= amount <= 12:
+            self.transpose = amount
 
     def turn_off_all_notes(self):
         """ Utility function used in troubleshooting/debugging. It is useful when handling hanging MIDI messages, 
@@ -312,8 +330,18 @@ if __name__ == "__main__":
     parser.add_argument('-p', '--print', action='store_true', help="Enable printing to the console.")
     parser.add_argument('-t', '--tuning', type=str, help="Path to a JSON pitch config.")
     
+    # Define mutually exclusive group for static and dynamic
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('-s', '--static', action='store_true', help="Enable static tuning.")
+    group.add_argument('-d', '--dynamic', action='store_true', help="Enable dynamic tuning.")
+    
     # Parse arguments
     args = parser.parse_args()
+    
+    # Ensure -s or -d can only be used if -t is provided
+    if (args.static or args.dynamic) and not args.tuning:
+        print("Error: The -s or -d flag requires the -t <config> flag to be provided.")
+        exit(1)
 
     # Load tuning from JSON file if -t flag is used
     pitch_config = None
@@ -329,14 +357,19 @@ if __name__ == "__main__":
             exit(1)
             
     if pitch_config:
-        max_key_length = max(len(key) for key in pitch_config.keys())+1
+        max_key_length = max(len(key) for key in pitch_config.keys()) + 1
         print(f"{'Interval':<{max_key_length}}  Pitch Setting")
         print('-' * (max_key_length + 16))  # Print a separator line
         for key, value in pitch_config.items():
             print(f"{key+":":<{max_key_length}}  {value}")
+            
+    # Determine if static or dynamic tuning is enabled
+    tuning_mode = 'static' if args.static else 'dynamic' if args.dynamic else None
+    print(f"Tuning mode: {tuning_mode}")
     
     # Initialize MidiController with parsed flags and static_tuning
     midi_controller = MidiController(
         print_msgs=args.print,
-        tuning=pitch_config
+        tuning=pitch_config,
+        tuning_mode=tuning_mode
     )
