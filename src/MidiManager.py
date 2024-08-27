@@ -1,5 +1,6 @@
 import argparse
 import heapq
+import json
 import logging
 import time
 import warnings
@@ -31,7 +32,7 @@ class MidiController:
     def __init__(self, input_port: str = "jacobs_ladder", 
                  output_ports: list = list(map(str, range(12))), 
                  print_msgs: bool = False,
-                 tuning: bool = False):
+                 tuning: dict = None):
         """Class Constructor creates a MidiController object.  MidiController handles MIDI port management, 
         output port instance management, and sustain pedal management.
 
@@ -307,15 +308,30 @@ if __name__ == "__main__":
     # Set up argument parser
     parser = argparse.ArgumentParser(description="Initialize the MidiController with specific settings.")
     
-    # Define the flags for print and tuning with default values
+    # Define the flags for print and tuning with a file path for tuning
     parser.add_argument('-p', '--print', action='store_true', help="Enable printing to the console.")
-    parser.add_argument('-t', '--tuning', action='store_true', help="Enable tuning.")
+    parser.add_argument('-t', '--tuning', type=str, help="Path to a JSON pitch config.")
     
     # Parse arguments
     args = parser.parse_args()
+
+    # Load tuning from JSON file if -t flag is used
+    pitch_config = None
+    if args.tuning:
+        try:
+            with open(args.tuning, 'r') as f:
+                pitch_config = json.load(f)
+        except FileNotFoundError:
+            print(f"Error: File {args.tuning} not found.")
+            exit(1)
+        except json.JSONDecodeError:
+            print(f"Error: File {args.tuning} is not a valid JSON file.")
+            exit(1)
     
-    # Initialize MidiController with parsed flags
+    print(pitch_config)
+    
+    # Initialize MidiController with parsed flags and static_tuning
     midi_controller = MidiController(
         print_msgs=args.print,
-        tuning=args.tuning
+        tuning=pitch_config
     )
