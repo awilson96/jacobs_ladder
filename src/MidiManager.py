@@ -82,13 +82,14 @@ class MidiController:
         # Tuning management
         self.tuning = tuning
         self.tuning_mode = tuning_mode
-        self.just_intonation = JustIntonation(player=input_port if input_port != "jacobs_ladder" else "User")
         self.logger.info("Initializing JustIntonation...")
         if self.tuning and self.tuning_mode: 
             self.logger.info("Tuning is enabled")
             self.logger.info(f"Mode is set to \"{self.tuning_mode}\" tuning")
         else:
             self.logger.info("Tuning is disabled")
+        self.just_intonation = JustIntonation(player=input_port if input_port != "jacobs_ladder" else "User", 
+                                              tuning_mode=tuning_mode)
             
         # Transposition Management
         self.transpose = 0
@@ -262,6 +263,25 @@ class MidiController:
 
         elif status == 169:
             self.turn_off_all_notes()
+            
+    def set_tuning_mode(self, tuning_mode: str = None) -> None:
+        """Change the tuning mode while running the MidiManager. Tuning options are static for static Just Intonation,
+        dynamic for dynamic Just Intonation, or None for Equal temperment (default).
+
+        Args:
+            tuning_mode (str, optional): static, dynamic, or None. Defaults to None.
+        """
+        previous_tuning_mode = self.just_intonation.tuning_mode.copy()
+        if tuning_mode:
+            if tuning_mode in ["static", "dynamic"]:
+                self.just_intonation.tuning_mode = tuning_mode
+                self.logger.info(f"Tuning mode state change: {previous_tuning_mode}->{tuning_mode}")
+            else:
+                self.logger.info("Tuning mode state change unsuccessful."
+                                 "Acceptable state change keys are static, dynamic, or None")
+        else:
+            self.just_intonation.tuning_mode = tuning_mode
+            self.logger.info(f"Tuning mode state change: {previous_tuning_mode}->Equal Temperment")
 
     def determine_octave(self, note: int):
         """

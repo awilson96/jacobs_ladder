@@ -13,12 +13,13 @@ class JustIntonation:
     Just Intonation is a class used for pitch manipulating individual notes such that the outcome of each chord and/or melodic sequence remains in perfect pitch with the currenlty suspended notes.
     The secondary goal of the class is to ensure that after silence, new notes must be in pitch with the previously played notes creating pitch drift as would be expected in true Just Intonation.
     """
-    def __init__(self, player: str = None):
+    def __init__(self, player: str = None, tuning_mode: str = None):
         self.logger = setup_logging(f"JustIntonation{player.capitalize()}")
         self.center_frequency = 8192
         self.pitch_table = {key: 8192 for key in range(-11, 12)}
         self.previous_root = [60, 0, 8192]
         self.root = [60, 0, 8192]
+        self.tuning_mode = tuning_mode
         
         self.calculate_pitch_table(offset=0)
         
