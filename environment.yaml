@@ -8,4 +8,6 @@ dependencies:
   - pandas
   - pip
   - pip:
+      - Appium-Python-Client
       - python-rtmidi
+      - selenium
