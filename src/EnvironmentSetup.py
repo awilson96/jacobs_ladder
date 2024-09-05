@@ -20,7 +20,8 @@ class EnvironmentSetup:
         self.winAppDriver = winAppDriver if winAppDriver else filedialog.askopenfilename(title="Select your WinAppDriver Executable Path")
 
         self.initialize_webdriver()
-        self.select_instrument(instrument="Rom1A 08-PIANO 1")
+        self.select_instrument(instrument_name="Rom1A 11-E.PIANO 1")
+        
 
     def initialize_webdriver(self) -> None:
         caps = DesktopOptions()
@@ -34,40 +35,22 @@ class EnvironmentSetup:
         
         self.driver.implicitly_wait(30)
 
-    def select_instrument(self, instrument: str) -> None:
-        """Select the instrument you want to change to
-
-        Args:
-            instrument (str): The string description of the software instrument in Analog Lab V
-        """
-        # TODO: Finish this function
-        button = self.driver.find_element(AppiumBy.NAME, instrument)
+    def __click__(self, search_str: str, keys: str = None):
+        button = self.driver.find_element(AppiumBy.NAME, search_str)
         editor = self.driver.create_web_element(list(button.values())[0])
-        for _ in range(5):
-            editor.send_keys(Keys.ARROW_UP)
-            sleep(3)
+        editor.click()
+        if keys:
+            editor.send_keys(keys)
+            editor.send_keys(Keys.RETURN)
+        sleep(0.5)
+
+    def select_instrument(self, instrument_name: str):
+        self.__click__(search_str="Play Panel toggle")
+        self.__click__(search_str="Searchbar", keys=instrument_name)
+        
 
 
 if __name__ == "__main__":
     analog_labV = r"C:/Program Files/Arturia/Analog Lab V/Analog Lab V.exe"
     winAppDriver = r"C:/Program Files (x86)/Windows Application Driver/WinAppDriver.exe"
     envSetup = EnvironmentSetup(analog_labV=analog_labV, winAppDriver=winAppDriver)
-
-    # caps = DesktopOptions()
-    # caps.set_capability("app", analog_labV)
-    # caps.set_capability("automationName", "Windows")
-    # caps.set_capability("newCommandTimeout", 60)
-
-    # driver = Webdriver.Remote(
-    #     command_executor='http://127.0.0.1:4723',
-    #     options=caps)
-    
-    # driver.implicitly_wait(30)
-
-    # driver.implicitly_wait(30)
-    # elm = driver.find_element(AppiumBy.NAME, "Text editor")
-    # editor = driver.create_web_element(list(elm.values())[0])
-    # for line in content:
-    #     editor.send_keys(line)
-    #     editor.send_keys(Keys.RETURN)
-    # editor.send_keys(Keys.CONTROL, "s")
