@@ -10,7 +10,7 @@ import pyautogui
 
 class EnvironmentSetup:
 
-    def __init__(self, analog_labV: str = None, winAppDriver: str = None, init_instrument: str = "Rom1A 11-E.PIANO 1", init: bool = True) -> None:
+    def __init__(self, analog_labV: str = None, winAppDriver: str = None, init_instrument: list[str] = ["Rom1A 11-E.PIANO 1"], init: bool = True) -> None:
         """Initialize the environment by taking in two paths.  One to the Analog Lab V and one to WinAppDriver
 
         Args:
@@ -120,28 +120,9 @@ class EnvironmentSetup:
                             instruments = input(
                                 "Enter the exact name of the instrument(s) separated by commas if there is more than one: ")
                             instruments_list = instruments.split(", ")
-                            if 12 % len(instruments_list) == 0:
-                                if len(instruments_list) == 1:
-                                    self.single_instrument(instrument_name=instruments_list[0])
-                                    break
-                                elif len(instruments_list) == 2:
-                                    self.two_instruments(instruments_list=instruments_list)
-                                    break
-                                elif len(instruments_list) == 3:
-                                    self.three_instruments(instruments_list=instruments_list)
-                                    break
-                                elif len(instruments_list) == 4:
-                                    self.four_instruments(instruments_list=instruments_list)
-                                    break
-                                elif len(instruments_list) == 6:
-                                    self.six_instruments(instruments_list=instruments_list)
-                                    break
-                                elif len(instruments_list) == 12:
-                                    self.twelve_instruments(instruments_list=instruments_list)
-                                    break
-                                else:
-                                    print(
-                                        "Invalid selection! Please enter a number of instruments that is evenly divisible by 12. \n")
+                            isValid = self.configure_instruments(instruments_list=instruments_list)
+                            if isValid:
+                                break
                     except KeyboardInterrupt:
                         print("Exiting Option 1...")
                 if choice.lower() in ["q", "quit", "exit"]:
@@ -149,6 +130,25 @@ class EnvironmentSetup:
                     break
         except KeyboardInterrupt:
             print("Exiting...")
+            
+    def configure_instruments(self, instruments_list: list[str]):
+        if 12 % len(instruments_list) == 0:
+            if len(instruments_list) == 1:
+                self.single_instrument(instrument_name=instruments_list[0])
+            elif len(instruments_list) == 2:
+                self.two_instruments(instruments_list=instruments_list)
+            elif len(instruments_list) == 3:
+                self.three_instruments(instruments_list=instruments_list)
+            elif len(instruments_list) == 4:
+                self.four_instruments(instruments_list=instruments_list)
+            elif len(instruments_list) == 6:
+                self.six_instruments(instruments_list=instruments_list)
+            elif len(instruments_list) == 12:
+                self.twelve_instruments(instruments_list=instruments_list)
+            return True
+        
+        print("Invalid selection! Please enter a number of instruments that is evenly divisible by 12. \n")
+        return False
             
     def single_instrument(self, instrument_name: str):
         [self.envInstances[i].change_instrument(instrument_name=instrument_name) for i in range(self.num_apps)]
