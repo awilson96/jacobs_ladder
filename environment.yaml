@@ -9,5 +9,6 @@ dependencies:
   - pip
   - pip:
       - Appium-Python-Client
+      - pyautogui
       - python-rtmidi
       - selenium
