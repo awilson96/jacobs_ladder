@@ -10,7 +10,8 @@ import pyautogui
 
 class EnvironmentSetup:
 
-    def __init__(self, analog_labV: str = None, winAppDriver: str = None, init_instruments: list[str] = ["Rom1A 11-E.PIANO 1"], init: bool = True) -> None:
+    def __init__(self, analog_labV: str = None, winAppDriver: str = None, loopMidi: str = None, 
+                 init_instruments: list[str] = ["Rom1A 11-E.PIANO 1"], init: bool = True) -> None:
         """Initialize the environment by taking in two paths.  One to the Analog Lab V and one to WinAppDriver
 
         Args:
@@ -21,6 +22,9 @@ class EnvironmentSetup:
             title="Select your Analog Lab Executable Path")
         self.winAppDriver = winAppDriver if winAppDriver else filedialog.askopenfilename(
             title="Select your WinAppDriver Executable Path")
+        self.loopMidi = loopMidi if loopMidi else filedialog.askopenfilename(
+            title="Select your loopMidi Executable Path"
+        )
         self.num_apps = 12
         self.moved = False
 
@@ -32,8 +36,9 @@ class EnvironmentSetup:
             init_instruments, str) else None
 
         if not self.init:
-            self.initialize_webdriver()
+            self.initialize_webdriver(executable_path=self.analog_labV)
         else:
+            self.initialize_webdriver(executable_path=self.loopMidi)
             self.envInstances = self.create_environment_setup(
                 init_instruments=init_instruments)
             [self.envInstances[instance_index].select_instrument(
@@ -120,14 +125,15 @@ class EnvironmentSetup:
             raise ValueError("Initializer list length must be evenly divisible by 12")
         for init_instrument in init_instruments:
             env = EnvironmentSetup(
-                analog_labV=self.analog_labV, winAppDriver=self.winAppDriver, init_instruments=init_instrument, init=False)
+                analog_labV=self.analog_labV, winAppDriver=self.winAppDriver, loopMidi="placeholder", 
+                init_instruments=init_instrument, init=False)
             envs.append(env)
         return envs
 
-    def initialize_webdriver(self) -> None:
+    def initialize_webdriver(self, executable_path: str) -> None:
         """Initialize the custom webdriver to work with windows applications"""
         caps = DesktopOptions()
-        caps.set_capability("app", self.analog_labV)
+        caps.set_capability("app", executable_path)
         caps.set_capability("automationName", "Windows")
         caps.set_capability("newCommandTimeout", 60)
 
@@ -277,8 +283,9 @@ class EnvironmentSetup:
 if __name__ == "__main__":
     analog_labV = r"C:/Program Files/Arturia/Analog Lab V/Analog Lab V.exe"
     winAppDriver = r"C:/Program Files (x86)/Windows Application Driver/WinAppDriver.exe"
+    loopMidi = r"C:/Program Files (x86)/Tobias Erichsen/loopMIDI/loopMIDI.exe"
     envSetup = EnvironmentSetup(
-        analog_labV=analog_labV, winAppDriver=winAppDriver, 
+        analog_labV=analog_labV, winAppDriver=winAppDriver, loopMidi=loopMidi,
         init_instruments=["Rom1A 11-E.PIANO 1", "Mark V EP", "Grand Piano 1", "Classic Jun Keys", "Pianos", "Dark Flute", 
                           "Lightway", "Rom1B 01-PIANO 4", "Rom1B 06-PIANO 5THS", "80's Bit", "Cathedral Lead", "Hacker"])
     
