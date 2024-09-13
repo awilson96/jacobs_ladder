@@ -10,7 +10,7 @@ import pyautogui
 
 class EnvironmentSetup:
 
-    def __init__(self, analog_labV: str = None, winAppDriver: str = None, init_instrument: list[str] = ["Rom1A 11-E.PIANO 1"], init: bool = True) -> None:
+    def __init__(self, analog_labV: str = None, winAppDriver: str = None, init_instruments: list[str] = ["Rom1A 11-E.PIANO 1"], init: bool = True) -> None:
         """Initialize the environment by taking in two paths.  One to the Analog Lab V and one to WinAppDriver
 
         Args:
@@ -27,14 +27,17 @@ class EnvironmentSetup:
         # Used to keep track of the previous commands web element
         self.current_editor = None
         self.play_panel_toggle = None
-        self.previous_instrument = init_instrument
         self.init = init
+        self.init_instrument = init_instruments if isinstance(
+            init_instruments, str) else None
 
         if not self.init:
             self.initialize_webdriver()
         else:
-            self.envInstances = self.create_environment_setup()
-            [self.envInstances[instance_index].select_instrument(instrument_name=init_instrument) for instance_index in range(12)]
+            self.envInstances = self.create_environment_setup(
+                init_instruments=init_instruments)
+            [self.envInstances[instance_index].select_instrument(
+                instrument_name=self.envInstances[instance_index].init_instrument) for instance_index in range(12)]
             self.menu()
 
     def __click__(self, search_str: str, keys: str = None):
@@ -66,10 +69,12 @@ class EnvironmentSetup:
         editor.click()
         x, y = pyautogui.position()
         pyautogui.mouseDown()
-        
-        if self.moved: pyautogui.dragTo(x=x-drag_distance, y=y, duration=1) 
-        else: pyautogui.dragTo(x=x+drag_distance, y=y, duration=1)
-        
+
+        if self.moved:
+            pyautogui.dragTo(x=x-drag_distance, y=y, duration=1)
+        else:
+            pyautogui.dragTo(x=x+drag_distance, y=y, duration=1)
+
         pyautogui.mouseUp()
 
         self.moved = not self.moved
@@ -81,18 +86,43 @@ class EnvironmentSetup:
             instrument_name (str): the exact name of an Analog Lab V instrument you wish to switch to (see Favorites)
         """
         self.current_editor.click()
-        self.current_editor.send_keys(Keys.CONTROL + Keys.SHIFT + Keys.HOME + Keys.BACKSPACE)
-        self.previous_instrument = instrument_name
+        self.current_editor.send_keys(
+            Keys.CONTROL + Keys.SHIFT + Keys.HOME + Keys.BACKSPACE)
         self.current_editor.send_keys(instrument_name)
         self.__click_and_drag__()
 
-    def create_environment_setup(self) -> list[object]:
+    def create_environment_setup(self, init_instruments: list[str]) -> list[object]:
         """Create a list of instances with initialized webdrivers capable of interacting with multiple EnvironmentSetup classes at once
-        
+
         Returns:
             list: a list of EnvironmentSetup classes with initialized webdrivers for interacting with the windows application
+
+        Raises:
+            ValueError: If the list length is not evenly divisible by self.num_apps (12)
+
+        Returns:
+            list[object]: a list of self.num_apps (12) EnvironmentSetup() objects
         """
-        return [EnvironmentSetup(analog_labV=self.analog_labV, winAppDriver=self.winAppDriver, init_instrument=self.previous_instrument, init=False) for _ in range(self.num_apps)]
+        envs = []
+        if len(init_instruments) == 1:
+            init_instruments = init_instruments * 12
+        elif len(init_instruments) == 2:
+            init_instruments = init_instruments * 6
+        elif len(init_instruments) == 3:
+            init_instruments = init_instruments * 4
+        elif len(init_instruments) == 4:
+            init_instruments = init_instruments * 3
+        elif len(init_instruments) == 6:
+            init_instruments = init_instruments * 2
+        elif len(init_instruments) == 12:
+            pass
+        else:
+            raise ValueError("Initializer list length must be evenly divisible by 12")
+        for init_instrument in init_instruments:
+            env = EnvironmentSetup(
+                analog_labV=self.analog_labV, winAppDriver=self.winAppDriver, init_instruments=init_instrument, init=False)
+            envs.append(env)
+        return envs
 
     def initialize_webdriver(self) -> None:
         """Initialize the custom webdriver to work with windows applications"""
@@ -120,7 +150,8 @@ class EnvironmentSetup:
                             instruments = input(
                                 "Enter the exact name of the instrument(s) separated by commas if there is more than one: ")
                             instruments_list = instruments.split(", ")
-                            isValid = self.configure_instruments(instruments_list=instruments_list)
+                            isValid = self.configure_instruments(
+                                instruments_list=instruments_list)
                             if isValid:
                                 break
                     except KeyboardInterrupt:
@@ -130,7 +161,7 @@ class EnvironmentSetup:
                     break
         except KeyboardInterrupt:
             print("Exiting...")
-            
+
     def configure_instruments(self, instruments_list: list[str]):
         if 12 % len(instruments_list) == 0:
             if len(instruments_list) == 1:
@@ -146,13 +177,14 @@ class EnvironmentSetup:
             elif len(instruments_list) == 12:
                 self.twelve_instruments(instruments_list=instruments_list)
             return True
-        
+
         print("Invalid selection! Please enter a number of instruments that is evenly divisible by 12. \n")
         return False
-            
+
     def single_instrument(self, instrument_name: str):
-        [self.envInstances[i].change_instrument(instrument_name=instrument_name) for i in range(self.num_apps)]
-        
+        [self.envInstances[i].change_instrument(
+            instrument_name=instrument_name) for i in range(self.num_apps)]
+
     def two_instruments(self, instruments_list: list[str]):
         for i in range(self.num_apps):
             if i % 2 == 0:
@@ -161,7 +193,7 @@ class EnvironmentSetup:
             else:
                 self.envInstances[i].change_instrument(
                     instrument_name=instruments_list[1])
-                
+
     def three_instruments(self, instruments_list: list[str]):
         for i in range(self.num_apps):
             if i % 3 == 0:
@@ -173,7 +205,7 @@ class EnvironmentSetup:
             else:
                 self.envInstances[i].change_instrument(
                     instrument_name=instruments_list[2])
-                
+
     def four_instruments(self, instruments_list: list[str]):
         for i in range(self.num_apps):
             if i % 4 == 0:
@@ -188,7 +220,7 @@ class EnvironmentSetup:
             else:
                 self.envInstances[i].change_instrument(
                     instrument_name=instruments_list[3])
-                
+
     def six_instruments(self, instruments_list: list[str]):
         for i in range(self.num_apps):
             if i % 6 == 0:
@@ -209,7 +241,7 @@ class EnvironmentSetup:
             else:
                 self.envInstances[i].change_instrument(
                     instrument_name=instruments_list[5])
-                
+
     def twelve_instruments(self, instruments_list: list[str]):
         for i in range(self.num_apps):
             self.envInstances[i].change_instrument(
@@ -246,6 +278,8 @@ if __name__ == "__main__":
     analog_labV = r"C:/Program Files/Arturia/Analog Lab V/Analog Lab V.exe"
     winAppDriver = r"C:/Program Files (x86)/Windows Application Driver/WinAppDriver.exe"
     envSetup = EnvironmentSetup(
-        analog_labV=analog_labV, winAppDriver=winAppDriver, init_instrument="Rom1A 11-E.PIANO 1")
-
-
+        analog_labV=analog_labV, winAppDriver=winAppDriver, 
+        init_instruments=["Rom1A 11-E.PIANO 1", "Mark V EP", "Grand Piano 1", "Classic Jun Keys", "Pianos", "Dark Flute", 
+                          "Lightway", "Rom1B 01-PIANO 4", "Rom1B 06-PIANO 5THS", "80's Bit", "Cathedral Lead", "Hacker"])
+    
+    
