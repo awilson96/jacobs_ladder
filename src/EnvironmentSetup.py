@@ -5,26 +5,34 @@ from time import sleep
 from appium.webdriver.common.appiumby import AppiumBy
 from selenium.webdriver.common.keys import Keys
 from .Favorites import Favorites
+import subprocess
 import pyautogui
 
 
 class EnvironmentSetup:
 
-    def __init__(self, analog_labV: str = None, winAppDriver: str = None, loopMidi: str = None, 
+    def __init__(self, analog_labV: str = None, winAppDriver: str = None, loopMidi: str = None, midiOX: str = None,
                  init_instruments: list[str] = ["Rom1A 11-E.PIANO 1"], init: bool = True) -> None:
         """Initialize the environment by taking in two paths.  One to the Analog Lab V and one to WinAppDriver
 
         Args:
             analog_labV (str, optional): Path to Analog Lab V. Defaults to None.
             winAppDriver (str, optional): Path to WinAppDriver. Defaults to None.
+            loopMidi (str, optional): Path to loopMidi. Defaults to None.
+            midiOX (str, optional): Path to midiOX. Defaults to None.
+            init_instruments (list[str], optional): a list of instruments whose length is divisible by 12. Defaults to ["Rom1A 11-E.PIANO 1"].
+            init (bool, optional): True for main controller, use false when instantiating other instances. Defaults to True.
         """
         self.analog_labV = analog_labV if analog_labV else filedialog.askopenfilename(
             title="Select your Analog Lab Executable Path")
         self.winAppDriver = winAppDriver if winAppDriver else filedialog.askopenfilename(
             title="Select your WinAppDriver Executable Path")
-        self.loopMidi = loopMidi if loopMidi else filedialog.askopenfilename(
-            title="Select your loopMidi Executable Path"
-        )
+        self.loopMidi = loopMidi
+        self.midiOX = midiOX if midiOX else filedialog.askopenfilename(
+            title="Select your midiOX Executable Path")
+        
+        if loopMidi: subprocess.Popen(self.loopMidi)
+        
         self.num_apps = 12
         self.moved = False
 
@@ -38,7 +46,11 @@ class EnvironmentSetup:
         if not self.init:
             self.initialize_webdriver(executable_path=self.analog_labV)
         else:
-            self.initialize_webdriver(executable_path=self.loopMidi)
+            if loopMidi:
+                self.initialize_webdriver(executable_path=self.loopMidi)
+                self.create_loop_midi_ports()         
+            self.initialize_webdriver(executable_path=self.midiOX)
+            self.initialize_webdriver(executable_path=self.midiOX)
             self.envInstances = self.create_environment_setup(
                 init_instruments=init_instruments)
             [self.envInstances[instance_index].select_instrument(
@@ -84,6 +96,45 @@ class EnvironmentSetup:
 
         self.moved = not self.moved
 
+    def create_loop_midi_ports(self):
+        """Consistently create the necissary virtual Midi ports needed for the application to run
+
+        Raises:
+            NotImplementedError: Used to save code, I'll admit it's kinda hacky :/
+        """
+        try:    
+            scroll_button = self.driver.find_element(AppiumBy.NAME, "Position")
+            scroll_editor = self.driver.create_web_element(list(scroll_button.values())[0])
+            scroll_editor.click()
+            plus_button = self.driver.find_element(AppiumBy.NAME, "+")
+            plus_editor = self.driver.create_web_element(list(plus_button.values())[0])
+            plus_editor.click()
+            plus_editor.send_keys(Keys.UP + Keys.DOWN)
+            minus_button = self.driver.find_element(AppiumBy.NAME, "-")
+            minus_editor = self.driver.create_web_element(list(minus_button.values())[0])
+            minus_editor.click()
+            for _ in range(26):
+                minus_editor.click()
+            raise NotImplementedError("Throw into the except to save code")
+        except Exception as e:
+            plus_button = self.driver.find_element(AppiumBy.NAME, "+")
+            plus_editor = self.driver.create_web_element(list(plus_button.values())[0])
+            plus_editor.click()
+            plus_editor.send_keys(Keys.UP + Keys.DOWN)
+            minus_button = self.driver.find_element(AppiumBy.NAME, "-")
+            minus_editor = self.driver.create_web_element(list(minus_button.values())[0])
+            minus_editor.click()
+            for i in range(26):
+                if i < 24:
+                    plus_editor.send_keys(Keys.RIGHT + Keys.BACK_SPACE + str(i))
+                elif i == 24:
+                    plus_editor.send_keys(Keys.RIGHT + Keys.BACK_SPACE + "jacobs_ladder")
+                elif i == 25:
+                    plus_editor.send_keys(Keys.RIGHT + Keys.BACK_SPACE + "jacob")
+                plus_editor.click()
+
+        self.__click__("Close")
+
     def change_instrument(self, instrument_name: str):
         """After an initial configuration has been setup, change an instance to a different instrument
 
@@ -93,7 +144,7 @@ class EnvironmentSetup:
         self.current_editor.click()
         self.current_editor.send_keys(
             Keys.CONTROL + Keys.SHIFT + Keys.HOME + Keys.BACKSPACE)
-        self.current_editor.send_keys(instrument_name)
+        self.current_editor.send_keys(instrument_name + Keys.ENTER)
         self.__click_and_drag__()
 
     def create_environment_setup(self, init_instruments: list[str]) -> list[object]:
@@ -125,7 +176,7 @@ class EnvironmentSetup:
             raise ValueError("Initializer list length must be evenly divisible by 12")
         for init_instrument in init_instruments:
             env = EnvironmentSetup(
-                analog_labV=self.analog_labV, winAppDriver=self.winAppDriver, loopMidi="placeholder", 
+                analog_labV=self.analog_labV, winAppDriver=self.winAppDriver, loopMidi=None, midiOX="placeholder",
                 init_instruments=init_instrument, init=False)
             envs.append(env)
         return envs
@@ -284,9 +335,7 @@ if __name__ == "__main__":
     analog_labV = r"C:/Program Files/Arturia/Analog Lab V/Analog Lab V.exe"
     winAppDriver = r"C:/Program Files (x86)/Windows Application Driver/WinAppDriver.exe"
     loopMidi = r"C:/Program Files (x86)/Tobias Erichsen/loopMIDI/loopMIDI.exe"
+    midiOX = r"C:/Program Files (x86)/MIDIOX/midiox.exe"
     envSetup = EnvironmentSetup(
-        analog_labV=analog_labV, winAppDriver=winAppDriver, loopMidi=loopMidi,
-        init_instruments=["Rom1A 11-E.PIANO 1", "Mark V EP", "Grand Piano 1", "Classic Jun Keys", "Pianos", "Dark Flute", 
-                          "Lightway", "Rom1B 01-PIANO 4", "Rom1B 06-PIANO 5THS", "80's Bit", "Cathedral Lead", "Hacker"])
-    
-    
+        analog_labV=analog_labV, winAppDriver=winAppDriver, loopMidi=loopMidi, midiOX=midiOX,
+        init_instruments=["Rom1A 11-E.PIANO 1", "Mark V EP", "Butter"])
