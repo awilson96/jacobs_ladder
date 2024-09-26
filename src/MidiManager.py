@@ -4,6 +4,7 @@ import json
 import logging
 import time
 import warnings
+from copy import copy, deepcopy
 
 import rtmidi
 
@@ -118,7 +119,8 @@ class MidiController:
         # Initialize MIDI input port
         try:
             available_input_ports = self.midi_in.get_ports()
-            # print(f"available_input_ports \n{available_input_ports}")
+            if self.print:
+                print(f"available_input_ports \n{available_input_ports}")
             input_port_index = None
             for port in available_input_ports:
                 if port.split(" ")[0] == (self.input_port):
@@ -181,7 +183,6 @@ class MidiController:
                     logging.warning(f"no instances are left! {instance_index}")
                         
             self.in_use_indices[note] = instance_index
-            print(self.in_use_indices[note], self.in_use_indices)
             heapq.heappush(self.message_heap, [note + self.transpose, instance_index, status, velocity, None])
             
             chord = self.music_theory.determine_chord(self.message_heap)
@@ -212,12 +213,10 @@ class MidiController:
         elif status in range(128, 144):
             instance_index = self.in_use_indices[note]
             self.midi_out_ports[instance_index].send_message([status, note, velocity])
-
             if not self.sustain:
                 # Delete only the first occurance of note in self.message_heap
                 for index, sublist in enumerate(self.message_heap):
                     if sublist[0] == note:
-                        print(f"self.message_heap[index] {self.message_heap[index]}")
                         del self.message_heap[index]
                         break
                 heapq.heapify(self.message_heap)
@@ -240,18 +239,36 @@ class MidiController:
                 self.sustain = False
                 for instance_index in range(12):
                     self.midi_out_ports[instance_index].send_message([status, 64, 0])
-                for sus_note in self.sustained_notes:
+                
+                sus_notes_copy = deepcopy(self.sustained_notes)
+                multiple_played_notes = []
+                for sus_note in sus_notes_copy:
                     instance_index = self.in_use_indices[sus_note[0]]
-                    for index, sublist in enumerate(self.message_heap):
-                        if sublist[0] == sus_note[0]:
-                            del self.message_heap[index]
-                            break
-                    if sus_note[0] not in [sublist[0] for sublist in self.message_heap]:
+                    self.delete_suspended_note(sus_note=sus_note)
+                    if instance_index or instance_index == 0:
                         if sus_note[1] not in [sublist[1] for sublist in self.message_heap]:
                             heapq.heappush(self.instance_index, instance_index)
-                    del self.in_use_indices[sus_note[0]]
+                            del self.in_use_indices[sus_note[0]]
+                        else:
+                            multiple_played_notes.append(sus_note)
 
+                if not self.message_heap:
+                    self.in_use_indices = {}
+                else:
+                    counter = 0
+                    length = len([note[0] for note in self.in_use_indices.items()])
+                    while sorted([note[0] for note in self.in_use_indices.items()]) != sorted([note[0] for note in self.message_heap]):
+                        if counter > 1000:
+                            logging.warning("Loop is misbehaving or you just held the sustain pedal for a really long time!")
+                            break
+                        for duplicate_note in [note[0] for note in self.in_use_indices.items()]:
+                            counter += 1
+                            if duplicate_note not in [note[0] for note in self.message_heap]:
+                                del self.in_use_indices[duplicate_note]
+                                break
+                
                 heapq.heapify(self.message_heap)
+                sus_notes_copy = []
                 self.sustained_notes = []
         
         elif status in range(176, 192) and note == 1:
@@ -305,6 +322,12 @@ class MidiController:
             if active_note in octaves:
                 return instance[notes.index(active_note)]
         return None
+    
+    def delete_suspended_note(self, sus_note: list):
+        for index, sublist in enumerate(self.message_heap):
+            if sublist[0] == sus_note[0]:
+                del self.message_heap[index]
+                return
     
     def transpose_by(self, amount: int) -> None:
         """Transpose by a given integer number of notes away from the root up or down
