@@ -178,11 +178,10 @@ class MidiController:
                 if note not in [msg_note[0] for msg_note in self.message_heap]:
                     instance_index = heapq.heappop(self.instance_index)
                 else:
-                    instance_index = self.in_use_indices[note]
-                    if not instance_index:
-                        logging.warning(f"no instances are left! {self.instance_index}")
+                    logging.warning(f"no instances are left! {instance_index}")
                         
             self.in_use_indices[note] = instance_index
+            print(self.in_use_indices[note], self.in_use_indices)
             heapq.heappush(self.message_heap, [note + self.transpose, instance_index, status, velocity, None])
             
             chord = self.music_theory.determine_chord(self.message_heap)
@@ -218,13 +217,13 @@ class MidiController:
                 # Delete only the first occurance of note in self.message_heap
                 for index, sublist in enumerate(self.message_heap):
                     if sublist[0] == note:
+                        print(f"self.message_heap[index] {self.message_heap[index]}")
                         del self.message_heap[index]
                         break
                 heapq.heapify(self.message_heap)
-                if instance_index not in [sublist[1] for sublist in self.message_heap]:
-                    if instance_index not in self.instance_index:
-                        heapq.heappush(self.instance_index, instance_index)
-                    del self.in_use_indices[note]
+                if instance_index not in self.instance_index:
+                    heapq.heappush(self.instance_index, instance_index)
+                del self.in_use_indices[note]
 
             else:
                 heapq.heappush(self.sustained_notes, [note, instance_index, status, velocity])
@@ -250,7 +249,7 @@ class MidiController:
                     if sus_note[0] not in [sublist[0] for sublist in self.message_heap]:
                         if sus_note[1] not in [sublist[1] for sublist in self.message_heap]:
                             heapq.heappush(self.instance_index, instance_index)
-                        del self.in_use_indices[sus_note[0]]
+                    del self.in_use_indices[sus_note[0]]
 
                 heapq.heapify(self.message_heap)
                 self.sustained_notes = []
@@ -295,6 +294,9 @@ class MidiController:
         """
         notes= list(map(lambda sublist: sublist[0], self.message_heap))
         instance= list(map(lambda sublist: sublist[1], self.message_heap))
+
+        if note in notes:
+            return instance[notes.index(note)]
 
         octaves= [octave for octave in range(note + 12, 109, 12)]
         octaves += [octave for octave in range(note - 12, 20, -12)]
