@@ -193,6 +193,8 @@ class MidiController:
             
             chord = self.music_theory.determine_chord(self.message_heap)
             key, candidate_keys = self.music_theory.determine_key(self.message_heap)
+            if self.print_msgs:
+                print(f"key: {key}")
             self.udp_sender.send(candidate_keys)
 
             pitch_adjust_message = None
@@ -201,11 +203,6 @@ class MidiController:
                 self.message_heap = message_heap
 
                 self.midi_out_ports[tuning_index].send_message(pitch_bend_message)
-
-            if self.print_msgs: 
-                print(f"{chord=}")
-                print(f"{key=}")
-                print(f"{candidate_keys}")
             
             self.midi_out_ports[instance_index].send_message([status, note, velocity])
             self.udp_sender.send(self.message_heap)

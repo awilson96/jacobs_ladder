@@ -76,17 +76,17 @@ class MusicTheory:
             return f" "
         elif len(intervals) == 1:
             diads = self.get_diad(intervals)
-            if self.print: print(diads)   
+            # if self.print: print(diads)   
             return f"{diads}"      
             
         elif len(intervals) == 2:      
             triad_log, triad_internal = self.get_triad(intervals, notes)
-            if self.print: print(triad_log)
+            # if self.print: print(triad_log)
             return triad_internal      
         
         elif len(intervals) == 3:      
             tetrad = self.get_tetrad(intervals, notes)
-            if self.print: print(tetrad)
+            # if self.print: print(tetrad)
             return tetrad
         else:
             return None
@@ -147,7 +147,8 @@ class MusicTheory:
             oldest_frame = set(oldest_frame)
 
             if self.key in current_frame and self.key is not None:
-                return self.key
+                if "Ionian" in self.key:
+                    return self.key
             for scale_name in current_frame:
                 if "Ionian" in scale_name:
                     self.key = scale_name
