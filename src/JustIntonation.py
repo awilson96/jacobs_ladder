@@ -2,6 +2,7 @@ from collections import Counter
 from .Logging import setup_logging
 
 from .Enums import Pitch
+from .Utilities import determine_octave
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
@@ -13,12 +14,13 @@ class JustIntonation:
     Just Intonation is a class used for pitch manipulating individual notes such that the outcome of each chord and/or melodic sequence remains in perfect pitch with the currenlty suspended notes.
     The secondary goal of the class is to ensure that after silence, new notes must be in pitch with the previously played notes creating pitch drift as would be expected in true Just Intonation.
     """
-    def __init__(self, player: str = None, tuning_mode: str = None):
+    def __init__(self, player: str = None, tuning: dict = None, tuning_mode: str = None):
         self.logger = setup_logging(f"JustIntonation{player.capitalize()}")
         self.center_frequency = 8192
         self.pitch_table = {key: 8192 for key in range(-11, 12)}
-        self.previous_root = [60, 0, 8192]
-        self.root = [60, 0, 8192]
+        self.previous_root = 60
+        self.root = 60
+        self.tuning = tuning
         self.tuning_mode = tuning_mode
         
         self.calculate_pitch_table(offset=0)
@@ -56,17 +58,16 @@ class JustIntonation:
                 return -1 * (intervals[0] % 12)
         return intervals
 
-    def get_pitch_bend_message(self, message_heap_elem: list, pitch_bend_amount: int):
+    def get_pitch_bend_message(self, message_heap_elem: list):
         """
         Gets the formed MIDI pitch bend message to be sent by the MidiManager
 
         Args:
-            message_heap_elem (list): a singular message_heap list represnting a single note plus metadata of the form [note, instance_index, status, velocity]
-            pitch_bend_amount (int): number from 0-16383, 8192 is no tuning, 0 is max tune down, 16383 is max tune up
+            message_heap_elem (list): a singular message_heap list representing a single note plus metadata of the form [note, instance_index, status, velocity, pitch]
         """
 
         # Ensure pitch bend amount is within the valid range
-        pitch_bend_amount = max(0, min(16383, pitch_bend_amount))
+        pitch_bend_amount = max(0, min(16383, message_heap_elem[4]))
 
         # Calculate the LSB (Least Significant Byte) and MSB (Most Significant Byte) of the pitch bend value
         lsb = pitch_bend_amount & 0x7F
@@ -80,7 +81,7 @@ class JustIntonation:
 
         return pitch_bend_message
 
-    def pitch_adjust_chord(self, message_heap: list[list], current_msg: list, dt: float, chord=None):
+    def get_tuning_info(self, message_heap: list[list], current_msg: list, dt: float, chord=None):
         """Adjust the pitch of individual notes within a given chord
         If the chord is unknown then it will be tuned using intervals instead
 
@@ -91,38 +92,58 @@ class JustIntonation:
         Returns:
             list[tuple(pitch_bend_message, instance_index)]: a list of actions in the form of pitch bend messages to be sent by certain instance indices.
         """
-        print(f"dt {dt}")
-        
-        current_note, instance_index, _, _, tuning = current_msg
-        if len(message_heap) == 1:
-            interval = self.get_intervals(notes=[self.root[0], current_note])
-            offset = self.pitch_table[interval] - self.center_frequency
-            self.calculate_pitch_table(offset=offset)
-            self.root = (current_note, instance_index, self.pitch_table[interval])
-            print(f"current_note {current_note}")
-            print(f"instance_index {instance_index}")
-            print(f"interval {interval}")
-            print(f"offset {offset}")
-            print(self.pitch_table)
-            print(self.root)
-            print()
-            
-        # TODO: Handle different ordering of notes by using dt from MidiController 
-        
-        if dt <= 0.01:
-            print("fast")
-        else:
+        if self.tuning_mode == "dynamic":
             pass
         
-        # Get the interval between the current root and the current note for possible tuning
-        interval = self.get_intervals(notes=[self.root[0], current_note])
-        pitch = self.pitch_table[interval]
-        pitch_bend_message = self.get_pitch_bend_message(message_heap_elem=current_msg, pitch_bend_amount=pitch)
-        print(f"interval {interval}")
-        print(f"pitch {pitch}")
-        print(f"pitch_bend_message {pitch_bend_message}")
-        print()
-        return pitch_bend_message, instance_index
+        elif self.tuning_mode == "static":
+            note = current_msg[0]
+            tuning_index = determine_octave(message_heap=message_heap, note=note)
+            octaves = [octave for octave in range(self.root + 12, 109, 12)]
+            octaves += [octave for octave in range(self.root - 12, 20, -12)]
+            octaves += [self.root]
+
+            current_msg_index = message_heap.index(current_msg)
+            if note in octaves:                
+                message_heap[current_msg_index][4] = 8192
+            else:
+                min_diff = (-1, 108)
+                differences = [(note - oct) for oct in octaves]
+                
+                for idx, diff in enumerate(differences):
+                    if abs(diff) < min_diff[1]:
+                        min_diff = (idx, abs(diff))
+                shortest_difference = differences[min_diff[0]]
+                if shortest_difference == -1:
+                    message_heap[message_heap.index(current_msg)][4] = self.tuning["minor_second_down"]
+                elif shortest_difference == -2:
+                    message_heap[message_heap.index(current_msg)][4] = self.tuning["major_second_down"]
+                elif shortest_difference == -3:
+                    message_heap[message_heap.index(current_msg)][4] = self.tuning["minor_third_down"]
+                elif shortest_difference == -4:
+                    message_heap[message_heap.index(current_msg)][4] = self.tuning["major_third_down"]
+                elif shortest_difference == -5:
+                    message_heap[message_heap.index(current_msg)][4] = self.tuning["perfect_fourth_down"]
+                elif shortest_difference == -6:
+                    message_heap[message_heap.index(current_msg)][4] = self.tuning["tritone_down"]
+                elif shortest_difference == 1:
+                    message_heap[message_heap.index(current_msg)][4] = self.tuning["minor_second_up"]
+                elif shortest_difference == 2:
+                    message_heap[message_heap.index(current_msg)][4] = self.tuning["major_second_up"]
+                elif shortest_difference == 3:
+                    message_heap[message_heap.index(current_msg)][4] = self.tuning["minor_third_up"]
+                elif shortest_difference == 4:
+                    message_heap[message_heap.index(current_msg)][4] = self.tuning["major_third_up"]
+                elif shortest_difference == 5:
+                    message_heap[message_heap.index(current_msg)][4] = self.tuning["perfect_fourth_up"]
+                elif shortest_difference == 6:
+                    message_heap[message_heap.index(current_msg)][4] = self.tuning["tritone_up"]
+                else:
+                    print("something weird happened")
+
+            pitch_bend_msg = self.get_pitch_bend_message(message_heap_elem=message_heap[current_msg_index])
+    
+            return tuning_index, pitch_bend_msg, message_heap
+            
         
     def get_diad_pitch(self, interval: int):
         """Given an interval between two notes, return the analog pitch value expressed as a range from 0-16383 

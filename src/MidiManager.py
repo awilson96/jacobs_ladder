@@ -11,6 +11,7 @@ import rtmidi
 from .JustIntonation import JustIntonation
 from .MusicTheory import MusicTheory
 from .Udp import UDPSender, UDPReceiver
+from .Utilities import determine_octave
 from .Logging import setup_logging
 
 __author__ = "Alex Wilson"
@@ -39,8 +40,11 @@ class MidiController:
         output port instance management, and sustain pedal management.
 
         Args:
-            input_port (str, optional): input port name. Defaults to "jacobs_ladder 2".
-            output_ports (list, optional): output port name. Defaults to a list on integers from 0-15.
+            input_port (str, optional): input port name. Defaults to "jacobs_ladder".
+            output_ports (list, optional): output port name. Defaults to list(map(str, range(12))).
+            print_msgs (bool, optional): True if you wish to print msgs to the console. Defaults to False.
+            tuning (dict, optional): a dictionary giving the controller its tuning. Defaults to None.
+            tuning_mode (str, optional): static, dynamic, or None for no tuning. Defaults to None.
         """
         # Set up logging
         if input_port == "jacobs_ladder":
@@ -58,14 +62,15 @@ class MidiController:
         self.output_ports = output_ports
         self.logger.info(f"Input port: {input_port}")
         self.logger.info(f"Output ports: {output_ports}")
-
-        # Create midi in and midi out virtual port objects
-        self.initialize_ports()
         
         # Set print settings
-        self.print = print_msgs
-        self.logger.info("Printing to the terminal is enabled") if self.print else \
+        self.print_msgs = print_msgs
+        print(self.print_msgs)
+        self.logger.info("Printing to the terminal is enabled") if self.print_msgs else \
             self.logger.info("Printing to the terminal is disabled")
+        
+        # Create midi in and midi out virtual port objects
+        self.initialize_ports()
 
         # Output port instance management
         self.instance_index = list(range(12))
@@ -77,7 +82,7 @@ class MidiController:
         self.sustained_notes = []
         
         # Music Theory
-        self.music_theory = MusicTheory(print_msgs=self.print, player=input_port if input_port != "jacobs_ladder" else "User")
+        self.music_theory = MusicTheory(print_msgs=self.print_msgs, player=input_port if input_port != "jacobs_ladder" else "User")
         self.logger.info(f"Initializing MusicTheory...")
 
         # Tuning management
@@ -90,6 +95,7 @@ class MidiController:
         else:
             self.logger.info("Tuning is disabled")
         self.just_intonation = JustIntonation(player=input_port if input_port != "jacobs_ladder" else "User", 
+                                              tuning=self.tuning,
                                               tuning_mode=tuning_mode)
             
         # Transposition Management
@@ -119,7 +125,7 @@ class MidiController:
         # Initialize MIDI input port
         try:
             available_input_ports = self.midi_in.get_ports()
-            if self.print:
+            if self.print_msgs:
                 print(f"available_input_ports \n{available_input_ports}")
             input_port_index = None
             for port in available_input_ports:
@@ -175,7 +181,7 @@ class MidiController:
         status, note, velocity = payload
 
         if status in range(144, 160):
-            instance_index = self.determine_octave(note)
+            instance_index = determine_octave(message_heap=self.message_heap, note=note)
             if instance_index is None:
                 if note not in [msg_note[0] for msg_note in self.message_heap]:
                     instance_index = heapq.heappop(self.instance_index)
@@ -191,18 +197,13 @@ class MidiController:
 
             pitch_adjust_message = None
             if self.tuning:
-                pitch_adjust_message = self.just_intonation.pitch_adjust_chord(
-                                            message_heap=self.message_heap, 
-                                            current_msg=[note, instance_index, status, velocity, None], 
-                                            dt=dt, 
-                                            chord=chord
-                                            )
+                tuning_index, pitch_bend_message, message_heap = self.just_intonation.get_tuning_info(message_heap=self.message_heap, current_msg=[note, instance_index, status, velocity, None], dt=dt, chord=chord)
+                self.message_heap = message_heap
+                print(message_heap)
 
-            if pitch_adjust_message:
-                pitch_bend_message, instance_idx = pitch_adjust_message
-                self.midi_out_ports[instance_idx].send_message(pitch_bend_message)
+                self.midi_out_ports[tuning_index].send_message(pitch_bend_message)
 
-            if self.print: 
+            if self.print_msgs: 
                 print(f"{chord=}")
                 print(f"{key=}")
                 print(f"{candidate_keys}")
@@ -298,30 +299,6 @@ class MidiController:
         else:
             self.just_intonation.tuning_mode = tuning_mode
             self.logger.info(f"Tuning mode state change: {previous_tuning_mode}->Equal Temperment")
-
-    def determine_octave(self, note: int):
-        """
-        Determine if the current note is an octave of any of the currently active notes.
-
-        Args:
-            note (int): an active note to check against self.message_heap
-
-        Returns:
-            int: returns the instance index if the current note is an octave multiple of an active note and None otherwise
-        """
-        notes= list(map(lambda sublist: sublist[0], self.message_heap))
-        instance= list(map(lambda sublist: sublist[1], self.message_heap))
-
-        if note in notes:
-            return instance[notes.index(note)]
-
-        octaves= [octave for octave in range(note + 12, 109, 12)]
-        octaves += [octave for octave in range(note - 12, 20, -12)]
-
-        for active_note in notes:
-            if active_note in octaves:
-                return instance[notes.index(active_note)]
-        return None
     
     def delete_suspended_note(self, sus_note: list):
         for index, sublist in enumerate(self.message_heap):
@@ -411,10 +388,12 @@ if __name__ == "__main__":
     # Determine if static or dynamic tuning is enabled
     tuning_mode = 'static' if args.static else 'dynamic' if args.dynamic else None
     print(f"Tuning mode: {tuning_mode}")
+    print(f"args.print {args.print}")
+    print_msgs = args.print
     
     # Initialize MidiController with parsed flags and static_tuning
     midi_controller = MidiController(
-        print_msgs=args.print,
+        print_msgs=print_msgs,
         tuning=pitch_config,
         tuning_mode=tuning_mode
     )
