@@ -54,7 +54,7 @@ class EnvironmentSetup:
             self.envInstances = self.create_environment_setup(
                 init_instruments=init_instruments)
             [self.envInstances[instance_index].select_instrument(
-                instrument_name=self.envInstances[instance_index].init_instrument) for instance_index in range(12)]
+                instrument_name=self.envInstances[instance_index].init_instrument, port_number=instance_index) for instance_index in range(12)]
             self.menu()
 
     def __click__(self, search_str: str, keys: str = None):
@@ -310,25 +310,121 @@ class EnvironmentSetup:
         editor = self.driver.create_web_element(list(button.values())[0])
         editor.click()
 
-    def select_instrument(self, instrument_name: str):
-        """Select an instrument you wish to initialize the instance to
+    def select_instrument(self, instrument_name: str, port_number: int):
+        """Select an instrument you wish to initialize the instance to by configuring its instrument type and port number
 
         Args:
             instrument_name (str): the exact name of an Analog Lab V instrument you wish to switch to (see Favorites)
+            port_number (int): the port number you wish to assign to this instance
         """
         try:
             self.play_panel_toggle = self.__click__(
                 search_str="Play Panel toggle")
             self.current_editor = self.__click__(
                 search_str="Searchbar", keys=instrument_name)
+            sleep(0.3)
+            self.select_midi_port(port_number=port_number)
+            sleep(0.3)
             self.__click_and_drag__()
-
+            sleep(0.5)
+            
         except:
             self.play_panel_toggle = self.__click__(
                 search_str="Play Panel toggle")
             self.current_editor = self.__click__(
                 search_str="Searchbar", keys=instrument_name)
+            sleep(0.3)
+            self.select_midi_port(port_number=port_number)
+            sleep(0.3)
             self.__click_and_drag__()
+            sleep(0.5)
+
+    def select_midi_port(self, port_number: int):
+        try:
+            self.__click__(search_str="Home tab")
+            pyautogui.moveRel(-85, -80)
+            sleep(0.3)
+            pyautogui.click()
+            sleep(0.3)
+            pyautogui.moveRel(50, 155)
+            sleep(0.3)
+            pyautogui.click()
+            self.play_panel_toggle = self.__click__(
+                search_str="Analog Lab V")
+            sleep(0.3)
+            pyautogui.moveRel(145, -90)
+            sleep(0.3)
+            color = self.determine_color()
+            # Color is cyan blue indicating the button is selected
+            if color == (0, 188, 250):
+                pyautogui.click()
+
+            if port_number == 0:
+                pyautogui.scroll(-840)
+            elif port_number == 1:
+                pyautogui.scroll(-880)
+            elif port_number == 2:
+                pyautogui.scroll(-920)
+            elif port_number == 3:
+                pyautogui.scroll(-960)
+            elif port_number == 4:
+                pyautogui.scroll(-1000)
+                pyautogui.moveRel(0, 10)
+            elif port_number == 5:
+                pyautogui.scroll(-1000)
+                pyautogui.moveRel(0, 30)
+            elif port_number == 6:
+                pyautogui.scroll(-1000)
+                pyautogui.moveRel(0, 50)
+            elif port_number == 7:
+                pyautogui.scroll(-1000)
+                pyautogui.moveRel(0, 70)
+            elif port_number == 8:
+                pyautogui.scroll(-1000)
+                pyautogui.moveRel(0, 90)
+            elif port_number == 9:
+                pyautogui.scroll(-1000)
+                pyautogui.moveRel(0, 110)
+            if port_number == 10:
+                pyautogui.scroll(-100)
+            elif port_number == 11:
+                pyautogui.scroll(-140)
+            
+            # Color is light or dark grey indicating it is not selected or is the rim of the button
+            color = self.determine_color()
+            if color in ((54, 53, 58), (67, 66, 73), (31, 30, 36), (55, 55, 62)):
+                sleep(0.3)
+                pyautogui.click()
+            sleep(0.3)
+            self.play_panel_toggle = self.__click__(
+                search_str="Analog Lab V")
+            sleep(0.3)
+            pyautogui.moveRel(265, 160)
+            sleep(0.3)
+            pyautogui.click()
+
+        except Exception as e:
+            print(f"Error: {e}")
+
+    def determine_color(self):
+        """Determine what the rgb value tuple is at the given mouse location
+
+        Returns:
+            tuple: rgb tuple
+        """
+        x, y = pyautogui.position()
+        screenshot = pyautogui.screenshot()
+        return screenshot.getpixel((x, y))
+
+    @staticmethod
+    def get_rgb_val_from_mouse_position(self):
+        """An integration tool for determining the rgb value based on where the mouse position is. Prints value in the same spot in the terminal"""
+        try:
+            while True:
+                color = self.determine_color()
+                print(f"\rColor: {color}", end="", flush=True)
+        except KeyboardInterrupt:
+            print("Exiting...")
 
 
 if __name__ == "__main__":
@@ -337,5 +433,6 @@ if __name__ == "__main__":
     loopMidi = r"C:/Program Files (x86)/Tobias Erichsen/loopMIDI/loopMIDI.exe"
     midiOX = r"C:/Program Files (x86)/MIDIOX/midiox.exe"
     envSetup = EnvironmentSetup(
-        analog_labV=analog_labV, winAppDriver=winAppDriver, loopMidi=loopMidi, midiOX=midiOX,
-        init_instruments=["Rom1A 11-E.PIANO 1", "Mark V EP", "Butter"])
+        analog_labV=analog_labV, winAppDriver=winAppDriver, loopMidi=None, midiOX=midiOX,
+        init_instruments=["Butter"])
+    
