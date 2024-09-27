@@ -6,7 +6,7 @@ from time import sleep
 
 class UDPSender:
     def __init__(self, host='127.0.0.1', port=50000, print_msgs=False):
-        self.print = print_msgs
+        self.print_msgs = print_msgs
         self.send_address = (host, port)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -20,23 +20,24 @@ class UDPSender:
             # Serialize the data to JSON format
             message = json.dumps(data)
             self.sock.sendto(message.encode(), self.send_address)
-            if self.print: print(f"Sent: {data}")
+            if self.print_msgs: print(f"Sent: {data}")
         except Exception as e:
-            if self.print: print(f"Error sending data: {e}")
+            if self.print_msgs: print(f"Error sending data: {e}")
 
     def stop(self):
         self.sock.close()
 
 
 class UDPReceiver:
-    def __init__(self, host='127.0.0.1', port=50001, print_msgs=False):
-        self.print = print_msgs
+    def __init__(self, host='127.0.0.1', port=50001, print_msgs=False, tuning_mode=None):
+        self.print_msgs = print_msgs
         self.receive_address = (host, port)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind(self.receive_address)
         self.running = True
         self.messages = []
         self.candidate_keys = []
+        self.tuning_mode = tuning_mode
 
     def listen(self):
         """Listen for Udp messages sent to the receive address"""
@@ -50,22 +51,30 @@ class UDPReceiver:
 
                     # Deserialize the data from JSON format
                     data = json.loads(data.decode())
-                    if self.print: print(f"Received: {data}")
-                    if data and any(isinstance(item, str) for item in data):
+                    if self.print_msgs: print(f"Received: {data}")
+                    if isinstance(data, dict):
+                        try:
+                            tuning_mode = data["tuning_mode"]
+                            if tuning_mode in [None, "static", "dynamic"]:
+                                self.tuning_mode = tuning_mode
+                        except:
+                            print("exception")
+                    elif data and any(isinstance(item, str) for item in data):
                         self.candidate_keys = data
                     elif data and any(isinstance(item, list) for item in data):
                         self.messages = data
+                    
 
                 except socket.timeout:
                     # If no data is received within the timeout, just loop again
                     continue
             except json.JSONDecodeError:
-                if self.print: print("Error: Received invalid JSON data.")
+                if self.print_msgs: print("Error: Received invalid JSON data.")
             except socket.error as e:
-                if self.print: print(f"Socket error: {e}")
+                if self.print_msgs: print(f"Socket error: {e}")
                 self.running = False
             except Exception as e:
-                if self.print: print(f"Unexpected error receiving data: {e}")
+                if self.print_msgs: print(f"Unexpected error receiving data: {e}")
                 self.running = False
 
     def start_listener(self):
@@ -82,11 +91,11 @@ class UDPReceiver:
 # Example usage:
 if __name__ == "__main__":
     # Example of starting a receiver
-    receiver = UDPReceiver(host='127.0.0.1', port=50001)
+    receiver = UDPReceiver(host='127.0.0.1', port=50000, print_msgs=True)
     receiver.start_listener()
 
     # Example of starting a sender
-    sender = UDPSender(host='127.0.0.1', port=50000)
+    sender = UDPSender(host='127.0.0.1', port=50000, print_msgs=True)
 
     # Example loop to send messages
     try:

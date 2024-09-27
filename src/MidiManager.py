@@ -103,10 +103,15 @@ class MidiController:
         
         # Communication with Jacob
         if self.output_ports == list(map(str, range(12))):
-            self.udp_receiver = UDPReceiver(host='127.0.0.1', port=50000)
+            self.udp_receiver = UDPReceiver(host='127.0.0.1', port=50000, print_msgs=True, tuning_mode=tuning_mode)
             self.udp_receiver.start_listener()
             self.udp_sender = UDPSender(host='127.0.0.1', port=50001)
             self.logger.info("Initializing connection to Jacob...")
+        else:
+            self.udp_receiver = UDPReceiver(host='127.0.0.1', port=50002, print_msgs=True, tuning_mode=tuning_mode)
+            self.udp_receiver.start_listener()
+            self.udp_sender = UDPSender(host='127.0.0.1', port=50003)
+            self.logger.info("Initializing connection to User...")
         
         self.logger.info("Listening for Midi messages...")
         self.set_midi_callback()
@@ -180,6 +185,8 @@ class MidiController:
         payload, dt  = message
         status, note, velocity = payload
 
+        self.just_intonation.tuning_mode = self.tuning_mode = self.udp_receiver.tuning_mode
+
         if status in range(144, 160):
             instance_index = determine_octave(message_heap=self.message_heap, note=note)
             if instance_index is None:
@@ -197,12 +204,13 @@ class MidiController:
                 print(f"key: {key}")
             self.udp_sender.send(candidate_keys)
 
-            pitch_adjust_message = None
-            if self.tuning:
+            if self.tuning_mode:
                 tuning_index, pitch_bend_message, message_heap = self.just_intonation.get_tuning_info(message_heap=self.message_heap, current_msg=[note, instance_index, status, velocity, None], dt=dt, key=key)
                 self.message_heap = message_heap
-
+                print(pitch_bend_message)
                 self.midi_out_ports[tuning_index].send_message(pitch_bend_message)
+            else:
+                self.midi_out_ports[instance_index].send_message([224, 0, 64])
             
             self.midi_out_ports[instance_index].send_message([status, note, velocity])
             self.udp_sender.send(self.message_heap)

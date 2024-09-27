@@ -54,6 +54,7 @@ class JacobsLadder:
                 print("2. Display active keys")
                 print("3. Print messages")
                 print("4. Play generated scales")
+                print("5. Switch tuning config")
                 print("Quit/Q")
 
                 choice = input("Enter your choice: ").lower()
@@ -145,9 +146,42 @@ class JacobsLadder:
 
                     except KeyboardInterrupt:
                         print("Exitting...")
+                
+                elif choice == "5":
+                    try:
+                        while True:
+                            print(f"1. No Tuning")
+                            print(f"2. Static Tuning")
+                            print(f"3. Dynamic Tuning")
+                            print(f"4. Oscillate between no tuning and static tuning")
+                            print(f"5. Quit/Q\n")
+                            tuning_mode = input("Select from the above choices: (i.e. 1, 2, 3, or q)")
+                            if tuning_mode == "1":
+                                self.udp_sender.send({"tuning_mode": None})
+                            elif tuning_mode == "2":
+                                self.udp_sender.send({"tuning_mode": "static"})
+                            elif tuning_mode == "3":
+                                self.udp_sender.send({"tuning_mode": "dynamic"})
+                            elif tuning_mode == "4":
+                                counter = 0
+                                try:
+                                    while True:
+                                        if counter % 2 == 0:
+                                            self.udp_sender.send({"tuning_mode": None})
+                                        else:
+                                            self.udp_sender.send({"tuning_mode": "static"})
+                                        time.sleep(5)
+                                        counter += 1
+                                except KeyboardInterrupt:
+                                    print("Exiting...")
+                            elif tuning_mode.lower() in ["5", "q", "quit", "exit"]:
+                                print("Exiting...")
+                                break
+                    except KeyboardInterrupt:
+                        print("Exiting...")
 
                 elif choice == "quit" or choice == "q":
-                    print("Exiting the program.")
+                    print("Exiting...")
                     break
                 else:
                     print("Invalid choice. Please choose again.")
