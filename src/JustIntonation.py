@@ -1,8 +1,9 @@
 from collections import Counter
+from copy import copy
 from .Logging import setup_logging
 
 from .Enums import Pitch
-from .Utilities import determine_octave
+from .Utilities import determine_octave, get_root_from_letter_note
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
@@ -81,7 +82,7 @@ class JustIntonation:
 
         return pitch_bend_message
 
-    def get_tuning_info(self, message_heap: list[list], current_msg: list, dt: float, chord=None):
+    def get_tuning_info(self, message_heap: list[list], current_msg: list, dt: float, key=None):
         """Adjust the pitch of individual notes within a given chord
         If the chord is unknown then it will be tuned using intervals instead
 
@@ -96,6 +97,11 @@ class JustIntonation:
             pass
         
         elif self.tuning_mode == "static":
+            self.previous_root = copy(self.root)
+            if key and key != "unknown":
+                self.root = get_root_from_letter_note(key.split(" ")[0])
+            else:
+                self.root = self.previous_root
             note = current_msg[0]
             tuning_index = determine_octave(message_heap=message_heap, note=note)
             octaves = [octave for octave in range(self.root + 12, 109, 12)]

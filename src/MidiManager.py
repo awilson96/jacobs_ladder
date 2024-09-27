@@ -197,9 +197,8 @@ class MidiController:
 
             pitch_adjust_message = None
             if self.tuning:
-                tuning_index, pitch_bend_message, message_heap = self.just_intonation.get_tuning_info(message_heap=self.message_heap, current_msg=[note, instance_index, status, velocity, None], dt=dt, chord=chord)
+                tuning_index, pitch_bend_message, message_heap = self.just_intonation.get_tuning_info(message_heap=self.message_heap, current_msg=[note, instance_index, status, velocity, None], dt=dt, key=key)
                 self.message_heap = message_heap
-                print(message_heap)
 
                 self.midi_out_ports[tuning_index].send_message(pitch_bend_message)
 

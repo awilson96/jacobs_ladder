@@ -126,18 +126,18 @@ class MusicTheory:
                 candidate_keys.append(scale.name)
 
         self.history.enqueue(candidate_keys)
-        return self.find_most_common_scale(), candidate_keys
+        return self.find_key(), candidate_keys
     
-        
-    def find_most_common_scale(self):
-        """Uses the InOutQueue to determine out of the previous self.QUEUE_SIZE frames which scale occured the most frequently
-        If there is a tie then one will be chosen arbitrarily from the most frequent scales
+    def find_key(self):
+        """First check to see if the original key still is compatible with the currently held down notes.  If so return this. 
+        Otherwise check all the scales to see if there is an Ionian Scale which matches nicely, if so use this. Do the same for Harmonic
+        Major scales to see if there is one that matches. If there are no other options then simply use the most common scale based
+        on the last five frames.
 
         Returns:
             str | None: most frequently occuring scale if the length of history is greater than self.QUEUE_SIZE and None otherwise
         """
         history = self.history.get_queue()
-
         if len(history) >= self.QUEUE_SIZE:
             oldest_frame, older_frame, middle_frame, previous_frame, current_frame = history
             current_frame = set(current_frame)
@@ -146,12 +146,18 @@ class MusicTheory:
             older_frame = set(older_frame)
             oldest_frame = set(oldest_frame)
 
-            # If the same key is still available as a choice then keep the key the same.  Only make changes when necissary
             if self.key in current_frame and self.key is not None:
                 return self.key
-
+            for scale_name in current_frame:
+                if "Ionian" in scale_name:
+                    self.key = scale_name
+                    return scale_name
+            for scale_name in current_frame:
+                if "Major" in scale_name:
+                    self.key = scale_name
+                    return scale_name
+                
             frames = [previous_frame, middle_frame, older_frame, oldest_frame]
-
             scale_counter = Counter()
 
             for frame in frames:
@@ -166,10 +172,10 @@ class MusicTheory:
             self.key = most_common_scale
 
             return most_common_scale
+            
         else:
             logging.info(f"Queue is not yet populated with at least {self.QUEUE_SIZE} elements. Play at least 5 different chords to use this feature.")
             return None
-    
 
     def get_intervals(self, notes: list[int]):
         """Determine the intervals between notes
