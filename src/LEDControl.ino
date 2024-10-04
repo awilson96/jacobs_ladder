@@ -3,6 +3,8 @@ int dataPin = 11;   // DS pin (Data)
 int latchPin = 12;  // ST_CP pin (Latch)
 int clockPin = 13;  // SH_CP pin (Clock)
 
+int animation_speed = 250;
+
 void setup() {
   // Set pins as output
   pinMode(dataPin, OUTPUT);
@@ -11,9 +13,31 @@ void setup() {
 }
 
 void loop() {
-  // Example usage of set_lights function
-  set_lights(0b10101011, 0b11111111); // Call the function with the desired patterns
-  delay(2000);  // Wait for 2 seconds before changing the lights
+  // Animate lighting up LEDs individually
+  animateLEDs();
+}
+
+// Function to animate LEDs lighting up individually
+void animateLEDs() {
+  // Turn off all LEDs first
+  set_lights(0b00000000, 0b00000000);
+  delay(animation_speed); // Delay to see all LEDs off
+  
+  // Loop through each LED in the first shift register (LEDs 1-8)
+  for (int i = 0; i < 8; i++) {
+    // Light up each LED in the first shift register
+    set_lights(1 << i, 0b00000000); // Shift left to set the appropriate bit
+    delay(animation_speed); // Wait before lighting up the next LED
+  }
+
+  // Loop through each LED in the second shift register (LEDs 9-16)
+  for (int i = 0; i < 8; i++) {
+    // Light up each LED in the second shift register
+    set_lights(0b00000000, 1 << i); // Shift left to set the appropriate bit
+    delay(animation_speed); // Wait before lighting up the next LED
+  }
+
+  
 }
 
 // Function to set the lights based on 8-bit binary numbers
