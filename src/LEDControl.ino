@@ -1,7 +1,7 @@
 // Pin definitions based on your setup
-int dataPin = 11;   // Input (Pin 14 on 74HC595)
-int latchPin = 12;  // Output Register Clock (Pin 12 on 74HC595)
-int clockPin = 13;  // Shift Register Clock (Pin 11 on 74HC595)
+int dataPin = 11;   // DS pin (Data)
+int latchPin = 12;  // ST_CP pin (Latch)
+int clockPin = 13;  // SH_CP pin (Clock)
 
 void setup() {
   // Set pins as output
@@ -11,20 +11,18 @@ void setup() {
 }
 
 void loop() {
-  // Pattern to light up LEDs 1, 3, 5, and 7 (odd LEDs)
-  int oddPattern = 0b10101010; // Binary pattern for odd LEDs on
-  // Pattern to light up LEDs 2, 4, 6, and 8 (even LEDs)
-  int evenPattern = 0b01010101; // Binary pattern for even LEDs on
+  // Example usage of set_lights function
+  set_lights(0b10101011, 0b11111111); // Call the function with the desired patterns
+  delay(2000);  // Wait for 2 seconds before changing the lights
+}
 
-  // Send odd pattern to shift register (LEDs 1, 3, 5, and 7 ON)
-  digitalWrite(latchPin, LOW);   // Prepare shift register to receive data
-  shiftOut(dataPin, clockPin, MSBFIRST, oddPattern); // Send odd pattern
-  digitalWrite(latchPin, HIGH);  // Latch the data to output pins
-  delay(3000);  // Wait for 400 milliseconds
+// Function to set the lights based on 8-bit binary numbers
+void set_lights(uint8_t firstRegister, uint8_t secondRegister) {
+  // Invert the registers to correct the LED states
 
-  // Send even pattern to shift register (LEDs 2, 4, 6, and 8 ON)
+  // Send patterns to the shift registers
   digitalWrite(latchPin, LOW);   // Prepare shift register to receive data
-  shiftOut(dataPin, clockPin, MSBFIRST, evenPattern); // Send even pattern
+  shiftOut(dataPin, clockPin, MSBFIRST, secondRegister);  // Send pattern to second shift register
+  shiftOut(dataPin, clockPin, MSBFIRST, firstRegister); // Send pattern to first shift register
   digitalWrite(latchPin, HIGH);  // Latch the data to output pins
-  delay(3000);  // Wait for 400 milliseconds
 }
