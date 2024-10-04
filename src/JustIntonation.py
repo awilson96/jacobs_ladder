@@ -24,7 +24,8 @@ class JustIntonation:
         self.tuning = tuning
         self.tuning_mode = tuning_mode
         
-        self.calculate_pitch_table(offset=0)
+        if self.tuning:
+            self.calculate_pitch_table(offset=0)
         
     def calculate_pitch_table(self, offset):
         """Calculate the new pitch table based on the currently held down notes with respect to the most recently played note

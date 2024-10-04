@@ -1,13 +1,21 @@
 note1, note2, note3, note4, note5, scale,
+C, D, E, G, A, C(add 2) 6, Pentatonic scale
+C, D, Eb, G, A, C Minor(add 2) 6, Dorian pentatonic scale
+C, Db, Eb, G, Ab, C Major 7 1st Inversion 11, Phrygian pentatonic scale
+C, D, Eb, G, Ab, C Minor 9 b13, Aeolian pentatonic scale
+C, Db, Eb, Gb, Ab, Ab Dominant 1st Inversion 11, Locrian pentatonic scale
+
+C, D, E, F, A, F Maj 6/7 1st Inversion, Minor 9 pentatonic scale
+C, D, Eb, F, A, F Dominant 6 2nd Inversion, Dominant 6 pentatonic scale
+C, Db, Eb, F, Ab, Db (add2) / C, Major 7/9 pentatonic scale
+C, D, E, F#, A, D(add 2) Dominant 7 3rd Inversion, Dominant 9 pentatonic scale
+C, Db, Eb, Gb, Bb, C Half Diminished b9, Half Diminished b9 pentatonic scale
+
 C, D, Eb, G, B, C Minor Major (add2) 
-B, C, D, E, G, C (add2) / B
 D, Eb, F, G, B, G Dominant 2nd Inversion b13 
-B, C, D, F, G, G Dominant 1st Inversion 11
 B, C, D, F, Ab, B Diminished b9
-B, C, D, F, A, B Half Diminished b9
-E, F, G, B, C, Major 7 1st Inversion 11
+
 D, Eb, F, A, B, B minor7 b5 major 1st inversion 
-E, F, G, B, D, G Dominant 3rd Inversion / E 
 B, C, Eb, Fb, G, C Major7 3rd Inversion with a minor 3rd
 C, Db, E, F, A, F Maj7 b13 2nd Inversion
 C, Db, E, Gb, Ab, Db Minor Major 7 3rd Inversion 11
@@ -17,10 +25,6 @@ C, Db, E, G, Ab, C Major b9 b13
 C, Db, E, G, A, C Major 6 b9
 C, Db, E, G, Bb, C Dominant 7 b9
 C, Db, E, Ab, Bb, Db Min 6 / C
-C, Db, F, Gb, Bb, F# Major 7 2nd Inversion / C
 C, Db, F, G, A, F(add2) 3rd inversion b13
-C, Db, F, G, Bb, Bb Minor 6 1st Inversion / C
-C, Db, F, Ab, Bb, Db Major 6/7 3rd Inversion
+
 C, D, E, Gb, Ab, C(add 2) Augmented #11
-C, D, E, Gb, A, D(add 2) Dominant 7 3rd Inversion
-C, D, E, G, A, C(add 2) 6

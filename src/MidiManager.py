@@ -383,11 +383,11 @@ if __name__ == "__main__":
             exit(1)
             
     if pitch_config:
-        max_key_length = max(len(key) for key in pitch_config.keys()) + 1
+        max_key_length = max(len(f"{key}:") for key in pitch_config.keys())
         print(f"{'Interval':<{max_key_length}}  Pitch Setting")
-        print('-' * (max_key_length + 16))  # Print a separator line
+        print('-' * (max_key_length + 20))
         for key, value in pitch_config.items():
-            print(f"{key+":":<{max_key_length}}  {value}")
+            print(f"{key:>{max_key_length}}: \t\t{value}")
             
     # Determine if static or dynamic tuning is enabled
     tuning_mode = 'static' if args.static else 'dynamic' if args.dynamic else None
