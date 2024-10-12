@@ -11,4 +11,3 @@ class NoteEvent:
     note: int
     status: int
     velocity: int
-    pitch: int
