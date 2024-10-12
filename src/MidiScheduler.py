@@ -16,6 +16,11 @@ class MidiScheduler:
         self.midi_out = rtmidi.MidiOut()
         self.output_port = midi_out_port
         self.events = deque()
+        
+        self.CONTROL_CHANGE_STATUS = 176
+        self.SUSTAIN_PEDAL_NOTE = 64
+        self.MAX_VELOCITY = 127
+        self.MIN_VELOCITY = 0
         self.NOTE_ON_STATUS = 144
         self.NOTE_OFF_STATUS = 128
         
@@ -65,6 +70,12 @@ class MidiScheduler:
             self.add_event(note_event=note_event)
         for note_event, duration in zip(note_events, durations):
             self.add_event(note_event=NoteEvent(dt=duration, note=note_event.note, status=self.NOTE_OFF_STATUS, velocity=note_event.velocity))
+            
+    def add_sustain_pedal_event(self, duration: int, sustain: bool):
+        if sustain:
+            self.add_event(note_event=NoteEvent(dt=duration, note=self.SUSTAIN_PEDAL_NOTE, status=self.CONTROL_CHANGE_STATUS, velocity=self.MAX_VELOCITY))
+        else:
+            self.add_event(note_event=NoteEvent(dt=duration, note=self.SUSTAIN_PEDAL_NOTE, status=self.CONTROL_CHANGE_STATUS, velocity=self.MIN_VELOCITY))
 
     def play_event(self, event: NoteEvent):
         """Play a single NoteEvent and schedule the next one.

@@ -26,28 +26,6 @@ class RhythmGenerator:
             'NOTE_ON': 144,
             'NOTE_OFF': 128
         }
-
-    def set_tempo(self, tempo: int):
-        """Set a new tempo for the RhythmGenerator.
-
-        Args:
-            tempo (int): The new tempo in beats per minute.
-        """
-        self.tempo = tempo
-
-    def division_to_dt(self, division: str) -> int:
-        """Convert a rhythmic division to a time delay (dt) in milliseconds.
-
-        Args:
-            division (str): The rhythmic division (e.g., 'whole', 'half', 'quarter', 'eighth', 'sixteenth').
-
-        Returns:
-            int: The delay time in milliseconds.
-        """
-        if division not in self.note_divisions_ms:
-            raise ValueError("Invalid division. Must be one of: " + ", ".join(self.note_divisions_ms.keys()))
-
-        return int(self.note_divisions_ms[division] * (self.SECONDS_IN_MINUTE / self.tempo))
     
     def add_event(self, rhythem_note_event: RhythemNoteEvent):
         """Add an event using a more intuitive RhythemNoteEvent dataclass
@@ -117,7 +95,31 @@ class RhythmGenerator:
                                        velocity=rhythem_note_event.velocity)
             self.midi_scheduler.add_event(note_off_event)
             
+    def add_sustain_pedal_event(self, division_duration: str, sustain: bool):
+        self.midi_scheduler.add_sustain_pedal_event(duration=self.division_to_dt(division_duration), sustain=sustain)
     
+    def division_to_dt(self, division: str) -> int:
+        """Convert a rhythmic division to a time delay (dt) in milliseconds.
+
+        Args:
+            division (str): The rhythmic division (e.g., 'whole', 'half', 'quarter', 'eighth', 'sixteenth').
+
+        Returns:
+            int: The delay time in milliseconds.
+        """
+        if division not in self.note_divisions_ms:
+            raise ValueError("Invalid division. Must be one of: " + ", ".join(self.note_divisions_ms.keys()))
+
+        return int(self.note_divisions_ms[division] * (self.SECONDS_IN_MINUTE / self.tempo))
+            
+    def set_tempo(self, tempo: int):
+        """Set a new tempo for the RhythmGenerator.
+
+        Args:
+            tempo (int): The new tempo in beats per minute.
+        """
+        self.tempo = tempo
+
 if __name__ == "__main__":
     rhythem_generator = RhythmGenerator(tempo=220)
     rhythem_generator.add_event(RhythemNoteEvent(division="zero", note="C4", status="NOTE_ON", velocity=100))
@@ -154,5 +156,17 @@ if __name__ == "__main__":
                                                       RhythemNoteEvent(division="zero", note="E4", status="NOTE_OFF", velocity=100),
                                                       RhythemNoteEvent(division="zero", note="G4", status="NOTE_OFF", velocity=100),
                                                       RhythemNoteEvent(division="zero", note="B4", status="NOTE_OFF", velocity=100)])
+    
+    rhythem_generator.add_sustain_pedal_event(division_duration="zero", sustain=True)
+    rhythem_generator.add_events_with_duration(rhythem_note_events=[RhythemNoteEvent(division="zero", note="C5", status="NOTE_ON", velocity=100),
+                                                                    RhythemNoteEvent(division="zero", note="D5", status="NOTE_ON", velocity=100),
+                                                                    RhythemNoteEvent(division="zero", note="E5", status="NOTE_ON", velocity=100),
+                                                                    RhythemNoteEvent(division="zero", note="F5", status="NOTE_ON", velocity=100),
+                                                                    RhythemNoteEvent(division="zero", note="G5", status="NOTE_ON", velocity=100),
+                                                                    RhythemNoteEvent(division="zero", note="A5", status="NOTE_ON", velocity=100),
+                                                                    RhythemNoteEvent(division="zero", note="B5", status="NOTE_ON", velocity=100),
+                                                                    RhythemNoteEvent(division="zero", note="C6", status="NOTE_ON", velocity=100)], 
+                                               duration_divisions=["eighth", "eighth", "eighth", "eighth", "eighth", "eighth", "eighth", "eighth"])
+    rhythem_generator.add_sustain_pedal_event(division_duration="zero", sustain=False)
     
     rhythem_generator.midi_scheduler.schedule_events(initial_delay=0)
