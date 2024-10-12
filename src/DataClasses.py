@@ -11,3 +11,10 @@ class NoteEvent:
     note: int
     status: int
     velocity: int
+    
+@dataclass
+class RhythemNoteEvent:
+    division: str
+    note: str
+    status: str
+    velocity: int

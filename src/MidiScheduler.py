@@ -7,7 +7,7 @@ from .Dictionaries import get_midi_notes
 
 class MidiScheduler:
     
-    def __init__(self, midi_out_port: str):
+    def __init__(self, midi_out_port: str = "jacob"):
         """Initialize the MidiScheduler with an output port and an empty deque for event storage.
 
         Args:
@@ -45,7 +45,7 @@ class MidiScheduler:
         self.events.append(note_event)
         
     def add_event_with_duration(self, note_event: NoteEvent, duration: int):
-        self.events.append(note_event)
+        self.add_event(note_event=note_event)
         note_off_event = NoteEvent(
             dt=duration, note=note_event.note, status=self.NOTE_OFF_STATUS, velocity=note_event.velocity
             )
@@ -73,7 +73,6 @@ class MidiScheduler:
             event (NoteEvent): The NoteEvent to play.
         """
         msg = [event.status, event.note, event.velocity]
-        print(f"playing msg: {msg}")
         self.midi_out.send_message(msg)
 
     def schedule_events(self, initial_delay: int = 0):
@@ -109,8 +108,9 @@ if __name__ == "__main__":
     midi_scheduler.add_events(note_events=[NoteEvent(dt=0, note=64, status=144, velocity=100), NoteEvent(dt=0, note=67, status=144, velocity=100)])
     midi_scheduler.add_events(note_events=[NoteEvent(dt=1000, note=60, status=128, velocity=100), NoteEvent(dt=0, note=64, status=128, velocity=100), NoteEvent(dt=0, note=67, status=128, velocity=100)])
     midi_scheduler.add_events_with_duration(note_events=[NoteEvent(dt=1000, note=62, status=144, velocity=100), NoteEvent(dt=0, note=65, status=144, velocity=100),NoteEvent(dt=0, note=69, status=144, velocity=100), NoteEvent(dt=0, note=72, status=144, velocity=100)], durations=[1000, 0, 0, 0])
-    midi_scheduler.add_event_with_duration(note_event=NoteEvent(dt=1000, note=64, status=144, velocity=100), duration=1000)
-    
+    midi_scheduler.add_events_with_duration(note_events=[NoteEvent(dt=1000, note=64, status=144, velocity=100), NoteEvent(dt=0, note=67, status=144, velocity=100),NoteEvent(dt=0, note=71, status=144, velocity=100), NoteEvent(dt=0, note=72, status=144, velocity=100)], durations=[1000, 0, 0, 0])
+    midi_scheduler.add_events_with_duration(note_events=[NoteEvent(dt=1000, note=62, status=144, velocity=100), NoteEvent(dt=0, note=65, status=144, velocity=100),NoteEvent(dt=0, note=69, status=144, velocity=100), NoteEvent(dt=0, note=72, status=144, velocity=100)], durations=[1000, 0, 0, 0])
+    midi_scheduler.add_events_with_duration(note_events=[NoteEvent(dt=1000, note=60, status=144, velocity=100), NoteEvent(dt=0, note=64, status=144, velocity=100),NoteEvent(dt=0, note=67, status=144, velocity=100), NoteEvent(dt=0, note=71, status=144, velocity=100)], durations=[1000, 0, 0, 0])
     midi_scheduler.schedule_events(initial_delay=1000)
     
     # Expected sequence:
@@ -121,5 +121,10 @@ if __name__ == "__main__":
     # C E G note_off at 1000 ms
     # D E F G note_on at 2000 ms
     # D E F G note_off at 3000 ms
-    # E note_on at 4000 ms
-    # E note_off at 5000 ms
+    # E G B C note_on at 4000 ms
+    # E G B C note_off at 5000 ms
+    # D E F G note_on at 6000 ms
+    # D E F G note_off at 7000 ms
+    # C E G B note_on at 8000 ms
+    # C E G B note_off at 9000 ms
+    
