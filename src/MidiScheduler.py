@@ -35,22 +35,33 @@ class MidiScheduler:
         """Play a single NoteEvent and schedule the next one.
 
         Args:
-            event (_type_): _description_
+            event (NoteEvent): The NoteEvent to play.
         """
         msg = [event.status, event.note, event.velocity]
         self.midi_out.send_message(msg)
 
-    def schedule_events(self):
-        """Schedule all NoteEvents for playback with appropriate timing."""
+    def schedule_events(self, initial_delay: int = 0):
+        """Schedule all NoteEvents for playback with appropriate timing.
+
+        Args:
+            initial_delay (int): The delay in milliseconds before playing the first note.
+        """
         if not self.events:
             return
         
+        if initial_delay > 0:
+            threading.Timer(initial_delay / 1000, self.play_events).start()
+        else:
+            self.play_events()
+
+    def play_events(self):
+        """Play the first event and schedule the subsequent events."""
         current_event = self.events.popleft()
         self.play_event(current_event)
 
         if self.events:
             next_event = self.events[0]
-            threading.Timer(next_event.dt, self.schedule_events).start()
+            threading.Timer(next_event.dt / 1000, self.schedule_events).start()
 
     def clear_events(self):
         """Clear all the scheduled MIDI events."""
