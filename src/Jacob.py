@@ -8,7 +8,8 @@ from .MajorScales import get_major_scales_dict
 from .MelodicMinorScales import get_melodic_minor_scales_dict
 from .ScaleClassifier import ScaleClassifier
 from .MidiInjector import MidiInjector
-from .Udp import UDPSender, UDPReceiver
+from .Udp import UDPSender 
+from .UserMonitor import UserMonitor
 from .Logging import setup_logging
 
 
@@ -27,10 +28,9 @@ class JacobsLadder:
         self.midi_controller_thread.start()
 
         # Setup communication with player
-        self.udp_receiver = UDPReceiver(host='127.0.0.1', port=50001, print_msgs=False)
+        self.udp_sender = UDPSender(host='127.0.0.1', port=50000, print_msgs=False)
+        self.udp_receiver = UserMonitor(host='127.0.0.1', port=50001, print_msgs=False)
         self.udp_receiver.start_listener()
-        self.udp_sender = UDPSender(host='127.0.0.1', port=50000)
-        
         
         # Get various scales as a dictionary of scale objects
         self.harm_maj_scales = get_harmonic_major_scales_dict()

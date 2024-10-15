@@ -2,17 +2,21 @@ import argparse
 import heapq
 import json
 import logging
+import rtmidi
 import time
 import warnings
-from copy import copy, deepcopy
 
-import rtmidi
+from copy import deepcopy
 
+from .JacobMonitor import JacobMonitor
 from .JustIntonation import JustIntonation
+from .MockSender import MockSender
 from .MusicTheory import MusicTheory
-from .Udp import UDPSender, UDPReceiver
-from .Utilities import determine_octave
+from .TimeKeeper import TimeKeeper
+from .Udp import UDPSender
+
 from .Logging import setup_logging
+from .Utilities import determine_octave
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
@@ -35,7 +39,9 @@ class MidiController:
                  output_ports: list = list(map(str, range(12))), 
                  print_msgs: bool = False,
                  tuning: dict = None,
-                 tuning_mode: str = None):
+                 tuning_mode: str = None, 
+                 tempo: int = 120, 
+                 time_signature: str = "4/4"):
         """Class Constructor creates a MidiController object.  MidiController handles MIDI port management, 
         output port instance management, and sustain pedal management.
 
@@ -103,15 +109,21 @@ class MidiController:
         
         # Communication with Jacob
         if self.output_ports == list(map(str, range(12))):
-            self.udp_receiver = UDPReceiver(host='127.0.0.1', port=50000, print_msgs=True, tuning_mode=tuning_mode)
+            self.udp_receiver = JacobMonitor(host='127.0.0.1', port=50000, print_msgs=True, tuning_mode=tuning_mode)
             self.udp_receiver.start_listener()
             self.udp_sender = UDPSender(host='127.0.0.1', port=50001)
             self.logger.info("Initializing connection to Jacob...")
         else:
-            self.udp_receiver = UDPReceiver(host='127.0.0.1', port=50002, print_msgs=True, tuning_mode=tuning_mode)
+            self.udp_receiver = JacobMonitor(host='127.0.0.1', port=50002, print_msgs=True, tuning_mode=tuning_mode)
             self.udp_receiver.start_listener()
-            self.udp_sender = UDPSender(host='127.0.0.1', port=50003)
+            self.udp_sender = MockSender(host='127.0.0.1', port=50003)
             self.logger.info("Initializing connection to User...")
+            
+        # Time keeping
+        self.tempo = tempo
+        self.time_signature = time_signature
+        self.time_keeper = TimeKeeper(sender=self.udp_sender, tempo=tempo, time_signature=time_signature)
+        self.time_keeper.start()
         
         self.logger.info("Listening for Midi messages...")
         self.set_midi_callback()
@@ -347,6 +359,7 @@ class MidiController:
             self.turn_off_all_notes()
         finally:
             self.close_ports()
+            self.time_keeper.stop()
             
 if __name__ == "__main__":
     # Set up argument parser

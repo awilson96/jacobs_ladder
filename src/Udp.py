@@ -2,6 +2,7 @@ import json
 import socket
 import threading
 from time import sleep
+from abc import ABC, abstractmethod
 
 
 class UDPSender:
@@ -27,17 +28,13 @@ class UDPSender:
     def stop(self):
         self.sock.close()
 
-
-class UDPReceiver:
-    def __init__(self, host='127.0.0.1', port=50001, print_msgs=False, tuning_mode=None):
+class UDPReceiver(ABC):
+    def __init__(self, host='127.0.0.1', port=50001, print_msgs=False):
         self.print_msgs = print_msgs
         self.receive_address = (host, port)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind(self.receive_address)
         self.running = True
-        self.messages = []
-        self.candidate_keys = []
-        self.tuning_mode = tuning_mode
 
     def listen(self):
         """Listen for Udp messages sent to the receive address"""
@@ -51,19 +48,10 @@ class UDPReceiver:
 
                     # Deserialize the data from JSON format
                     data = json.loads(data.decode())
-                    if self.print_msgs: print(f"Received: {data}")
-                    if isinstance(data, dict):
-                        try:
-                            tuning_mode = data["tuning_mode"]
-                            if tuning_mode in [None, "static", "dynamic"]:
-                                self.tuning_mode = tuning_mode
-                        except:
-                            print("exception")
-                    elif data and any(isinstance(item, str) for item in data):
-                        self.candidate_keys = data
-                    elif data and any(isinstance(item, list) for item in data):
-                        self.messages = data
-                    
+                    if self.print_msgs: 
+                        print(f"Received: {data}")
+                        
+                    self.dispact_message(data=data)
 
                 except socket.timeout:
                     # If no data is received within the timeout, just loop again
@@ -79,19 +67,41 @@ class UDPReceiver:
 
     def start_listener(self):
         # Daemonize the listener thread so it closes with the main program
-        listener_thread = threading.Thread(target=self.listen)
-        listener_thread.daemon = True
-        listener_thread.start()
+        self.listener_thread = threading.Thread(target=self.listen)
+        self.listener_thread.daemon = True
+        self.listener_thread.start()
 
     def stop(self):
         self.running = False
+        self.listener_thread.join()
         self.sock.close()
+    
+    @abstractmethod
+    def dispact_message(self, data):
+        """This is a method which parses messages across a user specified UDP interface
+
+        Args:
+            data (Any): any data the user wishes to send over UDP
+        """
+        pass
 
 
 # Example usage:
 if __name__ == "__main__":
     # Example of starting a receiver
-    receiver = UDPReceiver(host='127.0.0.1', port=50000, print_msgs=True)
+    class CustomUDPReceiver(UDPReceiver):
+        def dispact_message(self, data):
+            """Process list of lists message types
+
+            Args:
+                data (list[list]): only process data which is an instance of list[list]
+            """
+            if isinstance(data, list) and isinstance(data[0], list):
+                print("printing list of lists")
+                for sublist in data:
+                    for number in sublist:
+                        print(number)
+    receiver = CustomUDPReceiver(host='127.0.0.1', port=50000, print_msgs=True)
     receiver.start_listener()
 
     # Example of starting a sender
@@ -105,5 +115,7 @@ if __name__ == "__main__":
             sender.send(data)
             sleep(3)
     except KeyboardInterrupt:
+        print("Exiting...")
         sender.stop()
         receiver.stop()
+        
