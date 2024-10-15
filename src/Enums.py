@@ -55,3 +55,26 @@ class Pitch(Enum):
     major_seventh_down = 9153               # 8/15  = +11.731  c       
 
     octave = 8192                           # 2/1 | 1/2         
+    
+class NoteDivisions(Enum):
+    """Enum to represent note divisions with the provided integer values in milliseconds."""
+    WHOLE = 4000
+    DOTTED_HALF = 3000
+    HALF = 2000
+    TRIPLET_HALF = 1333
+    DOTTED_QUARTER = 1500
+    QUARTER = 1000
+    TRIPLET_QUARTER = 666
+    DOTTED_EIGHTH = 750
+    EIGHTH = 500
+    TRIPLET_EIGHTH = 333
+    DOTTED_SIXTEENTH = 375
+    SIXTEENTH = 250
+    TRIPLET_SIXTEENTH = 166
+    THIRTYSECOND = 125
+    TRIPLET_THIRTYSECOND = 83
+    ZERO = 0
+    
+class MidiStatus(Enum):
+    NOTE_ON = 144
+    NOTE_OFF = 128
