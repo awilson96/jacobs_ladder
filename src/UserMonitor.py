@@ -5,6 +5,8 @@ class UserMonitor(UDPReceiver):
         super().__init__(host=host, port=port, print_msgs=print_msgs)
         self.candidate_keys = []
         self.messages = []
+        self.beat = None
+        self.measure = None
         
     def dispact_message(self, data):
         """Handle user message types candidate_keys and general messages from the message heap
@@ -13,11 +15,11 @@ class UserMonitor(UDPReceiver):
             data (list): data can come in the form of list[str] or list[list[int]]
         """
         if isinstance(data, dict):
-            if data.get('event') == "downbeat":
-                # TODO Simplify this to simply be the beat instead of isolating the downbeat (i.e. 1, 2, 3, 4)
-                # this is where calls to the rhythem generators schedule_events() will happen
-                return
-            elif data.get("event") == "beat":
+            if data.get('event') == "beat":
+                # TODO Make calls to the rhythem generators schedule_events()
+                self.beat = data.get("beat")
+                self.measure = data.get("measure")
+                print(f"{self.beat} {self.measure}")
                 return
         elif data and any(isinstance(item, str) for item in data):
             self.candidate_keys = data

@@ -3,6 +3,7 @@ import heapq
 import json
 import logging
 import rtmidi
+import threading
 import time
 import warnings
 
@@ -109,21 +110,20 @@ class MidiController:
         
         # Communication with Jacob
         if self.output_ports == list(map(str, range(12))):
-            self.udp_receiver = JacobMonitor(host='127.0.0.1', port=50000, print_msgs=True, tuning_mode=tuning_mode)
-            self.udp_receiver.start_listener()
             self.udp_sender = UDPSender(host='127.0.0.1', port=50001)
+            
+            # Time keeping
+            time_keeper = TimeKeeper(sender=self.udp_sender, tempo=tempo, time_signature=time_signature)
+            
+            self.udp_receiver = JacobMonitor(timekeeper=time_keeper, host='127.0.0.1', port=50000, print_msgs=True, tuning_mode=tuning_mode)
+            self.udp_receiver.start_listener()
+            
             self.logger.info("Initializing connection to Jacob...")
         else:
             self.udp_receiver = JacobMonitor(host='127.0.0.1', port=50002, print_msgs=True, tuning_mode=tuning_mode)
             self.udp_receiver.start_listener()
             self.udp_sender = MockSender(host='127.0.0.1', port=50003)
             self.logger.info("Initializing connection to User...")
-            
-        # Time keeping
-        self.tempo = tempo
-        self.time_signature = time_signature
-        self.time_keeper = TimeKeeper(sender=self.udp_sender, tempo=tempo, time_signature=time_signature)
-        self.time_keeper.start()
         
         self.logger.info("Listening for Midi messages...")
         self.set_midi_callback()
@@ -181,6 +181,11 @@ class MidiController:
         for midi_out_port in self.midi_out_ports:
             if midi_out_port.is_port_open():
                 midi_out_port.close_port()
+                
+        # Close UDP Receivers and the Timekeeper
+        if self.udp_receiver.timekeeper:
+            self.udp_receiver.timekeeper.stop()
+        self.udp_receiver.stop()
 
     def filter(self, message: tuple, timestamp: float):
         """
@@ -359,7 +364,6 @@ class MidiController:
             self.turn_off_all_notes()
         finally:
             self.close_ports()
-            self.time_keeper.stop()
             
 if __name__ == "__main__":
     # Set up argument parser

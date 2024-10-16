@@ -32,6 +32,9 @@ class JacobsLadder:
         self.udp_receiver = UserMonitor(host='127.0.0.1', port=50001, print_msgs=False)
         self.udp_receiver.start_listener()
         
+        self.beat = None
+        self.measure = None
+        
         # Get various scales as a dictionary of scale objects
         self.harm_maj_scales = get_harmonic_major_scales_dict()
         self.harm_min_scales = get_harmonic_minor_scales_dict()
@@ -49,12 +52,14 @@ class JacobsLadder:
         """Main control loop for diplaying menu options to the user"""
         try:
             while True:
+                
                 print("Choose from the following options:")
                 print("1. Play active scales")
                 print("2. Display active keys")
                 print("3. Print messages")
                 print("4. Play generated scales")
                 print("5. Switch tuning config")
+                print("6. Change tempo/time signature")
                 print("Quit/Q")
 
                 choice = input("Enter your choice: ").lower()
@@ -177,6 +182,30 @@ class JacobsLadder:
                             elif tuning_mode.lower() in ["5", "q", "quit", "exit"]:
                                 print("Exiting...")
                                 break
+                    except KeyboardInterrupt:
+                        print("Exiting...")
+                        
+                elif choice == "6":
+                    try:
+                        while True:
+                            tempo = input("Enter the new tempo: ")
+                            try: 
+                                tempo_int = int(tempo)
+                                time_signature = input("Enter a time_signature: ")
+                                try: 
+                                    time_signature_str = str(time_signature)
+                                    beats_per_measure, note_value = time_signature_str.split("/")
+                                    print()
+                                    int(beats_per_measure)
+                                    int(note_value)
+                                    self.udp_sender.send({"event": "tempo_update", 
+                                                          "tempo": tempo_int, 
+                                                          "time_signature": time_signature_str})
+                                    break
+                                except:
+                                    print("Invalid time signature, expected format: '4/4', '6/8', etc.")
+                            except:
+                                print("Invalid tempo: Must be an int")
                     except KeyboardInterrupt:
                         print("Exiting...")
 
