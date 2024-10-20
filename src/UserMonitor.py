@@ -19,7 +19,6 @@ class UserMonitor(UDPReceiver):
                 # TODO Make calls to the rhythem generators schedule_events()
                 self.beat = data.get("beat")
                 self.measure = data.get("measure")
-                print(f"{self.beat} {self.measure}")
                 return
         elif data and any(isinstance(item, str) for item in data):
             self.candidate_keys = data
