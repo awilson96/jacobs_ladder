@@ -30,6 +30,9 @@ notes_to_midi = {"A0": 21, "B\u266d0": 22, "B0": 23, "C1": 24, "D\u266d1": 25, "
                  "E\u266d7": 99, "E7": 100, "F7": 101, "G\u266d7": 102, "G7": 103, "A\u266d7": 104, 
                  "A7": 105, "B\u266d7": 106, "B7": 107, "C8": 108}
 
+beat_to_note_divisions = {1: "WHOLE", 2: "HALF", 3: "TRIPLET_HALF", 4: "QUARTER", 5: "QUINTUPLET_QUARTER", 6: "TRIPLET_QUARTER",
+                          7: "SEPTUPLET_QUARTER", 8: "EIGHTH", 9: "", 10: "", }
+
 def get_midi_notes():
     """Return a dictionary of MIDI note: note name key value pairs
 

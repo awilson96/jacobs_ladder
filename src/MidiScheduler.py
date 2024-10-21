@@ -72,6 +72,9 @@ class MidiScheduler:
             self.add_event(note_event=NoteEvent(dt=duration, note=note_event.note, status=self.NOTE_OFF_STATUS, velocity=note_event.velocity))
             
     def add_sustain_pedal_event(self, duration: int, sustain: bool):
+        if duration <= -1:
+            assert(len(self.events) >= abs(duration))
+            duration = self.events[duration].dt
         if sustain:
             self.add_event(note_event=NoteEvent(dt=duration, note=self.SUSTAIN_PEDAL_NOTE, status=self.CONTROL_CHANGE_STATUS, velocity=self.MAX_VELOCITY))
         else:
@@ -102,13 +105,14 @@ class MidiScheduler:
 
     def sort_events_by_dt(self, relative: bool):
         """Sort the events by their dt attribute and convert to relative time."""
+        sorted_events = sorted(self.events, key=lambda event: event.dt)
+
         if relative:
             last_dt = 0  
             for event in sorted_events:
                 event.dt -= last_dt
                 last_dt += event.dt
 
-        sorted_events = sorted(self.events, key=lambda event: event.dt)
         self.events = deque(sorted_events)
 
     def play_events(self):
