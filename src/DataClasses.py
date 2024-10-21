@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from .Utilities import division_to_dt
 
 @dataclass
 class Scale:
@@ -22,7 +23,18 @@ class NoteEvent:
     
 @dataclass
 class RhythemNoteEvent:
+    offset: float
     division: str
     note: str
     status: str
     velocity: int
+    tempo: int
+
+    def __init__(self, offset, division, note, status, velocity, tempo):
+        self.offset = offset
+        self.division = division
+        self.note = note
+        self.status = status
+        self.velocity = velocity
+        self.tempo = tempo
+        self.absolute_time = offset + division_to_dt(division=division, tempo=tempo)

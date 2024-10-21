@@ -1,4 +1,5 @@
 import math
+from .Enums import NoteDivisions
 
 def determine_octave(message_heap: list, note: int):
     """
@@ -34,6 +35,22 @@ def calculate_cents_offset_from_interval(interval: float):
 
 def calculate_analog_pitch_wheel_value_from_cents_offset(cents_offset: float):
     return int(round(cents_offset * 8192 / 200 + 8192, 0))
+
+def division_to_dt(division: str, tempo: int) -> int:
+    """Convert a rhythmic division to a time delay (dt) in milliseconds.
+
+    Args:
+        division (str): The rhythmic division (e.g., 'WHOLE', 'HALF', 'QUARTER', 'EIGHTH', 'SIXTEENTH').
+
+    Returns:
+        int: The delay time in milliseconds.
+    """
+    try:
+        division_ms = NoteDivisions[division.upper()].value
+    except KeyError:
+        raise ValueError(f"Invalid division: {division}")
+    
+    return int(division_ms * (60 / tempo))
 
 def get_root_from_letter_note(letter_note: str):
     match letter_note:

@@ -100,6 +100,17 @@ class MidiScheduler:
         else:
             self.play_events()
 
+    def sort_events_by_dt(self, relative: bool):
+        """Sort the events by their dt attribute and convert to relative time."""
+        if relative:
+            last_dt = 0  
+            for event in sorted_events:
+                event.dt -= last_dt
+                last_dt += event.dt
+
+        sorted_events = sorted(self.events, key=lambda event: event.dt)
+        self.events = deque(sorted_events)
+
     def play_events(self):
         """Play the first event and schedule the subsequent events."""
         current_event = self.events.popleft()
