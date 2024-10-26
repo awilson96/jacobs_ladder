@@ -22,8 +22,6 @@ class MidiInjector:
     This is a Midi Injector which sends in Midi Data to a specified MIDI port for playing back audio to the user
     """
 
-    # TODO: Look into standardizing these ports as well as the port setup.  See if there is a more robust way to use
-    # pyautogui and/or find a new backend solution to configure LoopMidi with predefined ports 
     # TODO: Look into packaging options, containerization, etc... Figure out how to wrap other people's existing 
     # software into my software package. 
     # TODO: Figure out how to make my software work for other software synths with port support and start writing 
