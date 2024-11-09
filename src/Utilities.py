@@ -46,7 +46,7 @@ def division_to_dt(division: str, tempo: int) -> int:
         int: The delay time in milliseconds.
     """
     try:
-        division_ms = NoteDivisions[division.upper()].value
+        division_ms = abs(NoteDivisions[division.upper()].value)
     except KeyError:
         raise ValueError(f"Invalid division: {division}")
     

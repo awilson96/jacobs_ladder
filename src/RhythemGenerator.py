@@ -24,7 +24,7 @@ class RhythmGenerator:
         self.midi_status = MidiStatus
         self.stash = []
     
-    def add_event(self, rhythem_note_event: RhythemNoteEvent):
+    def add_event(self, rhythem_note_event: RhythemNoteEvent, stash: bool = False):
         """Add an event using a more intuitive RhythemNoteEvent dataclass
 
         Args:
@@ -41,9 +41,9 @@ class RhythmGenerator:
                                    note=self.note_str_to_int[rhythem_note_event.note], 
                                    status=self.midi_status[rhythem_note_event.status].value,
                                    velocity=rhythem_note_event.velocity)
-        self.midi_scheduler.add_event(note_event=note_event)
+        self.midi_scheduler.add_event(note_event=note_event, stash=stash)
         
-    def add_event_with_duration(self, rhythem_note_event: RhythemNoteEvent, duration_division: str):
+    def add_event_with_duration(self, rhythem_note_event: RhythemNoteEvent, duration_division: str, stash: bool = False):
         """Add a single note with a specified duration expressed as a duration division. This method is useful if you
         only plan on playing one note for the whole duration division with no other held notes
 
@@ -63,14 +63,14 @@ class RhythmGenerator:
                                    status=self.midi_status[rhythem_note_event.status].value,
                                    velocity=rhythem_note_event.velocity)
         
-        self.midi_scheduler.add_event(note_event=note_event)
+        self.midi_scheduler.add_event(note_event=note_event, stash=stash)
         note_off_event = NoteEvent(dt=self.midi_scheduler.events[-1].dt + division_to_dt(division=duration_division, tempo=self.tempo),
                                    note=note_event.note,
                                    status=self.midi_status.NOTE_OFF.value,
                                    velocity=note_event.velocity)
-        self.midi_scheduler.add_event(note_off_event)
+        self.midi_scheduler.add_event(note_off_event, stash=stash)
         
-    def add_events(self, rhythem_note_events: list[RhythemNoteEvent]):
+    def add_events(self, rhythem_note_events: list[RhythemNoteEvent], stash: bool = False):
         """Add multiple RhythemNoteEvents
 
         Args:
@@ -89,9 +89,9 @@ class RhythmGenerator:
                                        status=self.midi_status[rhythem_note_event.status].value,
                                        velocity=rhythem_note_event.velocity)
     
-            self.midi_scheduler.add_event(note_event=note_event)
+            self.midi_scheduler.add_event(note_event=note_event, stash=stash)
             
-    def add_events_with_duration(self, rhythem_note_events: list[RhythemNoteEvent], duration_divisions: list[str]):
+    def add_events_with_duration(self, rhythem_note_events: list[RhythemNoteEvent], duration_divisions: list[str], stash: bool = False):
         """Add multiple multiple notes with a specified duration expressed as a duration division. This method is useful
         for playing a sequence individual notes for the whole duration of each notes division with no other held notes. 
 
@@ -115,20 +115,20 @@ class RhythmGenerator:
                                        status=self.midi_status[rhythem_note_event.status].value, 
                                        velocity=rhythem_note_event.velocity)
 
-            self.midi_scheduler.add_event(note_event=note_event)
+            self.midi_scheduler.add_event(note_event=note_event, stash=stash)
         
             note_off_event = NoteEvent(dt=self.midi_scheduler.events[-1].dt + division_to_dt(division=duration_division, tempo=self.tempo), 
                                        note=self.note_str_to_int[rhythem_note_event.note], 
                                        status=self.midi_status.NOTE_OFF.value, 
                                        velocity=rhythem_note_event.velocity)
-            self.midi_scheduler.add_event(note_off_event)
+            self.midi_scheduler.add_event(note_off_event, stash=stash)
             
-    def add_sustain_pedal_event(self, absolute_time: int, sustain: bool):
+    def add_sustain_pedal_event(self, absolute_time: int, sustain: bool, stash: bool = False):
         self.midi_scheduler.add_sustain_pedal_event(duration=absolute_time, sustain=sustain)
 
-    def add_sustain_pedal_event_with_duration(self, absolute_time: int, duration_division: str):
-        self.midi_scheduler.add_sustain_pedal_event(duration=absolute_time, sustain=True)
-        self.midi_scheduler.add_sustain_pedal_event(duration=absolute_time + division_to_dt(division=duration_division, tempo=self.tempo), sustain=False)
+    def add_sustain_pedal_event_with_duration(self, absolute_time: int, duration_division: str, stash: bool = False):
+        self.midi_scheduler.add_sustain_pedal_event(duration=absolute_time, sustain=True, stash=stash)
+        self.midi_scheduler.add_sustain_pedal_event(duration=absolute_time + division_to_dt(division=duration_division, tempo=self.tempo), sustain=False, stash=stash)
         
     def construct_scale(self, interval_scale: IntervalScale, duration_divisions: list[str], direction: str):
         """Construct a scale for playing back to the user which has direction ascending 'ASC', descending 'DESC', 
@@ -170,13 +170,15 @@ class RhythmGenerator:
             self.add_events_with_duration(rhythem_note_events=rhythem_note_events, duration_divisions=duration_divisions)
             self.add_events_with_duration(rhythem_note_events=rhythem_note_events[::-1][1:], duration_divisions=duration_divisions[1:])
 
-    def get_offset(self, index: int) -> int:
+    def get_offset(self, index: int, stash: bool = False) -> int:
         """Get the absolute offset for a given index
 
         Returns:
             int: the offset in milliseconds of the chosen index
         """
-        self.midi_scheduler.sort_events_by_dt(relative=False)
+        self.midi_scheduler.sort_events_by_dt(relative=False, stash=stash)
+        if stash:
+            return self.midi_scheduler.stash[index].dt
         return self.midi_scheduler.events[index].dt
             
     def set_tempo(self, tempo: int):
@@ -187,7 +189,7 @@ class RhythmGenerator:
         """
         self.tempo = tempo
 
-    def stage(self):
+    def stage_all(self):
         self.stash.extend(list(self.midi_scheduler.events)[1:])
         self.midi_scheduler.events = deque([self.midi_scheduler.events[0]])
 
@@ -218,7 +220,7 @@ if __name__ == "__main__":
     rhythem_generator.add_event(RhythemNoteEvent(offset=-1, division="ZERO", note="G4", status="NOTE_OFF", velocity=100, tempo=tempo))
     rhythem_generator.add_event(RhythemNoteEvent(offset=-1, division="ZERO", note="B4", status="NOTE_OFF", velocity=100, tempo=tempo))
 
-    rhythem_generator.midi_scheduler.sort_events_by_dt(relative=False)
+    rhythem_generator.midi_scheduler.sort_events_by_dt(relative=False, stash=False)
 
     rhythem_generator.add_events(rhythem_note_events=[RhythemNoteEvent(offset=-1, division="ZERO", note="C4", status="NOTE_ON", velocity=100, tempo=tempo),
                                                       RhythemNoteEvent(offset=-1, division="ZERO", note="E4", status="NOTE_ON", velocity=100, tempo=tempo),
@@ -238,7 +240,7 @@ if __name__ == "__main__":
                                                       RhythemNoteEvent(offset=-1, division="ZERO", note="G4", status="NOTE_OFF", velocity=100, tempo=tempo),
                                                       RhythemNoteEvent(offset=-1, division="ZERO", note="B4", status="NOTE_OFF", velocity=100, tempo=tempo)])
     
-    rhythem_generator.midi_scheduler.sort_events_by_dt(relative=False)
+    rhythem_generator.midi_scheduler.sort_events_by_dt(relative=False, stash=False)
 
     rhythem_generator.add_sustain_pedal_event(absolute_time=-1 + division_to_dt(division="ZERO", tempo=tempo), sustain=True)
     rhythem_generator.add_events_with_duration(rhythem_note_events=[RhythemNoteEvent(offset=-1, division="ZERO", note="C5", status="NOTE_ON", velocity=100, tempo=tempo),
@@ -252,7 +254,7 @@ if __name__ == "__main__":
                                                duration_divisions=["SIXTEENTH", "SIXTEENTH", "SIXTEENTH", "SIXTEENTH", "SIXTEENTH", "SIXTEENTH", "SIXTEENTH", "SIXTEENTH"])
     rhythem_generator.add_sustain_pedal_event(absolute_time=rhythem_generator.midi_scheduler.events[-10].dt + division_to_dt(division="SIXTEENTH", tempo=tempo), sustain=False)
 
-    rhythem_generator.midi_scheduler.sort_events_by_dt(relative=False)
+    rhythem_generator.midi_scheduler.sort_events_by_dt(relative=False, stash=False)
     
     for _ in range(4):
         rhythem_generator.construct_scale(interval_scale=IntervalScale(name="C5 Major", 
@@ -264,6 +266,6 @@ if __name__ == "__main__":
                                         duration_divisions=["ZERO", "ZERO", "ZERO", "ZERO", "ZERO", "ZERO"], 
                                         direction='BOTH')
 
-    rhythem_generator.midi_scheduler.sort_events_by_dt(relative=True)
+    rhythem_generator.midi_scheduler.sort_events_by_dt(relative=True, stash=False)
     rhythem_generator.midi_scheduler.schedule_events(initial_delay=0)
     

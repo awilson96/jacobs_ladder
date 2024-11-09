@@ -50,7 +50,7 @@ if __name__ == "__main__":
                                          [RhythemNoteEvent(offset=-1, division="ZERO", note="C4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)]*28,
                                           duration_divisions=["QUARTER"]*28)
     
-    polyrhythms.stage()
+    polyrhythms.stage_all()
 
     polyrhythms.create_n_1_polyrhythm(n=2, 
         rhythem_note_events=[[RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
@@ -237,5 +237,5 @@ if __name__ == "__main__":
     for event in polyrhythms.midi_scheduler.events:
         print(event)
       
-    polyrhythms.midi_scheduler.sort_events_by_dt(relative=True)
+    polyrhythms.midi_scheduler.sort_events_by_dt(relative=True, stash=False)
     polyrhythms.midi_scheduler.schedule_events(initial_delay=1000)
