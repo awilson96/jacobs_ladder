@@ -1,64 +1,73 @@
 import threading
-import time
+from time import sleep
+from collections import deque
+from DataClasses import NoteEvent
 
-class CircularPriorityQueue:
+class CircularQueue:
     def __init__(self):
-        self.queue = []
         self.lock = threading.Lock()
-        self.can_enqueue = threading.Condition(self.lock)
-        self.last_dequeue_time = 0
+        self.condition = threading.Condition(self.lock)
+        self.circular_queue = deque()
+        self.interrupt = False
 
-    def dequeue(self):
+    def dequeue(self) -> NoteEvent:
+        """Dequeue items from the circular queue, stopping all enqueues by using a software interrupt
+
+        Returns:
+            NoteEvent: a NoteEvent dataclass for scheduling
+        """
+        self.interrupt = True
         with self.lock:
-            if not self.queue:
-                print("Queue is empty! Cannot dequeue.")
+            if not self.circular_queue:
+                print("Queue is emtpy!")
                 return None
-            
-            item = self.queue.pop(0)  # FIFO behavior
-            self.last_dequeue_time = time.time() * 1000  # Milliseconds for precision
-            print(f"Dequeued: {item} at {int(self.last_dequeue_time)} ms")
-            
-            # Notify any waiting enqueues that dequeue has completed
-            self.can_enqueue.notify()
+            item = self.circular_queue.popleft()
+            self.condition.notify()
+            self.interrupt = False
             return item
 
-    def enqueue(self, item):
-        with self.can_enqueue:
-            # Wait if dequeue is in progress or another enqueue is pending
-            while self.last_dequeue_time == 0 or len(self.queue) > 0:
-                self.can_enqueue.wait()
-            
-            self.queue.append(item)
-            enqueue_time = time.time() * 1000
-            print(f"Enqueued: {item} at {int(enqueue_time)} ms")
-            self.can_enqueue.notify()  # Signal next enqueue opportunity
+    def _enqueue(self, note_events: list[NoteEvent]) -> int | None:
+        """Create an interruptable append process that can be exitted anytime whenever the dequeue method is called.  Only appends items one at a time
+        checking at each iteration of the loop to see if the dequeue method has been called and exitting the function if so returning an index if interrupted.
+        Returns None if the process was successful withoout interruption.
 
-    def enqueue_multiple(self, items):
-        for item in items:
-            self.enqueue(item)
+        Args:
+            note_events (list[NoteEvent]): A list of NoteEvent(s) to be appended to the end of the deque()
 
-# Example thread functions for enqueue and dequeue operations
-def scheduled_dequeue(q, interval_ms):
-    while True:
-        time.sleep(interval_ms / 1000)  # Convert ms to seconds
-        q.dequeue()
+        Returns:
+            int | None: returns an int if the process was interrupted with the index where the process left off, 
+                        None if the operation was successful without interruption
+        """
+        with self.condition:
+            if isinstance(note_events, list):
+                for index, note_event in enumerate(note_events):
+                    # Check continously to see if the operation has been interrupted
+                    if not self.interrupt:
+                        print(f"Appending a note event {index}")
+                        self.circular_queue.append(note_event)
+                    else:
+                        return index
+                return None
+            else:
+                raise TypeError(f"Expected a list of NoteEvent(s), instead got {type(note_events)}")
+       
+                
+    def enqueue(self, note_events: list[NoteEvent]) -> None:
+        """Enqueue new NoteEvents to the end of the deque() in a thread safe manner prioritizing dequeue operations. Do not stop until all NoteEvents in the 
+        note_events list have been successfully added.
 
-def controlled_enqueue(q, items, delay_ms):
-    for item in items:
-        time.sleep(delay_ms / 1000)  # Simulate delay between enqueues
-        q.enqueue(item)
+        Args:
+            note_events (list[NoteEvent]): a list of NoteEvent(s) to be added to the end of the circular queue.
+        """
+        remaining_notes = note_events
+        while remaining_notes:
+            index_thread_left_off_at = self._enqueue(note_events=remaining_notes)
+            if index_thread_left_off_at:
+                remaining_notes = remaining_notes[index_thread_left_off_at:]
+            else:
+                return
 
-# Initialize queue and start threads
-q = CircularPriorityQueue()
+if __name__ == "__main__":
+    circularQueue = CircularQueue()
 
-# Dequeue thread running at precise intervals
-dequeue_thread = threading.Thread(target=scheduled_dequeue, args=(q, 28))
 
-# Enqueue items with delays between them
-enqueue_thread = threading.Thread(target=controlled_enqueue, args=(q, [1, 2, 3, 4, 5], 17))
-
-dequeue_thread.start()
-enqueue_thread.start()
-
-dequeue_thread.join()
-enqueue_thread.join()
