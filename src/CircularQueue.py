@@ -1,7 +1,8 @@
 import threading
 from time import sleep
 from collections import deque
-from DataClasses import NoteEvent
+
+from .DataClasses import NoteEvent
 
 class CircularQueue:
     def __init__(self):
@@ -43,7 +44,6 @@ class CircularQueue:
                 for index, note_event in enumerate(note_events):
                     # Check continously to see if the operation has been interrupted
                     if not self.interrupt:
-                        print(f"Appending a note event {index}")
                         self.circular_queue.append(note_event)
                     else:
                         return index

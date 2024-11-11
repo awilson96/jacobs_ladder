@@ -1,9 +1,11 @@
 import threading
 from collections import deque
 import rtmidi
+import time
 
 from .DataClasses import NoteEvent
 from .Dictionaries import get_midi_notes
+from .CircularQueue import CircularQueue
 
 class MidiScheduler:
     
@@ -15,9 +17,8 @@ class MidiScheduler:
         """
         self.midi_out = rtmidi.MidiOut()
         self.output_port = midi_out_port
-        self.events = deque()
+        self.events = CircularQueue()
         self.stash = []
-        self.playing = False
         
         self.CONTROL_CHANGE_STATUS = 176
         self.SUSTAIN_PEDAL_NOTE = 64
@@ -49,14 +50,14 @@ class MidiScheduler:
         Args:
             note_event (NoteEvent): A NoteEvent object to be added.
         """
-        self.events.append(note_event) if not stash else self.stash.append(note_event)
+        self.events.enqueue(note_events=[note_event]) if not stash else self.stash.append(note_event)
         
     def add_event_with_duration(self, note_event: NoteEvent, duration: int, stash: bool = False):
         self.add_event(note_event=note_event, stash=stash)
         note_off_event = NoteEvent(
             dt=duration, note=note_event.note, status=self.NOTE_OFF_STATUS, velocity=note_event.velocity
             )
-        self.events.append(note_off_event) if not stash else self.stash.append(note_off_event)
+        self.events.enqueue(note_events=[note_off_event]) if not stash else self.stash.append(note_off_event)
 
     def add_events(self, note_events: list[NoteEvent], stash: bool = False):
         """Add multiple NoteEvents to the end of the deque.
@@ -64,7 +65,7 @@ class MidiScheduler:
         Args:
             note_events (list[NoteEvent]): A list of NoteEvent objects to be added.
         """
-        self.events.extend(note_events) if not stash else self.stash.extend(note_events)
+        self.events.enqueue(note_events=note_events) if not stash else self.stash.extend(note_events)
     
     def add_events_with_duration(self, note_events: list[NoteEvent], durations: list[int], stash: bool = False):
         assert(len(note_events) == len(durations))
@@ -74,9 +75,10 @@ class MidiScheduler:
             self.add_event(note_event=NoteEvent(dt=duration, note=note_event.note, status=self.NOTE_OFF_STATUS, velocity=note_event.velocity), stash=stash)
             
     def add_sustain_pedal_event(self, duration: int, sustain: bool, stash: bool = False):
+        # Special logic allowing duration to be used as an indexing offset from previous notes
         if duration <= -1:
-            assert(len(self.events) >= abs(duration))
-            duration = self.events[duration].dt
+            assert(len(self.events.circular_queue) >= abs(duration))
+            duration = self.events.circular_queue[duration].dt
         if sustain:
             self.add_event(note_event=NoteEvent(dt=duration, note=self.SUSTAIN_PEDAL_NOTE, status=self.CONTROL_CHANGE_STATUS, velocity=self.MAX_VELOCITY), stash=stash)
         else:
@@ -90,12 +92,9 @@ class MidiScheduler:
         """
         
         # If there are no events left to process then set playing to false and return
-        if len(self.events) == 0:
+        if len(self.events.circular_queue) == 0:
             print("No more events")
-            self.playing = False
             return
-            
-        self.playing = True
     
         # Schedule events
         if initial_delay > 0:
@@ -105,14 +104,13 @@ class MidiScheduler:
 
     def play_events(self):
         """Play the first event and schedule the subsequent events."""
-        current_event = self.events.popleft()
+        current_event = self.events.dequeue()
         self.play_event(current_event)
 
-        if self.events:
-            next_event = self.events[0]
+        if self.events.circular_queue:
+            next_event = self.events.circular_queue[0]
             threading.Timer(next_event.dt / 1000, self.schedule_events).start()
         else:
-            self.playing = False
             threading.Timer(0, self.schedule_events).start()
 
     def play_event(self, event: NoteEvent):
@@ -127,7 +125,7 @@ class MidiScheduler:
     def sort_events_by_dt(self, relative: bool, stash: bool = False):
         """Sort the events by their dt attribute and convert to relative time."""
         if not stash:
-            sorted_events = sorted(self.events, key=lambda event: event.dt)
+            sorted_events = sorted(self.events.circular_queue, key=lambda event: event.dt)
 
             if relative:
                 last_dt = 0  
@@ -135,7 +133,7 @@ class MidiScheduler:
                     event.dt -= last_dt
                     last_dt += event.dt
 
-            self.events = deque(sorted_events)
+            self.events.circular_queue = deque(sorted_events)
         else:
             sorted_events = sorted(self.stash, key=lambda event: event.dt)
 
@@ -148,7 +146,8 @@ class MidiScheduler:
             self.stash = deque(sorted_events)
 
     def pop_stash(self):
-        self.events.extend(self.stash) 
+        """Add the stash to the end of the circular queue"""
+        self.events.enqueue(note_events=list(self.stash)) 
         self.stash = []
 
     def get_absolute_length(self) -> int:
@@ -157,11 +156,11 @@ class MidiScheduler:
         Returns:
             int: the amount of time allocated for events 
         """
-        return self.events[-1].dt / 1000
+        return self.events.circular_queue[-1].dt / 1000
 
     def clear_events(self):
         """Clear all the scheduled MIDI events."""
-        self.events.clear()
+        self.events.circular_queue = deque()
 
 if __name__ == "__main__":
     midi_scheduler = MidiScheduler(midi_out_port="jacob")
@@ -173,6 +172,18 @@ if __name__ == "__main__":
     midi_scheduler.add_events_with_duration(note_events=[NoteEvent(dt=1000, note=62, status=144, velocity=100), NoteEvent(dt=0, note=65, status=144, velocity=100),NoteEvent(dt=0, note=69, status=144, velocity=100), NoteEvent(dt=0, note=72, status=144, velocity=100)], durations=[1000, 0, 0, 0])
     midi_scheduler.add_events_with_duration(note_events=[NoteEvent(dt=1000, note=60, status=144, velocity=100), NoteEvent(dt=0, note=64, status=144, velocity=100),NoteEvent(dt=0, note=67, status=144, velocity=100), NoteEvent(dt=0, note=71, status=144, velocity=100)], durations=[1000, 0, 0, 0])
     midi_scheduler.schedule_events(initial_delay=1000)
+
+    time.sleep(2)
+
+    midi_scheduler.add_event(note_event=NoteEvent(dt=0, note=60, status=144, velocity=100), stash=True)
+    midi_scheduler.add_events(note_events=[NoteEvent(dt=0, note=64, status=144, velocity=100), NoteEvent(dt=0, note=67, status=144, velocity=100)], stash=True)
+    midi_scheduler.add_events(note_events=[NoteEvent(dt=1000, note=60, status=128, velocity=100), NoteEvent(dt=0, note=64, status=128, velocity=100), NoteEvent(dt=0, note=67, status=128, velocity=100)], stash=True)
+    midi_scheduler.add_events_with_duration(note_events=[NoteEvent(dt=1000, note=62, status=144, velocity=100), NoteEvent(dt=0, note=65, status=144, velocity=100),NoteEvent(dt=0, note=69, status=144, velocity=100), NoteEvent(dt=0, note=72, status=144, velocity=100)], durations=[1000, 0, 0, 0], stash=True)
+    midi_scheduler.add_events_with_duration(note_events=[NoteEvent(dt=1000, note=64, status=144, velocity=100), NoteEvent(dt=0, note=67, status=144, velocity=100),NoteEvent(dt=0, note=71, status=144, velocity=100), NoteEvent(dt=0, note=72, status=144, velocity=100)], durations=[1000, 0, 0, 0], stash=True)
+    midi_scheduler.add_events_with_duration(note_events=[NoteEvent(dt=1000, note=62, status=144, velocity=100), NoteEvent(dt=0, note=65, status=144, velocity=100),NoteEvent(dt=0, note=69, status=144, velocity=100), NoteEvent(dt=0, note=72, status=144, velocity=100)], durations=[1000, 0, 0, 0], stash=True)
+    midi_scheduler.add_events_with_duration(note_events=[NoteEvent(dt=1000, note=60, status=144, velocity=100), NoteEvent(dt=0, note=64, status=144, velocity=100),NoteEvent(dt=0, note=67, status=144, velocity=100), NoteEvent(dt=0, note=71, status=144, velocity=100)], durations=[1000, 0, 0, 0], stash=True)
+    midi_scheduler.pop_stash()
+
     
     # Expected sequence:
     # initial delay of 1000 ms
