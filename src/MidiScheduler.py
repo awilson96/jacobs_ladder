@@ -175,9 +175,7 @@ if __name__ == "__main__":
 
     time.sleep(2)
 
-    midi_scheduler.add_event(note_event=NoteEvent(dt=0, note=60, status=144, velocity=100), stash=True)
-    midi_scheduler.add_events(note_events=[NoteEvent(dt=0, note=64, status=144, velocity=100), NoteEvent(dt=0, note=67, status=144, velocity=100)], stash=True)
-    midi_scheduler.add_events(note_events=[NoteEvent(dt=1000, note=60, status=128, velocity=100), NoteEvent(dt=0, note=64, status=128, velocity=100), NoteEvent(dt=0, note=67, status=128, velocity=100)], stash=True)
+    midi_scheduler.add_events(note_events=[NoteEvent(dt=0, note=60, status=128, velocity=100), NoteEvent(dt=0, note=64, status=128, velocity=100), NoteEvent(dt=0, note=67, status=128, velocity=100)], stash=True)
     midi_scheduler.add_events_with_duration(note_events=[NoteEvent(dt=1000, note=62, status=144, velocity=100), NoteEvent(dt=0, note=65, status=144, velocity=100),NoteEvent(dt=0, note=69, status=144, velocity=100), NoteEvent(dt=0, note=72, status=144, velocity=100)], durations=[1000, 0, 0, 0], stash=True)
     midi_scheduler.add_events_with_duration(note_events=[NoteEvent(dt=1000, note=64, status=144, velocity=100), NoteEvent(dt=0, note=67, status=144, velocity=100),NoteEvent(dt=0, note=71, status=144, velocity=100), NoteEvent(dt=0, note=72, status=144, velocity=100)], durations=[1000, 0, 0, 0], stash=True)
     midi_scheduler.add_events_with_duration(note_events=[NoteEvent(dt=1000, note=62, status=144, velocity=100), NoteEvent(dt=0, note=65, status=144, velocity=100),NoteEvent(dt=0, note=69, status=144, velocity=100), NoteEvent(dt=0, note=72, status=144, velocity=100)], durations=[1000, 0, 0, 0], stash=True)
