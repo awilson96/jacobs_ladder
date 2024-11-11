@@ -22,7 +22,7 @@ class NoteEvent:
     velocity: int
     
 @dataclass
-class RhythemNoteEvent:
+class RhythmNoteEvent:
     offset: float
     division: str
     note: str

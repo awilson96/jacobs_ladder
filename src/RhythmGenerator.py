@@ -1,7 +1,8 @@
 from bidict import bidict
 from collections import deque
+from time import sleep
 
-from .DataClasses import IntervalScale, NoteEvent, RhythemNoteEvent
+from .DataClasses import IntervalScale, NoteEvent, RhythmNoteEvent
 from .Dictionaries import notes_to_midi
 from .Enums import NoteDivisions, MidiStatus
 from .MidiScheduler import MidiScheduler
@@ -24,15 +25,15 @@ class RhythmGenerator:
         self.midi_status = MidiStatus
         self.stash = []
     
-    def add_event(self, rhythem_note_event: RhythemNoteEvent, stash: bool = False):
-        """Add an event using a more intuitive RhythemNoteEvent dataclass
+    def add_event(self, rhythem_note_event: RhythmNoteEvent, stash: bool = False):
+        """Add an event using a more intuitive RhythmNoteEvent dataclass
 
         Args:
-            rhythem_note_event (RhythemNoteEvent): a RhythemNoteEvent dataclass to add to the event sequence
+            rhythem_note_event (RhythmNoteEvent): a RhythmNoteEvent dataclass to add to the event sequence
         """
         if rhythem_note_event.offset <= -1:
-            assert(len(self.midi_scheduler.events) >= abs(rhythem_note_event.offset))
-            note_event = NoteEvent(dt=self.midi_scheduler.events[rhythem_note_event.offset].dt + division_to_dt(division=rhythem_note_event.division, tempo=self.tempo), 
+            assert(len(self.midi_scheduler.events.circular_queue) >= abs(rhythem_note_event.offset))
+            note_event = NoteEvent(dt=self.midi_scheduler.events.circular_queue[rhythem_note_event.offset].dt + division_to_dt(division=rhythem_note_event.division, tempo=self.tempo), 
                                    note=self.note_str_to_int[rhythem_note_event.note], 
                                    status=self.midi_status[rhythem_note_event.status].value, 
                                    velocity=rhythem_note_event.velocity)
@@ -43,17 +44,17 @@ class RhythmGenerator:
                                    velocity=rhythem_note_event.velocity)
         self.midi_scheduler.add_event(note_event=note_event, stash=stash)
         
-    def add_event_with_duration(self, rhythem_note_event: RhythemNoteEvent, duration_division: str, stash: bool = False):
+    def add_event_with_duration(self, rhythem_note_event: RhythmNoteEvent, duration_division: str, stash: bool = False):
         """Add a single note with a specified duration expressed as a duration division. This method is useful if you
         only plan on playing one note for the whole duration division with no other held notes
 
         Args:
-            rhythem_note_event (RhythemNoteEvent): a RhythemNoteEvent dataclass to add NOTE_ON and NOTE_OFF messages for
+            rhythem_note_event (RhythmNoteEvent): a RhythmNoteEvent dataclass to add NOTE_ON and NOTE_OFF messages for
             duration_division (str): the division length for which the note should play (i.e. quarter_note, half_note, etc)
         """
         if rhythem_note_event.offset <= -1:
-            assert(len(self.midi_scheduler.events) >= abs(rhythem_note_event.offset))
-            note_event = NoteEvent(dt=self.midi_scheduler.events[rhythem_note_event.offset].dt + division_to_dt(division=rhythem_note_event.division, tempo=self.tempo), 
+            assert(len(self.midi_scheduler.events.circular_queue) >= abs(rhythem_note_event.offset))
+            note_event = NoteEvent(dt=self.midi_scheduler.events.circular_queue[rhythem_note_event.offset].dt + division_to_dt(division=rhythem_note_event.division, tempo=self.tempo), 
                                    note=self.note_str_to_int[rhythem_note_event.note], 
                                    status=self.midi_status[rhythem_note_event.status].value, 
                                    velocity=rhythem_note_event.velocity)
@@ -64,22 +65,22 @@ class RhythmGenerator:
                                    velocity=rhythem_note_event.velocity)
         
         self.midi_scheduler.add_event(note_event=note_event, stash=stash)
-        note_off_event = NoteEvent(dt=self.midi_scheduler.events[-1].dt + division_to_dt(division=duration_division, tempo=self.tempo),
+        note_off_event = NoteEvent(dt=self.midi_scheduler.events.circular_queue[-1].dt + division_to_dt(division=duration_division, tempo=self.tempo),
                                    note=note_event.note,
                                    status=self.midi_status.NOTE_OFF.value,
                                    velocity=note_event.velocity)
         self.midi_scheduler.add_event(note_off_event, stash=stash)
         
-    def add_events(self, rhythem_note_events: list[RhythemNoteEvent], stash: bool = False):
-        """Add multiple RhythemNoteEvents
+    def add_events(self, rhythem_note_events: list[RhythmNoteEvent], stash: bool = False):
+        """Add multiple RhythmNoteEvents
 
         Args:
-            rhythem_note_events (list[RhythemNoteEvent]): a list of RhythemNoteEvent dataclasses to add to the event queue
+            rhythem_note_events (list[RhythmNoteEvent]): a list of RhythmNoteEvent dataclasses to add to the event queue
         """
         for rhythem_note_event in rhythem_note_events:
             if rhythem_note_event.offset <= -1:
-                assert(len(self.midi_scheduler.events) >= abs(rhythem_note_event.offset))
-                note_event = NoteEvent(dt=self.midi_scheduler.events[rhythem_note_event.offset].dt + division_to_dt(division=rhythem_note_event.division, tempo=self.tempo), 
+                assert(len(self.midi_scheduler.events.circular_queue) >= abs(rhythem_note_event.offset))
+                note_event = NoteEvent(dt=self.midi_scheduler.events.circular_queue[rhythem_note_event.offset].dt + division_to_dt(division=rhythem_note_event.division, tempo=self.tempo), 
                                        note=self.note_str_to_int[rhythem_note_event.note], 
                                        status=self.midi_status[rhythem_note_event.status].value, 
                                        velocity=rhythem_note_event.velocity)
@@ -91,12 +92,12 @@ class RhythmGenerator:
     
             self.midi_scheduler.add_event(note_event=note_event, stash=stash)
             
-    def add_events_with_duration(self, rhythem_note_events: list[RhythemNoteEvent], duration_divisions: list[str], stash: bool = False):
+    def add_events_with_duration(self, rhythem_note_events: list[RhythmNoteEvent], duration_divisions: list[str], stash: bool = False):
         """Add multiple multiple notes with a specified duration expressed as a duration division. This method is useful
         for playing a sequence individual notes for the whole duration of each notes division with no other held notes. 
 
         Args:
-            rhythem_note_events (list[RhythemNoteEvent]): a list of RhythemNoteEvents for adding to the event queue
+            rhythem_note_events (list[RhythmNoteEvent]): a list of RhythmNoteEvents for adding to the event queue
             duration_divisions (list[str]): a list of duration divisions marking the placement of the NOTE_OFF event as 
                 a time offset from the NOTE_ON event. Note that the duration_divisions must be less than or equal to
                 the division parameter of each individual note for the function to work properly.
@@ -104,8 +105,8 @@ class RhythmGenerator:
         assert(len(rhythem_note_events) == len(duration_divisions))
         for rhythem_note_event, duration_division in zip(rhythem_note_events, duration_divisions):
             if rhythem_note_event.offset <= -1:
-                assert(len(self.midi_scheduler.events) >= abs(rhythem_note_event.offset))
-                note_event = NoteEvent(dt=self.midi_scheduler.events[rhythem_note_event.offset].dt + division_to_dt(division=rhythem_note_event.division, tempo=self.tempo), 
+                assert(len(self.midi_scheduler.events.circular_queue) >= abs(rhythem_note_event.offset))
+                note_event = NoteEvent(dt=self.midi_scheduler.events.circular_queue[rhythem_note_event.offset].dt + division_to_dt(division=rhythem_note_event.division, tempo=self.tempo), 
                                        note=self.note_str_to_int[rhythem_note_event.note], 
                                        status=self.midi_status[rhythem_note_event.status].value, 
                                        velocity=rhythem_note_event.velocity)
@@ -117,7 +118,7 @@ class RhythmGenerator:
 
             self.midi_scheduler.add_event(note_event=note_event, stash=stash)
         
-            note_off_event = NoteEvent(dt=self.midi_scheduler.events[-1].dt + division_to_dt(division=duration_division, tempo=self.tempo), 
+            note_off_event = NoteEvent(dt=self.midi_scheduler.events.circular_queue[-1].dt + division_to_dt(division=duration_division, tempo=self.tempo), 
                                        note=self.note_str_to_int[rhythem_note_event.note], 
                                        status=self.midi_status.NOTE_OFF.value, 
                                        velocity=rhythem_note_event.velocity)
@@ -149,14 +150,14 @@ class RhythmGenerator:
             raise ValueError(f"The direction you provided '{direction}', is not valid. "
                                 "\nPlease provide one of the following directions: " + ", ".join(valid_directions))
         
-        rhythem_note_events = [RhythemNoteEvent(offset=-1,
+        rhythem_note_events = [RhythmNoteEvent(offset=-1,
                                                 division=interval_scale.divisions[0], 
                                                 note=self.note_str_to_int.inv[interval_scale.starting_note], 
                                                 status='NOTE_ON',
                                                 velocity=interval_scale.velocities[0],
                                                 tempo=self.tempo)]
         for index, interval in enumerate(interval_scale.intervals, start=1):
-            rhythem_note_events.append(RhythemNoteEvent(offset=-1, 
+            rhythem_note_events.append(RhythmNoteEvent(offset=-1, 
                                                         division=interval_scale.divisions[index],
                                                         note=self.note_str_to_int.inv[self.note_str_to_int[rhythem_note_events[index-1].note] + interval], 
                                                         status='NOTE_ON', 
@@ -179,7 +180,7 @@ class RhythmGenerator:
         self.midi_scheduler.sort_events_by_dt(relative=False, stash=stash)
         if stash:
             return self.midi_scheduler.stash[index].dt
-        return self.midi_scheduler.events[index].dt
+        return self.midi_scheduler.events.circular_queue[index].dt
             
     def set_tempo(self, tempo: int):
         """Set a new tempo for the RhythmGenerator.
@@ -189,83 +190,78 @@ class RhythmGenerator:
         """
         self.tempo = tempo
 
-    def stage_all(self):
-        self.stash.extend(list(self.midi_scheduler.events)[1:])
-        self.midi_scheduler.events = deque([self.midi_scheduler.events[0]])
-
     def pop_stash(self):
-        self.midi_scheduler.events = list(self.midi_scheduler.events)
-        self.midi_scheduler.events.extend(self.stash)
-        self.midi_scheduler.events = deque(self.midi_scheduler.events)
+        self.midi_scheduler.events.enqueue(self.stash)
 
 if __name__ == "__main__":
     tempo = 120
     rhythem_generator = RhythmGenerator(tempo=tempo)
-    rhythem_generator.add_event(RhythemNoteEvent(offset=0, division="ZERO", note="C4", status="NOTE_ON", velocity=100, tempo=tempo))
-    rhythem_generator.add_event(RhythemNoteEvent(offset=0, division="ZERO", note="E4", status="NOTE_ON", velocity=100, tempo=tempo))
-    rhythem_generator.add_event(RhythemNoteEvent(offset=0, division="ZERO", note="G4", status="NOTE_ON", velocity=100, tempo=tempo))
-    rhythem_generator.add_event(RhythemNoteEvent(offset=0, division="ZERO", note="B4", status="NOTE_ON", velocity=100, tempo=tempo))
+    rhythem_generator.add_event(RhythmNoteEvent(offset=0, division="ZERO", note="C4", status="NOTE_OFF", velocity=100, tempo=tempo))
+    rhythem_generator.add_event(RhythmNoteEvent(offset=0, division="ZERO", note="E4", status="NOTE_ON", velocity=100, tempo=tempo))
+    rhythem_generator.add_event(RhythmNoteEvent(offset=0, division="ZERO", note="G4", status="NOTE_ON", velocity=100, tempo=tempo))
+    rhythem_generator.add_event(RhythmNoteEvent(offset=0, division="ZERO", note="B4", status="NOTE_ON", velocity=100, tempo=tempo))
 
-    rhythem_generator.add_event_with_duration(RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=100, tempo=tempo), duration_division="QUARTER")
-    rhythem_generator.add_event_with_duration(RhythemNoteEvent(offset=-1, division="ZERO", note="D5", status="NOTE_ON", velocity=100, tempo=tempo), duration_division="QUARTER")
-    rhythem_generator.add_event_with_duration(RhythemNoteEvent(offset=-1, division="ZERO", note="E5", status="NOTE_ON", velocity=100, tempo=tempo), duration_division="QUARTER")
-    rhythem_generator.add_event_with_duration(RhythemNoteEvent(offset=-1, division="ZERO", note="F5", status="NOTE_ON", velocity=100, tempo=tempo), duration_division="QUARTER")
-    rhythem_generator.add_event_with_duration(RhythemNoteEvent(offset=-1, division="ZERO", note="G5", status="NOTE_ON", velocity=100, tempo=tempo), duration_division="QUARTER")
-    rhythem_generator.add_event_with_duration(RhythemNoteEvent(offset=-1, division="ZERO", note="A5", status="NOTE_ON", velocity=100, tempo=tempo), duration_division="QUARTER")
-    rhythem_generator.add_event_with_duration(RhythemNoteEvent(offset=-1, division="ZERO", note="B5", status="NOTE_ON", velocity=100, tempo=tempo), duration_division="QUARTER")
-    rhythem_generator.add_event_with_duration(RhythemNoteEvent(offset=-1, division="ZERO", note="C6", status="NOTE_ON", velocity=100, tempo=tempo), duration_division="QUARTER")
+    rhythem_generator.add_event_with_duration(RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=100, tempo=tempo), duration_division="QUARTER")
+    rhythem_generator.add_event_with_duration(RhythmNoteEvent(offset=-1, division="ZERO", note="D5", status="NOTE_ON", velocity=100, tempo=tempo), duration_division="QUARTER")
+    rhythem_generator.add_event_with_duration(RhythmNoteEvent(offset=-1, division="ZERO", note="E5", status="NOTE_ON", velocity=100, tempo=tempo), duration_division="QUARTER")
+    rhythem_generator.add_event_with_duration(RhythmNoteEvent(offset=-1, division="ZERO", note="F5", status="NOTE_ON", velocity=100, tempo=tempo), duration_division="QUARTER")
+    rhythem_generator.add_event_with_duration(RhythmNoteEvent(offset=-1, division="ZERO", note="G5", status="NOTE_ON", velocity=100, tempo=tempo), duration_division="QUARTER")
+    rhythem_generator.add_event_with_duration(RhythmNoteEvent(offset=-1, division="ZERO", note="A5", status="NOTE_ON", velocity=100, tempo=tempo), duration_division="QUARTER")
+    rhythem_generator.add_event_with_duration(RhythmNoteEvent(offset=-1, division="ZERO", note="B5", status="NOTE_ON", velocity=100, tempo=tempo), duration_division="QUARTER")
+    rhythem_generator.add_event_with_duration(RhythmNoteEvent(offset=-1, division="ZERO", note="C6", status="NOTE_ON", velocity=100, tempo=tempo), duration_division="QUARTER")
     
-    rhythem_generator.add_event(RhythemNoteEvent(offset=-1, division="ZERO", note="C4", status="NOTE_OFF", velocity=100, tempo=tempo))
-    rhythem_generator.add_event(RhythemNoteEvent(offset=-1, division="ZERO", note="E4", status="NOTE_OFF", velocity=100, tempo=tempo))
-    rhythem_generator.add_event(RhythemNoteEvent(offset=-1, division="ZERO", note="G4", status="NOTE_OFF", velocity=100, tempo=tempo))
-    rhythem_generator.add_event(RhythemNoteEvent(offset=-1, division="ZERO", note="B4", status="NOTE_OFF", velocity=100, tempo=tempo))
+    rhythem_generator.add_event(RhythmNoteEvent(offset=-1, division="ZERO", note="C4", status="NOTE_OFF", velocity=100, tempo=tempo))
+    rhythem_generator.add_event(RhythmNoteEvent(offset=-1, division="ZERO", note="E4", status="NOTE_OFF", velocity=100, tempo=tempo))
+    rhythem_generator.add_event(RhythmNoteEvent(offset=-1, division="ZERO", note="G4", status="NOTE_OFF", velocity=100, tempo=tempo))
+    rhythem_generator.add_event(RhythmNoteEvent(offset=-1, division="ZERO", note="B4", status="NOTE_OFF", velocity=100, tempo=tempo))
 
     rhythem_generator.midi_scheduler.sort_events_by_dt(relative=False, stash=False)
 
-    rhythem_generator.add_events(rhythem_note_events=[RhythemNoteEvent(offset=-1, division="ZERO", note="C4", status="NOTE_ON", velocity=100, tempo=tempo),
-                                                      RhythemNoteEvent(offset=-1, division="ZERO", note="E4", status="NOTE_ON", velocity=100, tempo=tempo),
-                                                      RhythemNoteEvent(offset=-1, division="ZERO", note="G4", status="NOTE_ON", velocity=100, tempo=tempo),
-                                                      RhythemNoteEvent(offset=-1, division="ZERO", note="B4", status="NOTE_ON", velocity=100, tempo=tempo)])
-    rhythem_generator.add_events_with_duration(rhythem_note_events=[RhythemNoteEvent(offset=-1, division="ZERO", note="C5", status="NOTE_ON", velocity=100, tempo=tempo),
-                                                                    RhythemNoteEvent(offset=-1, division="ZERO", note="D5", status="NOTE_ON", velocity=100, tempo=tempo),
-                                                                    RhythemNoteEvent(offset=-1, division="ZERO", note="E5", status="NOTE_ON", velocity=100, tempo=tempo),
-                                                                    RhythemNoteEvent(offset=-1, division="ZERO", note="F5", status="NOTE_ON", velocity=100, tempo=tempo),
-                                                                    RhythemNoteEvent(offset=-1, division="ZERO", note="G5", status="NOTE_ON", velocity=100, tempo=tempo),
-                                                                    RhythemNoteEvent(offset=-1, division="ZERO", note="A5", status="NOTE_ON", velocity=100, tempo=tempo),
-                                                                    RhythemNoteEvent(offset=-1, division="ZERO", note="B5", status="NOTE_ON", velocity=100, tempo=tempo),
-                                                                    RhythemNoteEvent(offset=-1, division="ZERO", note="C6", status="NOTE_ON", velocity=100, tempo=tempo)], 
+    rhythem_generator.add_events(rhythem_note_events=[RhythmNoteEvent(offset=-1, division="ZERO", note="C4", status="NOTE_ON", velocity=100, tempo=tempo),
+                                                      RhythmNoteEvent(offset=-1, division="ZERO", note="E4", status="NOTE_ON", velocity=100, tempo=tempo),
+                                                      RhythmNoteEvent(offset=-1, division="ZERO", note="G4", status="NOTE_ON", velocity=100, tempo=tempo),
+                                                      RhythmNoteEvent(offset=-1, division="ZERO", note="B4", status="NOTE_ON", velocity=100, tempo=tempo)])
+    rhythem_generator.add_events_with_duration(rhythem_note_events=[RhythmNoteEvent(offset=-1, division="ZERO", note="C5", status="NOTE_ON", velocity=100, tempo=tempo),
+                                                                    RhythmNoteEvent(offset=-1, division="ZERO", note="D5", status="NOTE_ON", velocity=100, tempo=tempo),
+                                                                    RhythmNoteEvent(offset=-1, division="ZERO", note="E5", status="NOTE_ON", velocity=100, tempo=tempo),
+                                                                    RhythmNoteEvent(offset=-1, division="ZERO", note="F5", status="NOTE_ON", velocity=100, tempo=tempo),
+                                                                    RhythmNoteEvent(offset=-1, division="ZERO", note="G5", status="NOTE_ON", velocity=100, tempo=tempo),
+                                                                    RhythmNoteEvent(offset=-1, division="ZERO", note="A5", status="NOTE_ON", velocity=100, tempo=tempo),
+                                                                    RhythmNoteEvent(offset=-1, division="ZERO", note="B5", status="NOTE_ON", velocity=100, tempo=tempo),
+                                                                    RhythmNoteEvent(offset=-1, division="ZERO", note="C6", status="NOTE_ON", velocity=100, tempo=tempo)], 
                                                duration_divisions=["EIGHTH", "EIGHTH", "EIGHTH", "EIGHTH", "EIGHTH", "EIGHTH", "EIGHTH", "EIGHTH"])
-    rhythem_generator.add_events(rhythem_note_events=[RhythemNoteEvent(offset=rhythem_generator.midi_scheduler.events[-6].dt, division="ZERO", note="C4", status="NOTE_OFF", velocity=100, tempo=tempo),
-                                                      RhythemNoteEvent(offset=-1, division="ZERO", note="E4", status="NOTE_OFF", velocity=100, tempo=tempo),
-                                                      RhythemNoteEvent(offset=-1, division="ZERO", note="G4", status="NOTE_OFF", velocity=100, tempo=tempo),
-                                                      RhythemNoteEvent(offset=-1, division="ZERO", note="B4", status="NOTE_OFF", velocity=100, tempo=tempo)])
+    rhythem_generator.add_events(rhythem_note_events=[RhythmNoteEvent(offset=rhythem_generator.midi_scheduler.events.circular_queue[-6].dt, division="ZERO", note="C4", status="NOTE_OFF", velocity=100, tempo=tempo),
+                                                      RhythmNoteEvent(offset=-1, division="ZERO", note="E4", status="NOTE_OFF", velocity=100, tempo=tempo),
+                                                      RhythmNoteEvent(offset=-1, division="ZERO", note="G4", status="NOTE_OFF", velocity=100, tempo=tempo),
+                                                      RhythmNoteEvent(offset=-1, division="ZERO", note="B4", status="NOTE_OFF", velocity=100, tempo=tempo)])
     
     rhythem_generator.midi_scheduler.sort_events_by_dt(relative=False, stash=False)
 
     rhythem_generator.add_sustain_pedal_event(absolute_time=-1 + division_to_dt(division="ZERO", tempo=tempo), sustain=True)
-    rhythem_generator.add_events_with_duration(rhythem_note_events=[RhythemNoteEvent(offset=-1, division="ZERO", note="C5", status="NOTE_ON", velocity=100, tempo=tempo),
-                                                                    RhythemNoteEvent(offset=-1, division="ZERO", note="D5", status="NOTE_ON", velocity=100, tempo=tempo),
-                                                                    RhythemNoteEvent(offset=-1, division="ZERO", note="E5", status="NOTE_ON", velocity=100, tempo=tempo),
-                                                                    RhythemNoteEvent(offset=-1, division="ZERO", note="F5", status="NOTE_ON", velocity=100, tempo=tempo),
-                                                                    RhythemNoteEvent(offset=-1, division="ZERO", note="G5", status="NOTE_ON", velocity=100, tempo=tempo),
-                                                                    RhythemNoteEvent(offset=-1, division="ZERO", note="A5", status="NOTE_ON", velocity=100, tempo=tempo),
-                                                                    RhythemNoteEvent(offset=-1, division="ZERO", note="B5", status="NOTE_ON", velocity=100, tempo=tempo),
-                                                                    RhythemNoteEvent(offset=-1, division="ZERO", note="C6", status="NOTE_ON", velocity=100, tempo=tempo)], 
+    rhythem_generator.add_events_with_duration(rhythem_note_events=[RhythmNoteEvent(offset=-1, division="ZERO", note="C5", status="NOTE_ON", velocity=100, tempo=tempo),
+                                                                    RhythmNoteEvent(offset=-1, division="ZERO", note="D5", status="NOTE_ON", velocity=100, tempo=tempo),
+                                                                    RhythmNoteEvent(offset=-1, division="ZERO", note="E5", status="NOTE_ON", velocity=100, tempo=tempo),
+                                                                    RhythmNoteEvent(offset=-1, division="ZERO", note="F5", status="NOTE_ON", velocity=100, tempo=tempo),
+                                                                    RhythmNoteEvent(offset=-1, division="ZERO", note="G5", status="NOTE_ON", velocity=100, tempo=tempo),
+                                                                    RhythmNoteEvent(offset=-1, division="ZERO", note="A5", status="NOTE_ON", velocity=100, tempo=tempo),
+                                                                    RhythmNoteEvent(offset=-1, division="ZERO", note="B5", status="NOTE_ON", velocity=100, tempo=tempo),
+                                                                    RhythmNoteEvent(offset=-1, division="ZERO", note="C6", status="NOTE_ON", velocity=100, tempo=tempo)], 
                                                duration_divisions=["SIXTEENTH", "SIXTEENTH", "SIXTEENTH", "SIXTEENTH", "SIXTEENTH", "SIXTEENTH", "SIXTEENTH", "SIXTEENTH"])
-    rhythem_generator.add_sustain_pedal_event(absolute_time=rhythem_generator.midi_scheduler.events[-10].dt + division_to_dt(division="SIXTEENTH", tempo=tempo), sustain=False)
+    rhythem_generator.add_sustain_pedal_event(absolute_time=rhythem_generator.midi_scheduler.events.circular_queue[-10].dt + division_to_dt(division="SIXTEENTH", tempo=tempo), sustain=False)
 
     rhythem_generator.midi_scheduler.sort_events_by_dt(relative=False, stash=False)
-    
+
+    rhythem_generator.midi_scheduler.schedule_events(initial_delay=0)
+  
     for _ in range(4):
         rhythem_generator.construct_scale(interval_scale=IntervalScale(name="C5 Major", 
-                                                                       starting_note=72,
-                                                                       intervals=[2,2,3,2,3],
-                                                                       divisions=["THIRTYSECOND", "THIRTYSECOND", "THIRTYSECOND", "THIRTYSECOND", 
-                                                                                   "THIRTYSECOND", "THIRTYSECOND"],
-                                                                       velocities=[20, 30, 40, 50, 60, 70]),
-                                        duration_divisions=["ZERO", "ZERO", "ZERO", "ZERO", "ZERO", "ZERO"], 
+                                                                        starting_note=72,
+                                                                        intervals=[2,2,3,2,3],
+                                                                        divisions=["ZERO", "ZERO", "ZERO", "ZERO", 
+                                                                                    "ZERO", "ZERO"],
+                                                                        velocities=[20, 30, 40, 50, 60, 70]),
+                                        duration_divisions=["THIRTYSECOND", "THIRTYSECOND", "THIRTYSECOND", "THIRTYSECOND", "THIRTYSECOND", "THIRTYSECOND"], 
                                         direction='BOTH')
 
     rhythem_generator.midi_scheduler.sort_events_by_dt(relative=True, stash=False)
-    rhythem_generator.midi_scheduler.schedule_events(initial_delay=0)
     

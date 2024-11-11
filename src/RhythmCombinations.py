@@ -1,5 +1,5 @@
 from .PolyRhythms import PolyRhythms
-from .DataClasses import RhythemNoteEvent, NoteEvent
+from .DataClasses import RhythmNoteEvent, NoteEvent
 from .Dictionaries import beat_to_note_divisions
 from .Enums import NoteDivisions
 from .Utilities import division_to_dt
@@ -43,14 +43,14 @@ class RhythmCombinations(PolyRhythms):
             print("-".join(note.name for note in combo))
 
     def queue_combinations(self, combinations: list[list[NoteDivisions]], stash: bool = False):
-        self.add_event(rhythem_note_event=RhythemNoteEvent(offset=0, division="ZERO", note="C7", status="NOTE_OFF", velocity=0, tempo=self.tempo), stash=stash)
+        self.add_event(rhythem_note_event=RhythmNoteEvent(offset=0, division="ZERO", note="C7", status="NOTE_OFF", velocity=0, tempo=self.tempo), stash=stash)
         for combo in combinations:
             for division in combo: 
                 status = "NOTE_ON" if "_REST" not in division.name else "NOTE_OFF"
                 offset = self.get_offset(index=-1, stash=stash)
                 self.add_events_with_duration(
-                    rhythem_note_events=[RhythemNoteEvent(offset=offset, division="ZERO", note="E4", status=status, velocity=80, tempo=self.tempo),
-                                         RhythemNoteEvent(offset=offset, division="ZERO", note="G4", status=status, velocity=80, tempo=self.tempo)],
+                    rhythem_note_events=[RhythmNoteEvent(offset=offset, division="ZERO", note="E4", status=status, velocity=80, tempo=self.tempo),
+                                         RhythmNoteEvent(offset=offset, division="ZERO", note="G4", status=status, velocity=80, tempo=self.tempo)],
                     duration_divisions=[division.name, division.name],
                     stash=stash)
                 
@@ -76,6 +76,3 @@ if __name__ == "__main__":
 
     rhythm_combinations.queue_combinations(combinations=valid_combinations, stash=True)
     rhythm_combinations.midi_scheduler.sort_events_by_dt(relative=True, stash=True)
-    if not rhythm_combinations.midi_scheduler.playing:
-        print("Not playing")
-        rhythm_combinations.midi_scheduler.schedule_events(initial_delay=0)

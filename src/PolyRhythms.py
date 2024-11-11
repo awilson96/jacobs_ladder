@@ -1,5 +1,5 @@
-from .RhythemGenerator import RhythmGenerator
-from .DataClasses import RhythemNoteEvent, NoteEvent
+from .RhythmGenerator import RhythmGenerator
+from .DataClasses import RhythmNoteEvent, NoteEvent
 from .Dictionaries import beat_to_note_divisions
 from .Utilities import division_to_dt
 
@@ -14,17 +14,17 @@ class PolyRhythms(RhythmGenerator):
         if ratio == "3:2":
             [self.create_3_2_polyrhythm(m=3, n=2) for _ in range(multiplicity)]
 
-    def create_n_1_polyrhythm(self, n: int, rhythem_note_events: list[list[RhythemNoteEvent]], initial_offset: int, multiplicity: int):
+    def create_n_1_polyrhythm(self, n: int, rhythem_note_events: list[list[RhythmNoteEvent]], initial_offset: int, multiplicity: int):
         assert(n==len(rhythem_note_events)-1)
         for _ in range(multiplicity):
             division = beat_to_note_divisions[n]
             for i in range(len(rhythem_note_events[0])):
-                rhythem_note_events[0][i] = RhythemNoteEvent(offset=initial_offset, division="ZERO", note=rhythem_note_events[0][i].note, 
+                rhythem_note_events[0][i] = RhythmNoteEvent(offset=initial_offset, division="ZERO", note=rhythem_note_events[0][i].note, 
                                                             status=rhythem_note_events[0][i].status, velocity=85, tempo=self.tempo)
             self.add_events_with_duration(rhythem_note_events=rhythem_note_events[0], duration_divisions=["WHOLE"]*len(rhythem_note_events[0]))
 
             for i in range(len(rhythem_note_events[1])):
-                rhythem_note_events[1][i] = RhythemNoteEvent(offset=initial_offset, division="ZERO", note=rhythem_note_events[1][i].note, 
+                rhythem_note_events[1][i] = RhythmNoteEvent(offset=initial_offset, division="ZERO", note=rhythem_note_events[1][i].note, 
                                                             status=rhythem_note_events[1][i].status, velocity=85, tempo=self.tempo)
             self.add_events_with_duration(rhythem_note_events=rhythem_note_events[1], duration_divisions=[division]*len(rhythem_note_events[1]))
 
@@ -35,7 +35,7 @@ class PolyRhythms(RhythmGenerator):
 
             initial_offset += division_to_dt(division="WHOLE", tempo=self.tempo)
 
-    def create_m_n_polyrhythm(self, m: int, n: int, m_rhythem_note_events: list[list[RhythemNoteEvent]], n_rhythem_note_events: list[list[RhythemNoteEvent]], 
+    def create_m_n_polyrhythm(self, m: int, n: int, m_rhythem_note_events: list[list[RhythmNoteEvent]], n_rhythem_note_events: list[list[RhythmNoteEvent]], 
                               initial_offset: int, multiplicity: int):
         assert(m==len(m_rhythem_note_events)-1)
         assert(n==len(n_rhythem_note_events)-1)
@@ -45,190 +45,190 @@ class PolyRhythms(RhythmGenerator):
 if __name__ == "__main__":
     tempo = 120
     polyrhythms = PolyRhythms(tempo=tempo)
-    polyrhythms.add_event(rhythem_note_event=RhythemNoteEvent(offset=0, division="ZERO", note="C1", status="NOTE_OFF", velocity=85, tempo=polyrhythms.tempo))
+    polyrhythms.add_event(rhythem_note_event=RhythmNoteEvent(offset=0, division="ZERO", note="C1", status="NOTE_OFF", velocity=85, tempo=polyrhythms.tempo))
     polyrhythms.add_events_with_duration(rhythem_note_events=
-                                         [RhythemNoteEvent(offset=-1, division="ZERO", note="C4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)]*28,
+                                         [RhythmNoteEvent(offset=-1, division="ZERO", note="C4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)]*28,
                                           duration_divisions=["QUARTER"]*28)
     
     polyrhythms.stage_all()
 
     polyrhythms.create_n_1_polyrhythm(n=2, 
-        rhythem_note_events=[[RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="G4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                            RhythemNoteEvent(offset=0, division="ZERO", note="E5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="A4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                            RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                            RhythemNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)]],
+        rhythem_note_events=[[RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="G4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                            RhythmNoteEvent(offset=0, division="ZERO", note="E5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="A4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                            RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                            RhythmNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)]],
         initial_offset=0, 
         multiplicity=1)
     
     offset = polyrhythms.get_offset(index=-1)
     polyrhythms.create_n_1_polyrhythm(n=3, 
-        rhythem_note_events=[[RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="G4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                            RhythemNoteEvent(offset=0, division="ZERO", note="E5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="A4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                            RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                            RhythemNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="B4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
-                                RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
-                                RhythemNoteEvent(offset=0, division="ZERO", note="G5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)]],
+        rhythem_note_events=[[RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="G4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                            RhythmNoteEvent(offset=0, division="ZERO", note="E5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="A4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                            RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                            RhythmNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="B4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
+                                RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
+                                RhythmNoteEvent(offset=0, division="ZERO", note="G5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)]],
         initial_offset=offset, 
         multiplicity=1)
     
     offset = polyrhythms.get_offset(index=-1)
     polyrhythms.create_n_1_polyrhythm(n=4, 
-        rhythem_note_events=[[RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="G4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="E5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="A4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="B4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
-                                RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
-                                RhythemNoteEvent(offset=0, division="ZERO", note="G5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="A4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)]],
+        rhythem_note_events=[[RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="G4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="E5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="A4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="B4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
+                                RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
+                                RhythmNoteEvent(offset=0, division="ZERO", note="G5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="A4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)]],
         initial_offset=offset, 
         multiplicity=1)
     
     offset = polyrhythms.get_offset(index=-1)
     polyrhythms.create_n_1_polyrhythm(n=5, 
-        rhythem_note_events=[[RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="G4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="E5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="A4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="B4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
-                                RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
-                                RhythemNoteEvent(offset=0, division="ZERO", note="G5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="A4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="A\u266d4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)]],
+        rhythem_note_events=[[RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="G4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="E5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="A4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="B4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
+                                RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
+                                RhythmNoteEvent(offset=0, division="ZERO", note="G5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="A4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="A\u266d4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)]],
         initial_offset=offset, 
         multiplicity=1)
     
     offset = polyrhythms.get_offset(index=-1)
     polyrhythms.create_n_1_polyrhythm(n=6, 
-        rhythem_note_events=[[RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="G4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="E5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="A4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="B4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
-                                RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
-                                RhythemNoteEvent(offset=0, division="ZERO", note="G5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="A5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="G5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="A4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="A\u266d4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)]],
+        rhythem_note_events=[[RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="G4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="E5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="A4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="B4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
+                                RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
+                                RhythmNoteEvent(offset=0, division="ZERO", note="G5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="A5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="G5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="A4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="A\u266d4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)]],
         initial_offset=offset, 
         multiplicity=1)
     
     offset = polyrhythms.get_offset(index=-1)
     polyrhythms.create_n_1_polyrhythm(n=7, 
-        rhythem_note_events=[[RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="G4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="E5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="A4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="B4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
-                                RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
-                                RhythemNoteEvent(offset=0, division="ZERO", note="G5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="A5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="G5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="A4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="A4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="A\u266d4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)]],
+        rhythem_note_events=[[RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="G4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="E5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="A4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="B4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
+                                RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
+                                RhythmNoteEvent(offset=0, division="ZERO", note="G5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="A5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="G5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="A4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="A4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="A\u266d4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)]],
         initial_offset=offset, 
         multiplicity=1)
     
     offset = polyrhythms.get_offset(index=-1)
     polyrhythms.create_n_1_polyrhythm(n=8, 
-        rhythem_note_events=[[RhythemNoteEvent(offset=0, division="ZERO", note="C6", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="G5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="E5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="G5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="D5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="B4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="A5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
-                                RhythemNoteEvent(offset=0, division="ZERO", note="E5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
-                                RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="E5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="B4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="A\u266d4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="A4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="D5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="A4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="F4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="G5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="D5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-                            [RhythemNoteEvent(offset=0, division="ZERO", note="G4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="D4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
-                                RhythemNoteEvent(offset=0, division="ZERO", note="B4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)]],
+        rhythem_note_events=[[RhythmNoteEvent(offset=0, division="ZERO", note="C6", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="G5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="E5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)], 
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="G5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="D5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="B4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="A5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
+                                RhythmNoteEvent(offset=0, division="ZERO", note="E5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
+                                RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="E5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="B4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="A\u266d4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="A4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="D5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="A4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="F4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="G5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="D5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+                            [RhythmNoteEvent(offset=0, division="ZERO", note="G4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="D4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo), 
+                                RhythmNoteEvent(offset=0, division="ZERO", note="B4", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)]],
         initial_offset=offset, 
         multiplicity=1)
     
     offset = polyrhythms.get_offset(index=-1)
     polyrhythms.create_n_1_polyrhythm(n=7, rhythem_note_events=
         [[],
-         [RhythemNoteEvent(offset=0, division="ZERO", note="C6", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-         [RhythemNoteEvent(offset=0, division="ZERO", note="G5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-         [RhythemNoteEvent(offset=0, division="ZERO", note="A5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-         [RhythemNoteEvent(offset=0, division="ZERO", note="E5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-         [RhythemNoteEvent(offset=0, division="ZERO", note="G5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-         [RhythemNoteEvent(offset=0, division="ZERO", note="D5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-         [RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)]],
+         [RhythmNoteEvent(offset=0, division="ZERO", note="C6", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+         [RhythmNoteEvent(offset=0, division="ZERO", note="G5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+         [RhythmNoteEvent(offset=0, division="ZERO", note="A5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+         [RhythmNoteEvent(offset=0, division="ZERO", note="E5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+         [RhythmNoteEvent(offset=0, division="ZERO", note="G5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+         [RhythmNoteEvent(offset=0, division="ZERO", note="D5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+         [RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)]],
          initial_offset=offset,
          multiplicity=4)
     
     polyrhythms.create_n_1_polyrhythm(n=3, rhythem_note_events=
         [[],
-         [RhythemNoteEvent(offset=0, division="ZERO", note="C3", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-         [RhythemNoteEvent(offset=0, division="ZERO", note="E3", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-         [RhythemNoteEvent(offset=0, division="ZERO", note="G3", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)]],
+         [RhythmNoteEvent(offset=0, division="ZERO", note="C3", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+         [RhythmNoteEvent(offset=0, division="ZERO", note="E3", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+         [RhythmNoteEvent(offset=0, division="ZERO", note="G3", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)]],
          initial_offset=offset,
          multiplicity=4)
     
     offset = polyrhythms.get_offset(index=-1)
     polyrhythms.create_m_n_polyrhythm(m=5, n=2, 
         m_rhythem_note_events=[[],
-                               [RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
-                               RhythemNoteEvent(offset=0, division="ZERO", note="E5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-                               [RhythemNoteEvent(offset=0, division="ZERO", note="D5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
-                               RhythemNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-                               [RhythemNoteEvent(offset=0, division="ZERO", note="E5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
-                               RhythemNoteEvent(offset=0, division="ZERO", note="G5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-                               [RhythemNoteEvent(offset=0, division="ZERO", note="E5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
-                               RhythemNoteEvent(offset=0, division="ZERO", note="G5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-                               [RhythemNoteEvent(offset=0, division="ZERO", note="D5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
-                               RhythemNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)]],
+                               [RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
+                               RhythmNoteEvent(offset=0, division="ZERO", note="E5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+                               [RhythmNoteEvent(offset=0, division="ZERO", note="D5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
+                               RhythmNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+                               [RhythmNoteEvent(offset=0, division="ZERO", note="E5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
+                               RhythmNoteEvent(offset=0, division="ZERO", note="G5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+                               [RhythmNoteEvent(offset=0, division="ZERO", note="E5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
+                               RhythmNoteEvent(offset=0, division="ZERO", note="G5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+                               [RhythmNoteEvent(offset=0, division="ZERO", note="D5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
+                               RhythmNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)]],
         n_rhythem_note_events=[[],
-                               [RhythemNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
-                               [RhythemNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
-                                RhythemNoteEvent(offset=0, division="ZERO", note="A5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)]],
+                               [RhythmNoteEvent(offset=0, division="ZERO", note="C5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)],
+                               [RhythmNoteEvent(offset=0, division="ZERO", note="F5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo),
+                                RhythmNoteEvent(offset=0, division="ZERO", note="A5", status="NOTE_ON", velocity=85, tempo=polyrhythms.tempo)]],
         initial_offset=offset,
         multiplicity=2)
     
