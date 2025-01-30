@@ -35,6 +35,10 @@ options:
   -t, --tuning  Enable tuning.
 ```
 
+# Cython compilation
+`cd ~/jacobs_ladder/`
+`python -m src.cython.compile build_ext --inplace`
+
 # Future Work
 1. Multiple instances of Jacob with different instrument configurations
 2. Quick setup of the MidiController and Jacob with mappings to software instruments
