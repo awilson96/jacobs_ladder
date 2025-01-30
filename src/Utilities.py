@@ -96,7 +96,8 @@ def generate_tunings(notes: list[int], root: int = None) -> list[list[tuple]]:
     notes.sort()  # Ensure the notes are sorted
     n = len(notes)
     tunings = []
-    
+    seen_intervals = set()
+
     for ref_points in product(*(range(n) for _ in range(1, n+1))):
         count = 0
         for index, ref in enumerate(ref_points):
@@ -111,9 +112,9 @@ def generate_tunings(notes: list[int], root: int = None) -> list[list[tuple]]:
         for index, ref in enumerate(ref_points):
             tuning.append((index, ref, (abs(notes[ref] - notes[index])) % 12))
             
-
         tunings.append(tuning)
 
+        interval_signature = tuple(sorted(interval for _, _, interval in tuning))
         valid_tunings = False
         for index, ref, _ in tunings[-1]:
             if index == ref and index == root:
@@ -121,20 +122,17 @@ def generate_tunings(notes: list[int], root: int = None) -> list[list[tuple]]:
                 break
         if not valid_tunings:
             tunings.pop()
-
-    seen_intervals = set()
-    unique_tunings = []
-    valid_tunings = []
-
-    for tuning in valid_tunings:
-        interval_signature = tuple(sorted(interval for _, _, interval in tuning))  # Get the interval part of each tuple
-        if interval_signature not in seen_intervals:
+        elif interval_signature not in seen_intervals:
             seen_intervals.add(interval_signature)
-            unique_tunings.append(tuning)
+        else:
+            tunings.pop()
 
-    # Print unique tunings
+    return tunings
+
+def remove_equivalent_tunings(tunings: list[list[tuple]]) -> list[list[tuple]]:
     for tuning in tunings:
-        print(tuning)
+        for index, ref, interval in tuning:
+            print(index, ref, interval)
 
 def remove_harmonically_redundant_intervals(message_heap: list[list[int]]):
     """Take in a message heap and return a sorted message heap with redundant harmonies excluded 
@@ -169,4 +167,4 @@ if __name__ == "__main__":
     pitch_wheel_value = calculate_analog_pitch_wheel_value_from_cents_offset(cents_offset=cents_offset)
     print(pitch_wheel_value)
 
-    generate_tunings([60, 64, 67, 71], root=0)
+    generate_tunings([60, 61, 62], root=0)

@@ -5,7 +5,7 @@ from itertools import combinations
 from .Dictionaries import midi_notes
 from .Enums import Pitch
 from .Logging import setup_logging
-from .Utilities import determine_octave, get_root_from_letter_note, generate_tunings, remove_harmonically_redundant_intervals
+from .Utilities import determine_octave, get_root_from_letter_note, generate_tunings, remove_harmonically_redundant_intervals, remove_equivalent_tunings
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
@@ -197,13 +197,13 @@ class JustIntonation:
                 self.root = current_msg[0]
             else:
                 sorted_message_heap = remove_harmonically_redundant_intervals(message_heap)
-                print(sorted_message_heap)
-                # keys = [k.split(" ")[0] for k in key]
-                # current_note = midi_notes[current_msg[0]]
-                # sorted_notes = sorted([note[0] for note in sorted_message_heap])
-                # intervals = self.get_intervals(notes=sorted_notes)
-                # potential_tunings = generate_tunings(notes=sorted_notes, root=0)
-                # filtered_tunings = self.remove_equivalent_tunings(potential_tunings)
+                keys = [k.split(" ")[0] for k in key]
+                current_note = midi_notes[current_msg[0]]
+                sorted_notes = sorted([note[0] for note in sorted_message_heap])
+                intervals = self.get_intervals(notes=sorted_notes)
+                potential_tunings = generate_tunings(notes=sorted_notes, root=0)
+                print(potential_tunings)
+                # filtered_tunings = remove_equivalent_tunings(potential_tunings)
                 
                 # TODO: set root if self.root is no longer in the chord
     
