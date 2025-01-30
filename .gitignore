@@ -5,3 +5,5 @@
 *.lib
 *.exp
 html/*
+*.tar.gz
+*.whl
