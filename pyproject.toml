@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "cython", "setuptools"]
 build-backend = "hatchling.build"
 
 [project]
@@ -18,7 +18,13 @@ classifiers = [
 ]
 dependencies = [
     "numpy",
-    "pytest_html",
+    "pandas",
+    "cython",
+    "pytest-html",
+    "appium-python-client==4.4.0",
+    "pyautogui==0.9.54",
+    "python-rtmidi==1.5.8",
+    "selenium==4.27.1",
 ]
 
 [project.optional-dependencies]
