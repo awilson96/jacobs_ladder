@@ -216,15 +216,18 @@ class MidiController:
             heapq.heappush(self.message_heap, [note + self.transpose, instance_index, status, velocity, None])
             
             chord = self.music_theory.determine_chord(self.message_heap)
-            key, candidate_keys = self.music_theory.determine_key(self.message_heap)
+            key, candidate_keys, ionian_keys = self.music_theory.determine_key(message_heap=self.message_heap, major_only=True)
             if self.print_msgs:
                 print(f"key: {key}")
             self.udp_sender.send(candidate_keys)
 
-            if self.tuning_mode:
+            if self.tuning_mode == "static" or self.tuning_mode == "dynamic":
                 tuning_index, pitch_bend_message, message_heap = self.just_intonation.get_tuning_info(message_heap=self.message_heap, current_msg=[note, instance_index, status, velocity, None], dt=dt, key=key)
                 self.message_heap = message_heap
-                print(pitch_bend_message)
+                self.midi_out_ports[tuning_index].send_message(pitch_bend_message)
+            elif self.tuning_mode == "just-intonation":
+                tuning_index, pitch_bend_message, message_heap = self.just_intonation.get_tuning_info(message_heap=self.message_heap, current_msg=[note, instance_index, status, velocity, None], dt=dt, key=ionian_keys)
+                self.message_heap = message_heap
                 self.midi_out_ports[tuning_index].send_message(pitch_bend_message)
             else:
                 self.midi_out_ports[instance_index].send_message([224, 0, 64])
@@ -377,6 +380,7 @@ if __name__ == "__main__":
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-s', '--static', action='store_true', help="Enable static tuning.")
     group.add_argument('-d', '--dynamic', action='store_true', help="Enable dynamic tuning.")
+    group.add_argument('-j', '--just-intonation', action='store_true', help="Enable just intonation tuning.")
     
     # Parse arguments
     args = parser.parse_args()
@@ -407,7 +411,7 @@ if __name__ == "__main__":
             print(f"{key:>{max_key_length}}: \t\t{value}")
             
     # Determine if static or dynamic tuning is enabled
-    tuning_mode = 'static' if args.static else 'dynamic' if args.dynamic else None
+    tuning_mode = 'static' if args.static else 'dynamic' if args.dynamic else 'just-intonation' if args.just_intonation else None
     print(f"Tuning mode: {tuning_mode}")
     print(f"args.print {args.print}")
     print_msgs = args.print

@@ -1,5 +1,6 @@
 import logging
 from collections import Counter
+from copy import deepcopy
 
 from .DataClasses import Scale
 from .Dictionaries import get_midi_notes
@@ -10,6 +11,7 @@ from .HarmonicMinorScales import get_harmonic_minor_scales
 from .MajorScales import get_major_scales
 from .MelodicMinorScales import get_melodic_minor_scales
 from .Logging import setup_logging
+from .Utilities import remove_harmonically_redundant_intervals
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
@@ -65,7 +67,7 @@ class MusicTheory:
         Returns:
             str: stringified description of the chord that was played
         """
-        sorted_message_heap: list[list[int]] = self.remove_harmonically_redundant_intervals(message_heap=message_heap)
+        sorted_message_heap: list[list[int]] = remove_harmonically_redundant_intervals(message_heap=message_heap)
         
         notes: list[int] = [note[0] for note in sorted_message_heap]
         instance_indices: list[int] = [indices[1] for indices in sorted_message_heap]
@@ -92,7 +94,7 @@ class MusicTheory:
             return None
     
     
-    def determine_key(self, message_heap: list[list[int]]):
+    def determine_key(self, message_heap: list[list[int]], major_only: bool = False):
         """Determines candidate keys based on the notes that are currently being held down. Then it compares those candidate
         keys to the previous QUEUE_SIZE lists of candidate keys and performs the intersection with the current key and each of the previous lists.
         The key with the most occurences gets returned as it has best described the key for the last QUEUE_SIZE frames.
@@ -111,22 +113,24 @@ class MusicTheory:
             is_sublist = all(element in scale.notes for element in unique_notes) 
             if is_sublist:
                 candidate_keys.append(scale.name)
-    
-        for scale in self.harmonic_minor_scales:
-            is_sublist = all(element in scale.notes for element in unique_notes) 
-            if is_sublist:
-                candidate_keys.append(scale.name)
-        for scale in self.harmonic_major_scales:
-            is_sublist = all(element in scale.notes for element in unique_notes) 
-            if is_sublist:
-                candidate_keys.append(scale.name)
-        for scale in self.melodic_minor_scales:
-            is_sublist = all(element in scale.notes for element in unique_notes) 
-            if is_sublist:
-                candidate_keys.append(scale.name)
+
+        ionian_keys = deepcopy(candidate_keys)
+        if not major_only:
+            for scale in self.harmonic_minor_scales:
+                is_sublist = all(element in scale.notes for element in unique_notes) 
+                if is_sublist:
+                    candidate_keys.append(scale.name)
+            for scale in self.harmonic_major_scales:
+                is_sublist = all(element in scale.notes for element in unique_notes) 
+                if is_sublist:
+                    candidate_keys.append(scale.name)
+            for scale in self.melodic_minor_scales:
+                is_sublist = all(element in scale.notes for element in unique_notes) 
+                if is_sublist:
+                    candidate_keys.append(scale.name)
 
         self.history.enqueue(candidate_keys)
-        return self.find_key(), candidate_keys
+        return self.find_key(), candidate_keys, ionian_keys
     
     def find_key(self):
         """First check to see if the original key still is compatible with the currently held down notes.  If so return this. 
@@ -530,31 +534,3 @@ class MusicTheory:
             
         tetrad: str = ""
         return tetrad
-    
-    def remove_harmonically_redundant_intervals(self, message_heap: list[list[int]]):
-        """Take in a message heap and return a sorted message heap with redundant harmonies excluded 
-
-        Args:
-            message_heap (list[list[int]]): a message heap of the form [[note, instance_index, status, velocity], ...] 
-
-        Returns:
-            list[list[int]]: a sorted message heap with redundant harmonies removed
-        """
-        
-        sorted_message_heap:        list[list[int]]             = sorted(message_heap, key=lambda x: x[0])
-        instance_indices:           list[int]                   = [indices[1] for indices in sorted_message_heap]
-        
-        unique_instances = []
-        instances_to_remove = []
-        for index, instance in enumerate(instance_indices):
-            if instance not in unique_instances:
-                unique_instances.append(instance)
-            else:
-                instances_to_remove.append(index)
-                
-        harmonically_unique_message_heap = []
-        for index, message in enumerate(sorted_message_heap):
-            if index not in instances_to_remove:
-                harmonically_unique_message_heap.append(message)
-                
-        return harmonically_unique_message_heap

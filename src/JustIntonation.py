@@ -1,9 +1,11 @@
 from collections import Counter
 from copy import copy
-from .Logging import setup_logging
+from itertools import combinations
 
+from .Dictionaries import midi_notes
 from .Enums import Pitch
-from .Utilities import determine_octave, get_root_from_letter_note
+from .Logging import setup_logging
+from .Utilities import determine_octave, get_root_from_letter_note, generate_tunings, remove_harmonically_redundant_intervals
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
@@ -48,16 +50,9 @@ class JustIntonation:
         """
         intervals = []
 
-        sorted_notes = sorted(notes)
-        if len(sorted_notes) > 1:
-            for idx in range(len(sorted_notes) - 1):
-                intervals.append(notes[idx + 1] - notes[idx])
+        for idx in range(len(notes) - 1):
+            intervals.append((notes[idx + 1] - notes[idx]) % 12)
 
-        if len(intervals) == 1:
-            if intervals[0] >= 0:
-                return intervals[0] % 12
-            else:
-                return -1 * (intervals[0] % 12)
         return intervals
 
     def get_pitch_bend_message(self, message_heap_elem: list):
@@ -196,7 +191,25 @@ class JustIntonation:
             pitch_bend_msg = self.get_pitch_bend_message(message_heap_elem=message_heap[current_msg_index])
     
             return tuning_index, pitch_bend_msg, message_heap
-            
+        
+        elif self.tuning_mode == "just-intonation":
+            if len(message_heap) == 1:
+                self.root = current_msg[0]
+            else:
+                sorted_message_heap = remove_harmonically_redundant_intervals(message_heap)
+                print(sorted_message_heap)
+                # keys = [k.split(" ")[0] for k in key]
+                # current_note = midi_notes[current_msg[0]]
+                # sorted_notes = sorted([note[0] for note in sorted_message_heap])
+                # intervals = self.get_intervals(notes=sorted_notes)
+                # potential_tunings = generate_tunings(notes=sorted_notes, root=0)
+                # filtered_tunings = self.remove_equivalent_tunings(potential_tunings)
+                
+                # TODO: set root if self.root is no longer in the chord
+    
+
+
+
         
     def get_diad_pitch(self, interval: int):
         """Given an interval between two notes, return the analog pitch value expressed as a range from 0-16383 

@@ -1,4 +1,6 @@
 import math
+from itertools import product
+
 from .Enums import NoteDivisions
 
 def determine_octave(message_heap: list, note: int):
@@ -78,8 +80,93 @@ def get_root_from_letter_note(letter_note: str):
             return 66
         case "G":
             return 67
+        
+"""Given a list of notes, generate all possible tunings based on the intervals between the notes.
+
+    Args:
+        notes (list[int]): a list of MIDI note numbers
+
+    Returns:
+        list[list[tuple]]: a list of potential ways to tune that note sequence
+    """
+
+from itertools import product
+
+def generate_tunings(notes: list[int], root: int = None) -> list[list[tuple]]:
+    notes.sort()  # Ensure the notes are sorted
+    n = len(notes)
+    tunings = []
+    
+    for ref_points in product(*(range(n) for _ in range(1, n+1))):
+        count = 0
+        for index, ref in enumerate(ref_points):
+            if count > 1:
+                break
+            if ref == index:
+                count += 1
+        if count > 1:
+            continue
+
+        tuning = []
+        for index, ref in enumerate(ref_points):
+            tuning.append((index, ref, (abs(notes[ref] - notes[index])) % 12))
+            
+
+        tunings.append(tuning)
+
+        valid_tunings = False
+        for index, ref, _ in tunings[-1]:
+            if index == ref and index == root:
+                valid_tunings = True
+                break
+        if not valid_tunings:
+            tunings.pop()
+
+    seen_intervals = set()
+    unique_tunings = []
+    valid_tunings = []
+
+    for tuning in valid_tunings:
+        interval_signature = tuple(sorted(interval for _, _, interval in tuning))  # Get the interval part of each tuple
+        if interval_signature not in seen_intervals:
+            seen_intervals.add(interval_signature)
+            unique_tunings.append(tuning)
+
+    # Print unique tunings
+    for tuning in tunings:
+        print(tuning)
+
+def remove_harmonically_redundant_intervals(message_heap: list[list[int]]):
+    """Take in a message heap and return a sorted message heap with redundant harmonies excluded 
+
+    Args:
+        message_heap (list[list[int]]): a message heap of the form [[note, instance_index, status, velocity], ...]
+
+    Returns:
+        list[list[int]]: a sorted message heap with redundant harmonies removed
+    """
+    
+    # Sort the message heap by note (first element)
+    sorted_message_heap = sorted(message_heap, key=lambda x: x[0])
+    
+    # To keep track of instances we've already seen
+    unique_instances = set()
+    
+    # Final message heap with redundant harmonies removed
+    harmonically_unique_message_heap = []
+    
+    for entry in sorted_message_heap:
+        instance = entry[1]
+        # Only add this entry if its instance has not been seen before
+        if instance not in unique_instances:
+            harmonically_unique_message_heap.append(entry)
+            unique_instances.add(instance)
+    
+    return harmonically_unique_message_heap
 
 if __name__ == "__main__":
     cents_offset = calculate_cents_offset_from_interval(8/7)
     pitch_wheel_value = calculate_analog_pitch_wheel_value_from_cents_offset(cents_offset=cents_offset)
     print(pitch_wheel_value)
+
+    generate_tunings([60, 64, 67, 71], root=0)
