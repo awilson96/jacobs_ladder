@@ -1,11 +1,13 @@
 from collections import Counter
 from copy import copy
 from itertools import combinations
+import time
 
 from .Dictionaries import midi_notes
 from .Enums import Pitch
 from .Logging import setup_logging
-from .Utilities import determine_octave, get_root_from_letter_note, generate_tunings, remove_harmonically_redundant_intervals, remove_equivalent_tunings
+from .Utilities import determine_octave, get_root_from_letter_note, remove_harmonically_redundant_intervals
+from .cython.tuning_utils import generate_tunings
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
@@ -193,6 +195,7 @@ class JustIntonation:
             return tuning_index, pitch_bend_msg, message_heap
         
         elif self.tuning_mode == "just-intonation":
+            start = time.time()
             if len(message_heap) == 1:
                 self.root = current_msg[0]
             else:
@@ -206,6 +209,8 @@ class JustIntonation:
                 # filtered_tunings = remove_equivalent_tunings(potential_tunings)
                 
                 # TODO: set root if self.root is no longer in the chord
+            end = time.time()
+            print(f"Time taken to calculate tuning: {end - start}")
     
 
 
