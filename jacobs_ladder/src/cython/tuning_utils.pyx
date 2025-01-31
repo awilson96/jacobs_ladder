@@ -1,4 +1,4 @@
-from itertools import product
+from itertools import combinations_with_replacement
 from typing import List, Tuple
 from cython cimport boundscheck, wraparound
 
@@ -23,7 +23,8 @@ def generate_tunings(List[int] notes, int root = 0) -> List[List[Tuple[int, int,
             if not visited[u]:
                 dfs(u, graph, visited)
 
-    for ref_points in product(*(range(n) for _ in range(1, n+1))):
+    # Generate combinations with replacement
+    for ref_points in combinations_with_replacement(range(n), n):  # Allow repeated elements (pairs or more)
         count = 0
         for index, ref in enumerate(ref_points):
             if count > 1:
