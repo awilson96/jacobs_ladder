@@ -13,8 +13,15 @@ def generate_tunings(List[int] notes, int root = 0) -> List[List[Tuple[int, int,
     # Declare variables before loop
     cdef int count, index, ref
     cdef List[Tuple[int, int, int]] tuning
-    cdef bint valid_tunings
+    cdef bint valid_tuning
     cdef tuple interval_signature
+
+    # Helper function for DFS traversal
+    def dfs(v, graph, visited):
+        visited[v] = True
+        for u in graph[v]:
+            if not visited[u]:
+                dfs(u, graph, visited)
 
     for ref_points in product(*(range(n) for _ in range(1, n+1))):
         count = 0
@@ -27,22 +34,35 @@ def generate_tunings(List[int] notes, int root = 0) -> List[List[Tuple[int, int,
             continue
 
         tuning = []
+        graph = [[] for _ in range(n)]  # Graph to store connections
         for index, ref in enumerate(ref_points):
             tuning.append((index, ref, (abs(notes[ref] - notes[index])) % 12))
-        
-        tunings.append(tuning)
+            # Build the graph of connections
+            graph[index].append(ref)
+            graph[ref].append(index)
 
+        # Interval signature and validity check
         interval_signature = tuple(sorted(interval for _, _, interval in tuning))
-        valid_tunings = False
-        for index, ref, _ in tunings[len(tunings)-1]:
-            if index == ref and index == root:
-                valid_tunings = True
+        valid_tuning = False
+        for index, ref, _ in tuning:
+            if index == root and ref == root:
+                valid_tuning = True
                 break
-        if not valid_tunings:
-            tunings.pop()
-        elif interval_signature not in seen_intervals:
+        
+        if not valid_tuning:
+            continue  # Skip this tuning if the root is not present
+
+        # Perform DFS to check if all nodes are connected to the root
+        visited = [False] * n
+        dfs(root, graph, visited)
+        
+        # Ensure all notes are connected to the root
+        if not all(visited):
+            continue  # Skip this tuning if any note is not connected to the root
+
+        # Add the tuning if it's valid and the interval signature hasn't been seen
+        if interval_signature not in seen_intervals:
             seen_intervals.add(interval_signature)
-        else:
-            tunings.pop()
-    
+            tunings.append(tuning)
+
     return tunings
