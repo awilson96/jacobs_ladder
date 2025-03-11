@@ -1,0 +1,23 @@
+# Ignore the build directory
+/build/
+
+# Ignore any other common build files or directories
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+*.log
+*.swp
+*.swo
+*.user
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+
+# Ignore Visual Studio specific files
+.vs/
+.vscode/
+
+# Ignore any debug or release binaries
+/bin/
+/lib/
