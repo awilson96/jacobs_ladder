@@ -195,24 +195,16 @@ class JustIntonation:
             return tuning_index, pitch_bend_msg, message_heap
         
         elif self.tuning_mode == "just-intonation":
-            start = time.time()
+
             if len(message_heap) == 1:
                 self.root = current_msg[0]
             else:
                 sorted_message_heap = remove_harmonically_redundant_intervals(message_heap)
                 keys = [k.split(" ")[0] for k in key]
-                current_note = midi_notes[current_msg[0]]
-                sorted_notes = sorted([note[0] for note in sorted_message_heap])
-                intervals = self.get_intervals(notes=sorted_notes)
-                potential_tunings = generate_tunings(notes=sorted_notes, root=0)
-                print(potential_tunings)
-                # filtered_tunings = remove_equivalent_tunings(potential_tunings)
                 
-                # TODO: set root if self.root is no longer in the chord
-            end = time.time()
-            print(f"Time taken to calculate tuning: {end - start}")
     
-
+    def get_harmonic_potential_dict(self, keys):
+        pass
 
 
         
