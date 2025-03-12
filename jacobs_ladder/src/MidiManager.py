@@ -144,6 +144,7 @@ class MidiController:
             available_input_ports = self.midi_in.get_ports()
             if self.print_msgs:
                 print(f"available_input_ports \n{available_input_ports}")
+                exit()
             input_port_index = None
             for port in available_input_ports:
                 if port.split(" ")[0] == (self.input_port):
