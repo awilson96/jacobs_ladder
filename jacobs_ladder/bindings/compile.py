@@ -3,7 +3,7 @@ from setuptools import setup
 from Cython.Build import cythonize
 
 # Define the source files
-source_files = ["src/cython/example.pyx", "src/cython/tuning_utils.pyx"]
+source_files = ["bindings/example.pyx", "bindings/tuning_utils.pyx"]
 
 # Define the output directory (one level above)
 output_dir = os.path.dirname(os.getcwd())

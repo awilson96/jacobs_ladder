@@ -37,11 +37,11 @@ options:
 
 # Cython compilation
 `cd ~/jacobs_ladder/`
-`python -m src.cython.compile build_ext --inplace`
+`python -m bindings.compile build_ext --inplace`
 
 # Pybind build
 Clean and Rebuild
-`Remove-Item -Path .\build\ -Recurse -Force; mkdir build; cd build; $PYBIND_DIR = python -c "import pybind11; print(pybind11.get_cmake_dir())"; cmake .. -Dpybind11_DIR="$PYBIND_DIR"; cmake --build .`
+`Remove-Item -Path .\cpp_build\ -Recurse -Force; mkdir cpp_build; cd cpp_build; $PYBIND_DIR = python -c "import pybind11; print(pybind11.get_cmake_dir())"; cmake .. -Dpybind11_DIR="$PYBIND_DIR"; cmake --build .`
  
 
 # Future Work
