@@ -39,6 +39,11 @@ options:
 `cd ~/jacobs_ladder/`
 `python -m src.cython.compile build_ext --inplace`
 
+# Pybind build
+Clean and Rebuild
+`Remove-Item -Path .\build\ -Recurse -Force; mkdir build; cd build; $PYBIND_DIR = python -c "import pybind11; print(pybind11.get_cmake_dir())"; cmake .. -Dpybind11_DIR="$PYBIND_DIR"; cmake --build .`
+ 
+
 # Future Work
 1. Multiple instances of Jacob with different instrument configurations
 2. Quick setup of the MidiController and Jacob with mappings to software instruments

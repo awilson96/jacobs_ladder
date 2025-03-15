@@ -28,28 +28,36 @@ else()
 endif()
 
 # -------------------------------
-# BUILD EXECUTABLE
+# ADD nlohmann/json
 # -------------------------------
+include(FetchContent)
+FetchContent_Declare(
+    nlohmann_json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG v3.10.4  # Specify the desired version (latest stable at time of writing)
+)
+FetchContent_MakeAvailable(nlohmann_json)
+
+# -------------------------------
+# BUILD EXECUTABLES
+# -------------------------------
+# Build the original executable
 add_executable(teVirtualMIDITest teVirtualMIDITest.c)
-target_link_libraries(teVirtualMIDITest "${TEVIRTUALMIDI_LIB}")
+target_link_libraries(teVirtualMIDITest PRIVATE "${TEVIRTUALMIDI_LIB}" nlohmann_json::nlohmann_json)
 
 # Set runtime output directory for the executable
 set_target_properties(teVirtualMIDITest PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
-# -------------------------------
-# BUILD PYBIND11 MODULE
-# -------------------------------
-# Locate pybind11
-find_package(pybind11 REQUIRED)
+# Build the second executable from VirtualMidi.cpp
+add_executable(VirtualMidi2Executable VirtualMidi2.cpp)
+target_link_libraries(VirtualMidi2Executable PRIVATE "${TEVIRTUALMIDI_LIB}" nlohmann_json::nlohmann_json)
 
-# Build the virtual MIDI Python module
-add_library(virtual_midi MODULE VirtualMidi.cpp)
-target_link_libraries(virtual_midi PRIVATE pybind11::module "${TEVIRTUALMIDI_LIB}")
-
-# Ensure the output is a Python-compatible shared library
-set_target_properties(virtual_midi PROPERTIES PREFIX "" SUFFIX ".pyd")
+# Set runtime output directory for the new executable
+set_target_properties(VirtualMidi2Executable PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)
 
 # Debug output
 message(STATUS "CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")

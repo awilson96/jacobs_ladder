@@ -37,7 +37,7 @@ class MidiController:
     """
 
     def __init__(self, input_port: str = "jacobs_ladder", 
-                 output_ports: list = list(map(str, range(12))), 
+                 output_ports: list = [f"jacobs_ladder_{i}" for i in range(12)], 
                  print_msgs: bool = False,
                  tuning: dict = None,
                  tuning_mode: str = None, 
@@ -48,7 +48,7 @@ class MidiController:
 
         Args:
             input_port (str, optional): input port name. Defaults to "jacobs_ladder".
-            output_ports (list, optional): output port name. Defaults to list(map(str, range(12))).
+            output_ports (list, optional): output port name. Defaults to [f"jacobs_ladder_{i}" for i in range(12)].
             print_msgs (bool, optional): True if you wish to print msgs to the console. Defaults to False.
             tuning (dict, optional): a dictionary giving the controller its tuning. Defaults to None.
             tuning_mode (str, optional): static, dynamic, or None for no tuning. Defaults to None.
@@ -109,7 +109,7 @@ class MidiController:
         self.transpose = 0
         
         # Communication with Jacob
-        if self.output_ports == list(map(str, range(12))):
+        if self.output_ports == [f"jacobs_ladder_{i}" for i in range(12)]:
             self.udp_sender = UDPSender(host='127.0.0.1', port=50001)
             
             # Time keeping
@@ -144,7 +144,6 @@ class MidiController:
             available_input_ports = self.midi_in.get_ports()
             if self.print_msgs:
                 print(f"available_input_ports \n{available_input_ports}")
-                exit()
             input_port_index = None
             for port in available_input_ports:
                 if port.split(" ")[0] == (self.input_port):
