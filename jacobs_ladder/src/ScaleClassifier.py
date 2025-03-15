@@ -19,8 +19,8 @@ class ScaleClassifier:
         Returns:
             dict: a dictionary of DataFrames representing the .csv files read in by the script
         """
-        self.script_directory = os.path.dirname(os.path.abspath(__file__))
-        self.csv_directory = os.path.join(self.script_directory, "possible_scales")
+        self.script_directory = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.csv_directory = os.path.join(self.script_directory, "csv")
         
         dfs = {}
         for filename in os.listdir(self.csv_directory):
