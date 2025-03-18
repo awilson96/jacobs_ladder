@@ -6,8 +6,8 @@ import os
 
 port_config = [("jacobs_ladder", 12), ("jacob", 12)]
 
-# Instantiate the VirtualMIDIManager
-manager = virtual_midi.VirtualMIDIManager()
+# Instantiate the VirtualMIDIPortManager
+manager = virtual_midi.VirtualMIDIPortManager(print_msgs=True)
 
 manager.start(port_config)
 
@@ -29,7 +29,7 @@ process1 = subprocess.Popen(
     text=True
 )
 
-time.sleep(10)
+time.sleep(30)
 
 # Clean up after usage
 manager.close()

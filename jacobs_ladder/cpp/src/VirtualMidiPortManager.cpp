@@ -1,4 +1,4 @@
-#include "VirtualMidiManager.h"
+#include "VirtualMIDIPortManager.h"
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <stdexcept>
@@ -7,37 +7,27 @@
 namespace py = pybind11;
 
 // Constructor
-VirtualMIDIManager::VirtualMIDIManager() = default;
+VirtualMIDIPortManager::VirtualMIDIPortManager(bool print_msgs) : print_msgs_(print_msgs) {}
 
 // Destructor
-VirtualMIDIManager::~VirtualMIDIManager() {
+VirtualMIDIPortManager::~VirtualMIDIPortManager() {
     if (running.load()) {
         close();
     }
 }
 
 // Callback function for MIDI events
-void CALLBACK VirtualMIDIManager::teVMCallback(LPVM_MIDI_PORT midiPort, LPBYTE midiDataBytes, DWORD length, DWORD_PTR dwCallbackInstance) {
+void CALLBACK VirtualMIDIPortManager::teVMCallback(LPVM_MIDI_PORT midiPort, LPBYTE midiDataBytes, DWORD length, DWORD_PTR dwCallbackInstance) {
     if (!midiDataBytes || length == 0) {
-        std::cout << "Empty command - driver was probably shut down!" << std::endl;
         return;
     }
     if (!virtualMIDISendData(midiPort, midiDataBytes, length)) {
-        std::cout << "Error sending data: " << GetLastError() << std::endl;
         return;
-    }
-    std::cout << "Port " << dwCallbackInstance << " Command received." << std::endl;
-}
-
-// Blocks execution until close() is called
-void VirtualMIDIManager::wait_for_close() {
-    while (running.load()) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
 
 // Initializes virtual MIDI ports from name-count pairs
-void VirtualMIDIManager::initialize(const std::vector<std::pair<std::string, int>>& name_count_pairs) {
+void VirtualMIDIPortManager::initialize(const std::vector<std::pair<std::string, int>>& name_count_pairs) {
     pybind11::gil_scoped_acquire acquire;
 
     for (const auto& pair : name_count_pairs) {
@@ -52,7 +42,8 @@ void VirtualMIDIManager::initialize(const std::vector<std::pair<std::string, int
             throw std::runtime_error("Could not create port: " + std::string(prefix));
         }
         ports.push_back(portDefault);
-        std::wcout << "Created virtual MIDI port: " << portNameDefault << std::endl;
+        if (print_msgs_)
+            std::wcout << "Created virtual MIDI port: " << portNameDefault << std::endl;
 
         for (int j = 0; j < numPorts; ++j) {
             std::wstring portName = std::wstring(prefix.begin(), prefix.end()) + L"_" + std::to_wstring(j);
@@ -63,21 +54,19 @@ void VirtualMIDIManager::initialize(const std::vector<std::pair<std::string, int
                 throw std::runtime_error("Could not create port: " + std::string(prefix) + "_" + std::to_string(j));
             }
             ports.push_back(port);
-            std::wcout << "Created virtual MIDI port: " << portName << std::endl;
+            if (print_msgs_)
+                std::wcout << "Created virtual MIDI port: " << portName << std::endl;
         }
     }
-
-    // running.store(true);
-    // wait_for_close();  // Blocking call within the same thread
 }
 
 // Starts the MIDI manager in a separate thread
-void VirtualMIDIManager::start(const std::vector<std::pair<std::string, int>>& name_count_pairs) {
-    workerThread = std::thread(&VirtualMIDIManager::initialize, this, name_count_pairs);
+void VirtualMIDIPortManager::start(const std::vector<std::pair<std::string, int>>& name_count_pairs) {
+    workerThread = std::thread(&VirtualMIDIPortManager::initialize, this, name_count_pairs);
 }
 
 // Stops the MIDI manager and cleans up ports
-void VirtualMIDIManager::close() {
+void VirtualMIDIPortManager::close() {
     running.store(false);
 
     if (workerThread.joinable()) {
@@ -87,15 +76,15 @@ void VirtualMIDIManager::close() {
     for (LPVM_MIDI_PORT port : ports) {
         virtualMIDIClosePort(port);
     }
-
-    std::cout << "All virtual MIDI ports closed." << std::endl;
+    if (print_msgs_)
+        std::cout << "All virtual MIDI ports closed." << std::endl;
 }
 
 // Pybind11 bindings
 PYBIND11_MODULE(virtual_midi, m) {
-    py::class_<VirtualMIDIManager>(m, "VirtualMIDIManager")
-        .def(py::init<>())
-        .def("start", &VirtualMIDIManager::start, py::arg("name_count_pairs"))
-        .def("close", &VirtualMIDIManager::close);
+    py::class_<VirtualMIDIPortManager>(m, "VirtualMIDIPortManager")
+        .def(py::init<bool>(), py::arg("print_msgs") = false) 
+        .def("start", &VirtualMIDIPortManager::start, py::arg("name_count_pairs"))
+        .def("close", &VirtualMIDIPortManager::close);
 }
 

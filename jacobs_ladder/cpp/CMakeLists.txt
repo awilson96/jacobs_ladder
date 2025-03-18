@@ -29,7 +29,7 @@ endif()
 find_package(pybind11 REQUIRED)  # Ensure pybind11 is installed
 
 # Add a shared library for the Python module
-add_library(virtual_midi MODULE src/VirtualMidiManager.cpp)
+add_library(virtual_midi MODULE src/VirtualMidiPortManager.cpp)
 
 # Include the header file for the source file
 target_include_directories(virtual_midi PRIVATE "${CMAKE_SOURCE_DIR}/src")  # Ensure the header is included
@@ -50,14 +50,14 @@ set_target_properties(virtual_midi PROPERTIES
 add_executable(teVirtualMIDITest src/teVirtualMIDITest.c)
 target_link_libraries(teVirtualMIDITest PRIVATE "${TEVIRTUALMIDI_LIB}")
 
-add_executable(VirtualMidi2Executable src/VirtualMidi2.cpp)
-target_link_libraries(VirtualMidi2Executable PRIVATE "${TEVIRTUALMIDI_LIB}")
+add_executable(VirtualMidiPortScript src/VirtualMidiPortScript.cpp)
+target_link_libraries(VirtualMidiPortScript PRIVATE "${TEVIRTUALMIDI_LIB}")
 
 # Set runtime output directory for executables
 set_target_properties(teVirtualMIDITest PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
-set_target_properties(VirtualMidi2Executable PROPERTIES
+set_target_properties(VirtualMidiPortScript PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 

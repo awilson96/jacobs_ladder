@@ -1,5 +1,5 @@
-#ifndef VIRTUALMIDIMANAGER_H
-#define VIRTUALMIDIMANAGER_H
+#ifndef VirtualMIDIPortManager_H
+#define VirtualMIDIPortManager_H
 
 #include <iostream>
 #include <fstream>
@@ -16,25 +16,23 @@
 
 using json = nlohmann::json;
 
-class VirtualMIDIManager {
+class VirtualMIDIPortManager {
 private:
+    bool print_msgs_;
     std::vector<LPVM_MIDI_PORT> ports;
     std::string jsonFile;
     std::thread workerThread;
     std::atomic<bool> running {false};
 
     static void CALLBACK teVMCallback(LPVM_MIDI_PORT midiPort, LPBYTE midiDataBytes, DWORD length, DWORD_PTR dwCallbackInstance);
-
-    void wait_for_close();
     void initialize(const std::vector<std::pair<std::string, int>>& name_count_pairs);
 
-
 public:
-    VirtualMIDIManager();
-    ~VirtualMIDIManager();
+    VirtualMIDIPortManager(bool print_msgs = false);
+    ~VirtualMIDIPortManager();
 
     void start(const std::vector<std::pair<std::string, int>>& name_count_pairs);
     void close();
 };
 
-#endif // VIRTUALMIDIMANAGER_H
+#endif // VirtualMIDIPortManager_H
