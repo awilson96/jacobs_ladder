@@ -3,15 +3,13 @@ import time
 import subprocess
 import os
 
-# Create a list of port configurations (pairs of <string, int>)
-port_configs = [("jacobs_ladder", 12)]
 
-# Instantiate the VirtualMIDIPortManager
-manager = virtual_midi.VirtualMIDIPortManager(port_configs, 1, True)
+port_config = [("jacobs_ladder", 12), ("jacob", 12)]
 
-# Access the list of port names
-port_names = manager.getPortNames()
-print(port_names)
+# Instantiate the VirtualMIDIManager
+manager = virtual_midi.VirtualMIDIManager()
+
+manager.start(port_config)
 
 # Path to your VBScript
 script_path = "C:\\Program Files (x86)\\MIDIOX\\WSH\\PortMapping.vbs"
@@ -31,10 +29,10 @@ process1 = subprocess.Popen(
     text=True
 )
 
-input("Press Enter to terminate...")
+time.sleep(10)
 
 # Clean up after usage
-manager.cleanup()
+manager.close()
 
 # Now, to stop the script, we send the "Enter" key as input
 process1.stdin.write("\n")
