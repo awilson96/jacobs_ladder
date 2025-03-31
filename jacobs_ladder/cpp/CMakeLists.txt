@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
+project(MyProject)
 
 # Use C++17 standard
 set(CMAKE_CXX_STANDARD 17)
@@ -26,22 +27,34 @@ endif()
 # -------------------------------
 # PYBIND11 CONFIGURATION
 # -------------------------------
-find_package(pybind11 REQUIRED)  # Ensure pybind11 is installed
+find_package(pybind11 REQUIRED)
+
+# Get all source and header files
+file(GLOB_RECURSE SOURCES src/*.cpp)
+file(GLOB_RECURSE HEADERS src/*.h)
+
+# Separate test files and normal sources
+set(TEST_SOURCES "")
+set(NORMAL_SOURCES "")
+
+foreach(FILE ${SOURCES})
+    if(FILE MATCHES ".*Test\\.cpp$")
+        list(APPEND TEST_SOURCES ${FILE})
+    else()
+        list(APPEND NORMAL_SOURCES ${FILE})
+    endif()
+endforeach()
 
 # Add a shared library for the Python module
-add_library(virtual_midi MODULE src/VirtualMidiPortManager.cpp)
-
-# Include the header file for the source file
-target_include_directories(virtual_midi PRIVATE "${CMAKE_SOURCE_DIR}/src")  # Ensure the header is included
-
-# Link necessary libraries
+add_library(virtual_midi MODULE ${NORMAL_SOURCES})
+target_include_directories(virtual_midi PRIVATE "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(virtual_midi PRIVATE pybind11::module "${TEVIRTUALMIDI_LIB}")
 
-# Ensure the output file has the correct naming convention for Python modules
+# Ensure correct naming for Python module
 set_target_properties(virtual_midi PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-    PREFIX ""  # Remove "lib" prefix (important for Windows)
-    SUFFIX ".pyd"  # Use `.pyd` on Windows
+    PREFIX ""  
+    SUFFIX ".pyd"
 )
 
 # -------------------------------
@@ -49,17 +62,29 @@ set_target_properties(virtual_midi PROPERTIES
 # -------------------------------
 add_executable(teVirtualMIDITest src/teVirtualMIDITest.c)
 target_link_libraries(teVirtualMIDITest PRIVATE "${TEVIRTUALMIDI_LIB}")
-
-add_executable(VirtualMidiPortScript src/VirtualMidiPortScript.cpp)
-target_link_libraries(VirtualMidiPortScript PRIVATE "${TEVIRTUALMIDI_LIB}")
-
-# Set runtime output directory for executables
 set_target_properties(teVirtualMIDITest PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
+
+add_executable(VirtualMidiPortScript src/VirtualMidiPortScript.cpp)
+target_link_libraries(VirtualMidiPortScript PRIVATE "${TEVIRTUALMIDI_LIB}")
 set_target_properties(VirtualMidiPortScript PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
+
+# -------------------------------
+# AUTO-DETECTED TESTS
+# -------------------------------
+foreach(TEST_FILE ${TEST_SOURCES})
+    get_filename_component(TEST_NAME ${TEST_FILE} NAME_WE)
+    add_executable(${TEST_NAME} ${TEST_FILE})
+    target_link_libraries(${TEST_NAME} PRIVATE virtual_midi "${TEVIRTUALMIDI_LIB}")
+    set_target_properties(${TEST_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+    add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
+endforeach()
+
+# Enable testing
+enable_testing()
 
 # Debug output
 message(STATUS "CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
