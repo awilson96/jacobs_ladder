@@ -72,3 +72,20 @@ Clean and Rebuild
     - Key independance
     - Tempo independance
     - Lick identification
+
+## Midi Database sources
+- https://soundsoft.de/
+- Freemidi.org
+- https://www.midi-hits.com/
+
+## Music scores sources
+- https://imslp.org/ (classical, paid)
+- https://www.pianostreet.com/?q=Mozart&size=n_20_n (classical, paid)
+- http://sheetmusicinternational.com/login (classical, paid, but watermarked downloads are free)
+- http://pop-sheet-music.com/home.html (free pop)
+
+## Textbooks
+Music similarity and retreival: an introduction to audio and web based strategies
+
+## Youtube
+https://www.youtube.com/watch?v=SRrQ_v-OOSg&list=PL-wATfeyAMNqIee7cH3q1bh4QJFAaeNv0&index=7
