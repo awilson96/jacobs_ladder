@@ -1,90 +1,109 @@
-cmake_minimum_required(VERSION 3.14)
-project(MyProject)
+cmake_minimum_required(VERSION 3.16)
+project(JacobsLadder CXX)
 
-# Use C++17 standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Define _CRT_SECURE_NO_WARNINGS to suppress deprecation warnings
-add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+# Set optimization flags for maximal optimization (O3, LTO, and other flags)
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -flto -march=native -funroll-loops")
 
-# Include directories
-include_directories("${CMAKE_SOURCE_DIR}/cpp/include")
-include_directories("${CMAKE_SOURCE_DIR}/cpp/external")
-include_directories("${CMAKE_SOURCE_DIR}/src")
+# Define the bin directory relative to the project root
+set(BIN_DIR ${CMAKE_SOURCE_DIR}/bin)
 
-# Detect architecture and set the appropriate library
-if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    message(STATUS "64-bit architecture detected, linking teVirtualMIDI64.lib")
-    set(TEVIRTUALMIDI_LIB "${CMAKE_SOURCE_DIR}/cpp/lib/teVirtualMIDI64.lib")
-elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-    message(STATUS "32-bit architecture detected, linking teVirtualMIDI32.lib")
-    set(TEVIRTUALMIDI_LIB "${CMAKE_SOURCE_DIR}/cpp/lib/teVirtualMIDI32.lib")
-else()
-    message(FATAL_ERROR "Unknown architecture")
-endif()
+# Remove the bin directory before recompilation
+add_custom_target(clean_bin
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${BIN_DIR}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${BIN_DIR}
+    COMMENT "Cleaning and recreating ${BIN_DIR}"
+)
 
-# -------------------------------
-# PYBIND11 CONFIGURATION
-# -------------------------------
+# Detect all .cpp and .h files in src/
+file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS src/*.cpp src/*.h)
+
+# Detect all .cpp and .h files in external/
+file(GLOB_RECURSE EXT_FILES CONFIGURE_DEPENDS external/*.cpp external/*.h)
+
+# Detect all .cpp files in test/ (each will be a separate executable)
+file(GLOB_RECURSE TEST_FILES CONFIGURE_DEPENDS test/*.cpp)
+
+# Pybind11 Integration - Use a dedicated /pybind directory
+file(GLOB_RECURSE PYBIND_FILES CONFIGURE_DEPENDS pybind/*.cpp)
+
+# Find Pybind11
 find_package(pybind11 REQUIRED)
 
-# Get all source and header files
-file(GLOB_RECURSE SOURCES src/*.cpp)
-file(GLOB_RECURSE HEADERS src/*.h)
+# Set default libraries based on platform
+set(DEFAULT_LIBS pybind11::module)  # Always include pybind11
 
-# Separate test files and normal sources
-set(TEST_SOURCES "")
-set(NORMAL_SOURCES "")
+if(WIN32)
+    list(APPEND DEFAULT_LIBS winmm)  # Windows Multimedia Library for QueryPerformanceCounter
+elseif(UNIX)
+    list(APPEND DEFAULT_LIBS pthread)  # Pthreads for POSIX systems
+endif()
 
-foreach(FILE ${SOURCES})
-    if(FILE MATCHES ".*Test\\.cpp$")
-        list(APPEND TEST_SOURCES ${FILE})
-    else()
-        list(APPEND NORMAL_SOURCES ${FILE})
-    endif()
+# Search for precompiled libraries in /lib and /external/lib
+file(GLOB LIB_FILES CONFIGURE_DEPENDS lib/*.lib lib/*.a external/lib/*.lib external/lib/*.a)
+
+if(LIB_FILES)
+    message(STATUS "Found precompiled libraries: ${LIB_FILES} ")
+endif()
+
+# Add external/ and src/ directories to include paths for all targets
+include_directories(${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/external)
+
+# Create a static library from src/ and external/
+add_library(MyLib STATIC ${SRC_FILES} ${EXT_FILES})
+
+# Link all detected libraries to MyLib
+target_link_libraries(MyLib PRIVATE ${LIB_FILES} ${DEFAULT_LIBS})
+
+# Add the src/ directory to include paths for all targets
+include_directories(${CMAKE_SOURCE_DIR}/src)
+
+# Process each test file separately as an executable
+foreach(test_file ${TEST_FILES})
+    get_filename_component(test_name ${test_file} NAME_WE)
+    add_executable(${test_name} ${test_file})
+    target_link_libraries(${test_name} PRIVATE MyLib ${DEFAULT_LIBS})
 endforeach()
 
-# Add a shared library for the Python module
-add_library(virtual_midi MODULE ${NORMAL_SOURCES})
-target_include_directories(virtual_midi PRIVATE "${CMAKE_SOURCE_DIR}/src")
-target_link_libraries(virtual_midi PRIVATE pybind11::module "${TEVIRTUALMIDI_LIB}")
-
-# Ensure correct naming for Python module
-set_target_properties(virtual_midi PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-    PREFIX ""  
-    SUFFIX ".pyd"
-)
-
-# -------------------------------
-# BUILD EXECUTABLES
-# -------------------------------
-add_executable(teVirtualMIDITest src/teVirtualMIDITest.c)
-target_link_libraries(teVirtualMIDITest PRIVATE "${TEVIRTUALMIDI_LIB}")
-set_target_properties(teVirtualMIDITest PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-)
-
-add_executable(VirtualMidiPortScript src/VirtualMidiPortScript.cpp)
-target_link_libraries(VirtualMidiPortScript PRIVATE "${TEVIRTUALMIDI_LIB}")
-set_target_properties(VirtualMidiPortScript PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-)
-
-# -------------------------------
-# AUTO-DETECTED TESTS
-# -------------------------------
-foreach(TEST_FILE ${TEST_SOURCES})
-    get_filename_component(TEST_NAME ${TEST_FILE} NAME_WE)
-    add_executable(${TEST_NAME} ${TEST_FILE})
-    target_link_libraries(${TEST_NAME} PRIVATE virtual_midi "${TEVIRTUALMIDI_LIB}")
-    set_target_properties(${TEST_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
-    add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
+# Pybind11 Integration - Automatically detect files meant for Pybind modules
+foreach(pybind_file ${PYBIND_FILES})
+    get_filename_component(module_name ${pybind_file} NAME_WE)
+    message(STATUS "Generating Pybind module: ${module_name}")
+    pybind11_add_module(${module_name} ${pybind_file})
+    set_target_properties(${module_name} PROPERTIES OUTPUT_NAME ${module_name})
+    target_link_libraries(${module_name} PRIVATE MyLib ${DEFAULT_LIBS})
 endforeach()
 
-# Enable testing
-enable_testing()
+# Define the bin directory relative to the project root
+set(BIN_DIR ${CMAKE_SOURCE_DIR}/bin)
 
-# Debug output
-message(STATUS "CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
+# Ensure the bin directory exists
+file(MAKE_DIRECTORY ${BIN_DIR})
+
+# Copy all test executables to /bin
+foreach(test_file ${TEST_FILES})
+    get_filename_component(test_name ${test_file} NAME_WE)
+    add_custom_command(TARGET ${test_name} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${test_name}> ${BIN_DIR}/$<TARGET_FILE_NAME:${test_name}>
+        COMMENT "Copying ${test_name} to ${BIN_DIR}"
+    )
+endforeach()
+
+# Define the target directory as ../ (parent directory of the project)
+set(PYBIND_TARGET_DIR ${CMAKE_SOURCE_DIR}/../)
+
+# Ensure the target directory exists
+file(MAKE_DIRECTORY ${PYBIND_TARGET_DIR})
+
+# Copy all Pybind11 modules to /bin (if applicable)
+foreach(pybind_file ${PYBIND_FILES})
+    get_filename_component(module_name ${pybind_file} NAME_WE)
+    message(STATUS "Generating Pybind module2: ${module_name}")
+    add_custom_command(TARGET ${module_name} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${module_name}> ${PYBIND_TARGET_DIR}/$<TARGET_FILE_NAME:${module_name}>
+        COMMAND ${CMAKE_COMMAND} -E rename ${PYBIND_TARGET_DIR}/$<TARGET_FILE_NAME:${module_name}> ${PYBIND_TARGET_DIR}/${module_name}.pyd
+        COMMENT "Copying and renaming ${module_name} to ${PYBIND_TARGET_DIR}/${module_name}.pyd"
+    )
+endforeach()
