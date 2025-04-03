@@ -10,6 +10,10 @@
 #include <numeric>
 #include <algorithm>
 #include <chrono>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
+namespace py = pybind11;
 
 QpcUtils::QpcUtils() {
     // Set system timer resolution to 1 ms using windows multimedia API

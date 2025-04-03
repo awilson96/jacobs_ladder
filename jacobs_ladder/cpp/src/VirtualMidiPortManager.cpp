@@ -3,7 +3,6 @@
 #include <pybind11/stl.h>
 #include <stdexcept>
 
-
 namespace py = pybind11;
 
 // Constructor
@@ -78,13 +77,5 @@ void VirtualMIDIPortManager::close() {
     }
     if (print_msgs_)
         std::cout << "All virtual MIDI ports closed." << std::endl;
-}
-
-// Pybind11 bindings
-PYBIND11_MODULE(VirtualMidiPortManager, m) {
-    py::class_<VirtualMIDIPortManager>(m, "VirtualMIDIPortManager")
-        .def(py::init<bool>(), py::arg("print_msgs") = false) 
-        .def("start", &VirtualMIDIPortManager::start, py::arg("name_count_pairs"))
-        .def("close", &VirtualMIDIPortManager::close);
 }
 
