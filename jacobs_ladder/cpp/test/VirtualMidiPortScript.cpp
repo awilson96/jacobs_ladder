@@ -115,7 +115,7 @@ int main(int argc, const char *argv[]) {
         }
     }
 
-    std::cout << "Virtual ports created - press enter to close ports again" << std::endl;
+    std::cout << "Virtual ports created - press enter to close ports..." << std::endl;
     std::cin.get(); // Wait for user input to close the ports
 
     // Close all created ports

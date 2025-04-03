@@ -83,6 +83,9 @@
         "unordered_set": "cpp",
         "valarray": "cpp",
         "variant": "cpp",
-        "xhash": "cpp"
+        "xhash": "cpp",
+        "coroutine": "cpp",
+        "queue": "cpp",
+        "regex": "cpp"
     }
 }

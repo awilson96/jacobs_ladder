@@ -31,6 +31,10 @@ public:
     VirtualMIDIPortManager(bool print_msgs = false);
     ~VirtualMIDIPortManager();
 
+    // Delete copy constructor and copy assignment operator
+    VirtualMIDIPortManager(const VirtualMIDIPortManager&) = delete;
+    VirtualMIDIPortManager& operator=(const VirtualMIDIPortManager&) = delete;
+
     void start(const std::vector<std::pair<std::string, int>>& name_count_pairs);
     void close();
 };
