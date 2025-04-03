@@ -1,4 +1,4 @@
-from jacobs_ladder import virtual_midi
+from jacobs_ladder import VirtualMidiPortManager
 import time
 import subprocess
 import os
@@ -7,7 +7,7 @@ import os
 port_config = [("jacobs_ladder", 12), ("jacob", 12)]
 
 # Instantiate the VirtualMIDIPortManager
-manager = virtual_midi.VirtualMIDIPortManager(print_msgs=True)
+manager = VirtualMidiPortManager.VirtualMIDIPortManager(print_msgs=True)
 
 manager.start(port_config)
 

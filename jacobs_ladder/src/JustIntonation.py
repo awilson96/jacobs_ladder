@@ -7,7 +7,7 @@ from .Dictionaries import midi_notes
 from .Enums import Pitch
 from .Logging import setup_logging
 from .Utilities import determine_octave, get_root_from_letter_note, remove_harmonically_redundant_intervals
-from .cython.tuning_utils import generate_tunings
+from jacobs_ladder.bindings.tuning_utils import generate_tunings
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"

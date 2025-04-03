@@ -29,14 +29,14 @@ char *binToStr(const unsigned char *data, DWORD length) {
 // Callback function to process incoming MIDI data for all ports
 void CALLBACK teVMCallback(LPVM_MIDI_PORT midiPort, LPBYTE midiDataBytes, DWORD length, DWORD_PTR dwCallbackInstance) {
     if (midiDataBytes == nullptr || length == 0) {
-        std::cout << "Empty command - driver was probably shut down!" << std::endl;
+        // std::cout << "Empty command - driver was probably shut down!" << std::endl;
         return;
     }
     if (!virtualMIDISendData(midiPort, midiDataBytes, length)) {
-        std::cout << "Error sending data: " << GetLastError() << std::endl;
+        // std::cout << "Error sending data: " << GetLastError() << std::endl;
         return;
     }
-    std::cout << "Port " << dwCallbackInstance << " Command: " << binToStr(midiDataBytes, length) << std::endl;
+    // std::cout << "Port " << dwCallbackInstance << " Command: " << binToStr(midiDataBytes, length) << std::endl;
 }
 
 int main(int argc, const char *argv[]) {

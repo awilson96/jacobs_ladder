@@ -1,4 +1,4 @@
-from jacobs_ladder.src.cython import tuning_utils
+from jacobs_ladder.bindings import tuning_utils
 from jacobs_ladder.src.Utilities import generate_tunings
 import time
 

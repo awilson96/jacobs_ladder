@@ -361,7 +361,6 @@ class MidiController:
             print("Listening for MIDI messages. Press Ctrl+C to exit.")
             while True:
                 message = self.midi_in.get_message()
-                time.sleep(0.001)
         except KeyboardInterrupt:
             print("Exiting...")
             self.turn_off_all_notes()

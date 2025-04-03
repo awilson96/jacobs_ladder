@@ -81,7 +81,7 @@ void VirtualMIDIPortManager::close() {
 }
 
 // Pybind11 bindings
-PYBIND11_MODULE(virtual_midi, m) {
+PYBIND11_MODULE(VirtualMidiPortManager, m) {
     py::class_<VirtualMIDIPortManager>(m, "VirtualMIDIPortManager")
         .def(py::init<bool>(), py::arg("print_msgs") = false) 
         .def("start", &VirtualMIDIPortManager::start, py::arg("name_count_pairs"))
