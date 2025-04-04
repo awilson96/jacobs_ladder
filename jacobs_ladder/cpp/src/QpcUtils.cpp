@@ -20,9 +20,7 @@ QpcUtils::QpcUtils() {
     timeBeginPeriod(1);
 
     // Initialize frequency and precision
-    qpcSetFrequency();
-    std::cout << "Course time resolution: " << mPrecisionNs << " ns\n";
-    std::cout << "Query Performance Counter Frequency: " << mFrequencyHz << " Hz\n";
+    qpcSetFrequency(false);
 
     // Set thread affinity to a single CPU core for better timing accuracy
     mPreviousMask = SetThreadAffinityMask(GetCurrentThread(), 1);

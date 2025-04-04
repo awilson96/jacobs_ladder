@@ -1,0 +1,33 @@
+#ifndef MIDI_SCHEDULER_H
+#define MIDI_SCHEDULER_H
+
+// Project Includes
+#include "MidiDefinitions.h"
+#include "QpcUtils.h"
+#include "rtmidi/RtMidi.h"
+
+// System Includes
+#include <queue>
+#include <vector>
+#include <memory>
+
+class MidiScheduler {
+public:
+    MidiScheduler(const std::string& outputPortName);
+    ~MidiScheduler();
+
+    bool addEvent(MidiEvent event);
+    bool addEvent(MidiEvent event, int offset);
+    bool addEvents(std::vector<MidiEvent> events);
+    bool addEvents(std::vector<MidiEvent> events, int offset);
+
+    void player();
+
+private:
+    std::priority_queue<MidiEvent> mQueue;
+    std::unique_ptr<QpcUtils> mTimer;
+    std::unique_ptr<RtMidiOut> mMidiOut;
+};
+
+
+#endif // MIDI_SCHEDULER_H
