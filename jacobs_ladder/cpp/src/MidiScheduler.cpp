@@ -1,6 +1,8 @@
 #include "MidiScheduler.h"
 #include "MidiUtils.h"
 
+#include <cstdlib>
+
 MidiScheduler::MidiScheduler(const std::string& outputPortName) {
     mTimer = std::make_unique<QpcUtils>();
     try {
@@ -35,7 +37,7 @@ MidiScheduler::MidiScheduler(const std::string& outputPortName) {
 }
 
 MidiScheduler::~MidiScheduler() {
-    // Destructor implementation (if needed)
+    mMidiOut->closePort();
 }
 
 bool MidiScheduler::addEvent(MidiEvent event) {
@@ -75,5 +77,27 @@ bool MidiScheduler::addEvents(std::vector<MidiEvent> events, int offset) {
         addEvent(event);
     }
     return true;
+}
+
+// TODO: Rework to use smart sleeps and absolute times instead of sleep times
+void MidiScheduler::player() {
+    while (!mQueue.empty()) {
+        MidiEvent event = mQueue.top();
+        mQueue.pop();
+
+        std::cout << "Midi Event: \n"
+                  << "Status: "   << static_cast<int>(event.status)   << "\n"
+                  << "Note: "     << (int)event.note                  << "\n"
+                  << "Velocity: " << (int)event.velocity              << "\n"
+                  << "Time: "     << event.time                       << "\n\n";
+
+        mTimer->qpcSleepMs(event.time);
+        
+        // Send the MIDI message
+        std::vector<unsigned char> message = { static_cast<unsigned char>(event.status),
+                                               static_cast<unsigned char>(event.note),
+                                               static_cast<unsigned char>(event.velocity) };
+        mMidiOut->sendMessage(&message);
+    }
 }
 
