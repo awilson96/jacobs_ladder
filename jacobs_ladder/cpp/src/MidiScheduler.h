@@ -27,6 +27,7 @@ private:
     std::priority_queue<MidiEvent> mQueue;
     std::unique_ptr<QpcUtils> mTimer;
     std::unique_ptr<RtMidiOut> mMidiOut;
+    long long mFrequencyHz {10000};
 };
 
 

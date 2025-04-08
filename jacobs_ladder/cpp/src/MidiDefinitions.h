@@ -17,10 +17,10 @@ struct MidiEvent {
     MidiMessageType status;
     uint8_t note;
     uint8_t velocity;
-    uint64_t time;
+    long long qpcTime;
 
     bool operator<(const MidiEvent& other) const {
-        return time > other.time;
+        return qpcTime > other.qpcTime;
     }
 };
 

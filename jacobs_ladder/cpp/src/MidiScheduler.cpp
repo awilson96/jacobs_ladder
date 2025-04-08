@@ -5,6 +5,7 @@
 
 MidiScheduler::MidiScheduler(const std::string& outputPortName) {
     mTimer = std::make_unique<QpcUtils>();
+    mFrequencyHz = mTimer->qpcGetFrequency();
     try {
         mMidiOut = std::make_unique<RtMidiOut>();
 
@@ -53,7 +54,7 @@ bool MidiScheduler::addEvent(MidiEvent event, int offset) {
     if (offset < 0)
         return false;
 
-    event.time += offset;
+    event.qpcTime += offset;
     return addEvent(event);
 }
 
@@ -73,7 +74,7 @@ bool MidiScheduler::addEvents(std::vector<MidiEvent> events, int offset) {
         return false;
 
     for (auto& event : events) {
-        event.time += offset;
+        event.qpcTime += offset;
         addEvent(event);
     }
     return true;
@@ -89,9 +90,17 @@ void MidiScheduler::player() {
                   << "Status: "   << static_cast<int>(event.status)   << "\n"
                   << "Note: "     << (int)event.note                  << "\n"
                   << "Velocity: " << (int)event.velocity              << "\n"
-                  << "Time: "     << event.time                       << "\n\n";
+                  << "Time: "     << event.qpcTime                    << "\n\n";
 
-        mTimer->qpcSleepMs(event.time);
+        LARGE_INTEGER start, now;
+        if (QueryPerformanceCounter(&start)) {
+
+            // TODO: If requested time is greater than consumer add() budget, add items until budget is met
+            // This is a kind of smart sleep
+            do {
+                QueryPerformanceCounter(&now);
+            } while (now.QuadPart < event.qpcTime);
+        }
         
         // Send the MIDI message
         std::vector<unsigned char> message = { static_cast<unsigned char>(event.status),
