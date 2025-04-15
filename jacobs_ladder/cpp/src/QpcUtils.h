@@ -20,9 +20,9 @@ public:
     void qpcSleepMs(long long ms);
     void qpcSleepUs(long long us);
     void qpcSleepNs(long long ns);
-    void qpcPrintTimeDiffNs(long long start, long long end) const;
-    void qpcPrintTimeDiffUs(long long start, long long end) const;
-    void qpcPrintTimeDiffMs(long long start, long long end) const;
+    long long qpcPrintTimeDiffNs(long long start, long long end) const;
+    long long qpcPrintTimeDiffUs(long long start, long long end) const;
+    long long qpcPrintTimeDiffMs(long long start, long long end) const;
     std::tuple<double, double, long long, double> qpcDisplayStatistics(const std::vector<long long>& durations) const;
     double qpcCalculatePercentError(double expectedTime, double meanTime) const;
 
@@ -34,7 +34,7 @@ private:
 
     void qpcSetFrequency(bool printMsgs = false);
     void qpcSleep(int option, long long dimmensionlessTime);
-    void qpcPrintTimeDiff(int option, long long start, long long end) const;
+    long long qpcPrintTimeDiff(int option, long long start, long long end) const;
 };
 
 #endif // QPC_UTILS_H

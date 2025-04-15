@@ -10,10 +10,11 @@
 #include <queue>
 #include <vector>
 #include <memory>
+#include <atomic>
 
 class MidiScheduler {
 public:
-    MidiScheduler(const std::string& outputPortName);
+    MidiScheduler(const std::string& outputPortName, bool printMsgs = false);
     ~MidiScheduler();
 
     bool addEvent(MidiEvent event);
@@ -24,6 +25,7 @@ public:
     void player();
 
 private:
+    std::atomic<bool> mPrintMsgs {false};
     std::priority_queue<MidiEvent> mQueue;
     std::unique_ptr<QpcUtils> mTimer;
     std::unique_ptr<RtMidiOut> mMidiOut;

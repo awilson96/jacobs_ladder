@@ -3,9 +3,10 @@
 
 #include <cstdlib>
 
-MidiScheduler::MidiScheduler(const std::string& outputPortName) {
+MidiScheduler::MidiScheduler(const std::string& outputPortName, bool printMsgs) {
     mTimer = std::make_unique<QpcUtils>();
     mFrequencyHz = mTimer->qpcGetFrequency();
+    mPrintMsgs.store(printMsgs);
     try {
         mMidiOut = std::make_unique<RtMidiOut>();
 
@@ -15,10 +16,12 @@ MidiScheduler::MidiScheduler(const std::string& outputPortName) {
         for (unsigned int i = 0; i < portCount; ++i) {
             std::string rawName = mMidiOut->getPortName(i);
             std::string normalizedName = normalizePortName(rawName);
-            std::cout << "MIDI output port " << i << ": " << normalizedName << "\n";
+            if (mPrintMsgs.load())
+                std::cout << "MIDI output port " << i << ": " << normalizedName << "\n";
             if (normalizedName == outputPortName) {
                 mMidiOut->openPort(i);
-                std::cout << "Opened MIDI output port: " << normalizedName << "\n";
+                if (mPrintMsgs.load())
+                    std::cout << "Opened MIDI output port: " << normalizedName << "\n";
                 portFound = true;
                 break;
             }
@@ -86,12 +89,14 @@ void MidiScheduler::player() {
         MidiEvent event = mQueue.top();
         mQueue.pop();
 
-        std::cout << "Midi Event: \n"
+        if (mPrintMsgs.load()) {
+            std::cout << "Midi Event: \n"
                   << "Status: "   << static_cast<int>(event.status)   << "\n"
                   << "Note: "     << (int)event.note                  << "\n"
                   << "Velocity: " << (int)event.velocity              << "\n"
                   << "Time: "     << event.qpcTime                    << "\n\n";
-
+        }
+        
         LARGE_INTEGER start, now;
         if (QueryPerformanceCounter(&start)) {
 

@@ -86,6 +86,10 @@
         "xhash": "cpp",
         "coroutine": "cpp",
         "queue": "cpp",
-        "regex": "cpp"
-    }
+        "regex": "cpp",
+        "resumable": "cpp",
+        "future": "cpp",
+        "stack": "cpp"
+    },
+    "cmake.sourceDirectory": "C:/Users/awils/OneDrive/Documents/Repos/jacobs_ladder/jacobs_ladder"
 }

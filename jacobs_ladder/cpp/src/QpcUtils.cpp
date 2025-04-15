@@ -135,10 +135,10 @@ void QpcUtils::qpcSleepMs(long long ms) {
     qpcSleep(2, ms);
 }
 
-void QpcUtils::qpcPrintTimeDiff(int option, long long start, long long end) const {
+long long QpcUtils::qpcPrintTimeDiff(int option, long long start, long long end) const {
     if (start < 0 || end < 0 || option < 0 || option > 2) {
         std::cerr << "Error: Invalid start or end time.\n";
-        return;
+        return -1;
     }
 
     long long conversionFactor;
@@ -160,23 +160,25 @@ void QpcUtils::qpcPrintTimeDiff(int option, long long start, long long end) cons
     }
 
     // Calculate elapsed time in nanoseconds correctly
-    long long elapsedNs = (end - start) * conversionFactor / mFrequencyHz;
+    long long elapsedTime = (end - start) * conversionFactor / mFrequencyHz;
 
     // Force decimal notation with no scientific output
     std::cout << std::fixed << std::setprecision(0)
-              << "Elapsed time: " << elapsedNs << " " << units << "\n";
+              << "Elapsed time: " << elapsedTime << " " << units << "\n";
+    
+    return elapsedTime;
 }
 
-void QpcUtils::qpcPrintTimeDiffNs(long long start, long long end) const {
-    qpcPrintTimeDiff(0, start, end);
+long long QpcUtils::qpcPrintTimeDiffNs(long long start, long long end) const {
+    return qpcPrintTimeDiff(0, start, end);
 }
 
-void QpcUtils::qpcPrintTimeDiffUs(long long start, long long end) const {
-    qpcPrintTimeDiff(1, start, end);
+long long QpcUtils::qpcPrintTimeDiffUs(long long start, long long end) const {
+    return qpcPrintTimeDiff(1, start, end);
 }
 
-void QpcUtils::qpcPrintTimeDiffMs(long long start, long long end) const {
-    qpcPrintTimeDiff(2, start, end);
+long long QpcUtils::qpcPrintTimeDiffMs(long long start, long long end) const {
+    return qpcPrintTimeDiff(2, start, end);
 }
 
 std::tuple<double, double, long long, double> QpcUtils::qpcDisplayStatistics(const std::vector<long long>& durations) const {
@@ -188,7 +190,7 @@ std::tuple<double, double, long long, double> QpcUtils::qpcDisplayStatistics(con
     // Convert the raw ticks to nanoseconds
     std::vector<long long> durationsInNs;
     for (long long duration : durations) {
-        long long durationInNs = static_cast<long long>((duration * 1.0 / mFrequencyHz) * 1e9);
+        long long durationInNs = static_cast<long long>((static_cast<double>(duration) / static_cast<double>(mFrequencyHz)) * 1e9);
         durationsInNs.push_back(durationInNs);
     }
 

@@ -20,8 +20,8 @@ add_custom_target(clean_bin
 # Detect all .cpp and .h files in src/
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS src/*.cpp src/*.h)
 
-# Detect all .cpp and .h files in external/
-file(GLOB_RECURSE EXT_FILES CONFIGURE_DEPENDS external/*.cpp external/*.h)
+# Detect all .cpp, .h, and .hpp files in external/
+file(GLOB_RECURSE EXT_FILES CONFIGURE_DEPENDS external/*.cpp external/*.h external/*.hpp)
 
 # Detect all .cpp files in test/ (each will be a separate executable)
 file(GLOB_RECURSE TEST_FILES CONFIGURE_DEPENDS test/*.cpp)
@@ -49,7 +49,7 @@ if(LIB_FILES)
 endif()
 
 # Add external/ and src/ directories to include paths for all targets
-include_directories(${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/external)
+include_directories(${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/external ${CMAKE_SOURCE_DIR}/external/catch2)
 
 # Create a static library from src/ and external/
 add_library(MyLib STATIC ${SRC_FILES} ${EXT_FILES})
