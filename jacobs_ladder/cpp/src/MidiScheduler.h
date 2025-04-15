@@ -11,21 +11,34 @@
 #include <vector>
 #include <memory>
 #include <atomic>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
 class MidiScheduler {
 public:
-    MidiScheduler(const std::string& outputPortName, bool printMsgs = false);
+    MidiScheduler(const std::string& outputPortName, bool startImmediately = true,  bool printMsgs = false);
     ~MidiScheduler();
 
     bool addEvent(MidiEvent event);
-    bool addEvent(MidiEvent event, int offset);
+    bool addEvent(MidiEvent event, int offsetNs);
     bool addEvents(std::vector<MidiEvent> events);
-    bool addEvents(std::vector<MidiEvent> events, int offset);
+    bool addEvents(std::vector<MidiEvent> events, int offsetNs);
+
+    void pause();
+    void resume();
+    bool start();
+    void stop();
 
     void player();
 
 private:
+    std::atomic<bool> mRunning {false};
+    std::atomic<bool> mPaused {false};
     std::atomic<bool> mPrintMsgs {false};
+    std::thread mPlayerThread;
+    std::mutex mPauseMutex;
+    std::condition_variable mPauseCv;
     std::priority_queue<MidiEvent> mQueue;
     std::unique_ptr<QpcUtils> mTimer;
     std::unique_ptr<RtMidiOut> mMidiOut;

@@ -3,7 +3,7 @@
 
 #include <cstdlib>
 
-MidiScheduler::MidiScheduler(const std::string& outputPortName, bool printMsgs) {
+MidiScheduler::MidiScheduler(const std::string& outputPortName, bool startImmediately, bool printMsgs) {
     mTimer = std::make_unique<QpcUtils>();
     mFrequencyHz = mTimer->qpcGetFrequency();
     mPrintMsgs.store(printMsgs);
@@ -30,6 +30,10 @@ MidiScheduler::MidiScheduler(const std::string& outputPortName, bool printMsgs) 
         if (!portFound) {
             throw std::runtime_error("Could not find MIDI output port: " + outputPortName);
         }
+        if (startImmediately) {
+            mRunning.store(true);
+            mPlayerThread = std::thread(&MidiScheduler::player, this);
+        }
 
     } catch (const RtMidiError& error) {
         std::cerr << "Error opening MIDI output port: " << error.getMessage() << "\n";
@@ -41,51 +45,91 @@ MidiScheduler::MidiScheduler(const std::string& outputPortName, bool printMsgs) 
 }
 
 MidiScheduler::~MidiScheduler() {
+    // Stop the player() thread and wait for it to join
+    stop();
+    if (mPlayerThread.joinable())
+        mPlayerThread.join();
+
+    // Close all open Midi ports
     mMidiOut->closePort();
 }
 
 bool MidiScheduler::addEvent(MidiEvent event) {
-    // TODO: Only push when the event time is greater than the current time
-    // TODO: Only push when scheduler is sleeping 
-    mQueue.push(event);
-    return true;
+    if (event.qpcTime >= mTimer->qpcGetTicks()) {
+        mQueue.push(event);
+        return true;
+    }
+    return false;
 }
 
-bool MidiScheduler::addEvent(MidiEvent event, int offset) {
-    // TODO: Only push when the event time is greater than the current time
-    // TODO: Only push when scheduler is sleeping 
-    if (offset < 0)
+bool MidiScheduler::addEvent(MidiEvent event, int offsetNs) {
+    if (offsetNs < 0)
         return false;
 
-    event.qpcTime += offset;
+    event.qpcTime += offsetNs;
     return addEvent(event);
 }
 
 bool MidiScheduler::addEvents(std::vector<MidiEvent> events) {
-    // TODO: Only push when the event time is greater than the current time
-    // TODO: Only push when scheduler is sleeping 
     for (const auto& event : events) {
         addEvent(event);
     }
     return true;
 }
 
-bool MidiScheduler::addEvents(std::vector<MidiEvent> events, int offset) {
-    // TODO: Only push when the event time is greater than the current time
-    // TODO: Only push when scheduler is sleeping 
-    if (offset < 0)
+bool MidiScheduler::addEvents(std::vector<MidiEvent> events, int offsetNs) {
+    if (offsetNs < 0)
         return false;
 
     for (auto& event : events) {
-        event.qpcTime += offset;
+        event.qpcTime += offsetNs;
         addEvent(event);
     }
     return true;
 }
 
+void MidiScheduler::pause() {
+    mPaused.store(true);
+}
+
+void MidiScheduler::resume() {
+    {
+        std::lock_guard<std::mutex> lock(mPauseMutex);
+        mPaused.store(false);
+    }
+    mPauseCv.notify_one();
+}
+
+bool MidiScheduler::start() {
+    if (mPlayerThread.joinable())
+        return false;
+    
+    mRunning.store(true);
+    mPlayerThread = std::thread(&MidiScheduler::player, this);
+    return true;
+}
+
+void MidiScheduler::stop() {
+    mRunning.store(false);
+    mPauseCv.notify_all();
+    std::priority_queue<MidiEvent> empty;
+    mQueue.swap(empty);
+}
+
 // TODO: Rework to use smart sleeps and absolute times instead of sleep times
 void MidiScheduler::player() {
-    while (!mQueue.empty()) {
+    while (mRunning.load()) {
+
+        {
+            std::unique_lock<std::mutex> lock(mPauseMutex);
+            mPauseCv.wait(lock, [this]() { return !mPaused.load() || !mRunning.load(); });
+            if (!mRunning.load()) 
+                break;
+        }
+
+        if (mQueue.empty())
+            continue;
+
         MidiEvent event = mQueue.top();
         mQueue.pop();
 
