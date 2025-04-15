@@ -54,38 +54,30 @@ MidiScheduler::~MidiScheduler() {
     mMidiOut->closePort();
 }
 
-bool MidiScheduler::addEvent(MidiEvent event) {
-    if (event.qpcTime >= mTimer->qpcGetTicks()) {
-        mQueue.push(event);
-        return true;
-    }
-    return false;
+void MidiScheduler::addEvent(const MidiEvent &event) {
+    std::lock_guard<std::mutex> lock(mBufferMutex);
+    mBuffer.push(event);
 }
 
-bool MidiScheduler::addEvent(MidiEvent event, int offsetNs) {
-    if (offsetNs < 0)
-        return false;
-
-    event.qpcTime += offsetNs;
-    return addEvent(event);
+void MidiScheduler::addEvent(MidiEvent &event, long long offsetTicks) {
+    std::lock_guard<std::mutex> lock(mBufferMutex);
+    event.qpcTime += offsetTicks;
+    mBuffer.push(event);
 }
 
-bool MidiScheduler::addEvents(std::vector<MidiEvent> events) {
-    for (const auto& event : events) {
-        addEvent(event);
+void MidiScheduler::addEvents(const std::vector<MidiEvent> &events) {
+    for (const auto &event : events) {
+        std::lock_guard<std::mutex> lock(mBufferMutex);
+        mBuffer.push(event);
     }
-    return true;
 }
 
-bool MidiScheduler::addEvents(std::vector<MidiEvent> events, int offsetNs) {
-    if (offsetNs < 0)
-        return false;
-
-    for (auto& event : events) {
-        event.qpcTime += offsetNs;
-        addEvent(event);
+void MidiScheduler::addEvents(std::vector<MidiEvent> &events, long long offsetTicks) {
+    for (auto &event : events) {
+        std::lock_guard<std::mutex> lock(mBufferMutex);
+        event.qpcTime += offsetTicks;
+        mBuffer.push(event);
     }
-    return true;
 }
 
 void MidiScheduler::pause() {
@@ -116,23 +108,62 @@ void MidiScheduler::stop() {
     mQueue.swap(empty);
 }
 
-// TODO: Rework to use smart sleeps and absolute times instead of sleep times
+bool MidiScheduler::conditionallyPause() {
+    std::unique_lock<std::mutex> lock(mPauseMutex);
+    mPauseCv.wait(lock, [this]() { return !mPaused.load() || !mRunning.load(); });
+    if (!mRunning.load()) 
+        return true;
+    return false;
+}
+
+// TODO: Rework to use smart sleeps
 void MidiScheduler::player() {
     while (mRunning.load()) {
 
-        {
-            std::unique_lock<std::mutex> lock(mPauseMutex);
-            mPauseCv.wait(lock, [this]() { return !mPaused.load() || !mRunning.load(); });
-            if (!mRunning.load()) 
-                break;
-        }
-
-        if (mQueue.empty())
+        // If the user has paused or stopped the player, conditionally pause.
+        // Only returns true when mRunning has been set to false
+        if (conditionallyPause())
             continue;
 
+        if (mQueue.empty()) {
+            std::lock_guard<std::mutex> lock(mBufferMutex);
+            if (mBuffer.empty()) {
+                continue;
+            }
+                
+            while(!mBuffer.empty()) {
+                if (scheduleEvent(mBuffer.top())) {
+                    mBuffer.pop();
+                    break;
+                } 
+                else if (mTimer->qpcGetTicks() > mBuffer.top().qpcTime + mBudgetNs) {
+                    mBuffer.pop();
+                }
+                else {
+                    break;
+                }
+            }
+        }
+
+        // If we have neither been told to pause or stop and the queue is not empty then process the soonest MidiEvent 
+        // and query the performance counter for the current time
         MidiEvent event = mQueue.top();
         mQueue.pop();
+        long long currentTime = mTimer->qpcGetTicks();
 
+        // If the currentTime is 10 ms or more behind schedule then just move on without playing it
+        if (currentTime > event.qpcTime + 10000000) {
+            continue;
+        } 
+        // If the currentTime is somewhere between the scheduled time and 10 ms behind then play it immediately
+        else if (currentTime > event.qpcTime && currentTime <= event.qpcTime + 10000000) {
+            std::vector<unsigned char> message = { static_cast<unsigned char>(event.status),
+                static_cast<unsigned char>(event.note),
+                static_cast<unsigned char>(event.velocity) };
+            mMidiOut->sendMessage(&message);
+        }
+        
+        // Helpful printout for debugging
         if (mPrintMsgs.load()) {
             std::cout << "Midi Event: \n"
                   << "Status: "   << static_cast<int>(event.status)   << "\n"
@@ -141,21 +172,55 @@ void MidiScheduler::player() {
                   << "Time: "     << event.qpcTime                    << "\n\n";
         }
         
-        LARGE_INTEGER start, now;
-        if (QueryPerformanceCounter(&start)) {
+        // Smart sleep adds MidiEvents to the priority queue while it is still within mBudgetNs nanoseconds of the scheduled event time
+        // This budget was calculated as approximately 5 times the benchmarked time it takes to run the scheduleEvent() on average.
+        // (i.e. 250 ns * 5 = 1250 ns) 
+        smartSleep(event);
 
-            // TODO: If requested time is greater than consumer add() budget, add items until budget is met
-            // This is a kind of smart sleep
-            do {
-                QueryPerformanceCounter(&now);
-            } while (now.QuadPart < event.qpcTime);
-        }
-        
-        // Send the MIDI message
+        // This is effectively a high resolution wait_until function for windows 
+        LARGE_INTEGER now;
+        do {
+            QueryPerformanceCounter(&now);
+        } while (now.QuadPart < event.qpcTime);
+
+        // Prepare and send the MIDI message after waiting until the scheduled time
         std::vector<unsigned char> message = { static_cast<unsigned char>(event.status),
                                                static_cast<unsigned char>(event.note),
                                                static_cast<unsigned char>(event.velocity) };
         mMidiOut->sendMessage(&message);
     }
+}
+
+bool MidiScheduler::scheduleEvent(MidiEvent event) {
+    if (event.qpcTime >= mTimer->qpcGetTicks()) {
+        mQueue.push(event);
+        return true;
+    }
+    return false;
+}
+
+bool MidiScheduler::scheduleEvents(std::vector<MidiEvent> events) {
+    for (const auto& event : events) {
+        scheduleEvent(event);
+    }
+    return true;
+}
+
+void MidiScheduler::smartSleep(MidiEvent &event) {
+    LARGE_INTEGER now;
+    std::lock_guard<std::mutex> lock(mBufferMutex);
+    // Query the performance counter each cycle to determine the moment our time budget has run out 
+    // and loop on the condition that we are within mBudgetNs nanoseconds of the scheduled event time
+    do {
+        // While the buffer is not exhausted add events from the buffer to the priority queue, otherwise break out of the loop to transition to fine time waiting
+        if (!mBuffer.empty()) {
+            scheduleEvent(mBuffer.top());
+            mBuffer.pop();
+        }
+        else {
+            break;
+        }
+        QueryPerformanceCounter(&now);
+    } while (now.QuadPart < event.qpcTime - mBudgetNs);
 }
 

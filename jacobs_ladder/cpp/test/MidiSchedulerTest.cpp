@@ -32,29 +32,29 @@ TEST_CASE("Test the MidiScheduler addEvents function", "[MidiScheduler][addEvent
     long long now = timer.qpcGetTicks();
 
     MidiEvent c60 = {MidiMessageType::NOTE_ON, 60, 10, timer.qpcGetFutureTime(now, 50LL)};
-    MidiEvent _c60 = {MidiMessageType::NOTE_OFF, 60, 10, timer.qpcGetFutureTime(now, 100LL)}; 
+    MidiEvent _c60 = {MidiMessageType::NOTE_OFF, 60, 10, timer.qpcGetFutureTime(now, 60LL)}; 
     MidiEvent c64 = {MidiMessageType::NOTE_ON, 64, 20, timer.qpcGetFutureTime(now, 100LL)};
-    MidiEvent _c64 = {MidiMessageType::NOTE_OFF, 64, 20, timer.qpcGetFutureTime(now, 150LL)};
+    MidiEvent _c64 = {MidiMessageType::NOTE_OFF, 64, 20, timer.qpcGetFutureTime(now, 110LL)};
     MidiEvent c67 = {MidiMessageType::NOTE_ON, 67, 30, timer.qpcGetFutureTime(now, 150LL)};
-    MidiEvent _c67 = {MidiMessageType::NOTE_OFF, 67, 30, timer.qpcGetFutureTime(now, 200LL)};
+    MidiEvent _c67 = {MidiMessageType::NOTE_OFF, 67, 30, timer.qpcGetFutureTime(now, 160LL)};
     MidiEvent c71 = {MidiMessageType::NOTE_ON, 71, 40, timer.qpcGetFutureTime(now, 200LL)};
-    MidiEvent _c71 = {MidiMessageType::NOTE_OFF, 71, 40, timer.qpcGetFutureTime(now, 250LL)};
+    MidiEvent _c71 = {MidiMessageType::NOTE_OFF, 71, 40, timer.qpcGetFutureTime(now, 210LL)};
     MidiEvent c72 = {MidiMessageType::NOTE_ON, 72, 50, timer.qpcGetFutureTime(now, 250LL)};
-    MidiEvent _c72 = {MidiMessageType::NOTE_OFF, 72, 50, timer.qpcGetFutureTime(now, 300LL)};
+    MidiEvent _c72 = {MidiMessageType::NOTE_OFF, 72, 50, timer.qpcGetFutureTime(now, 260LL)};
     MidiEvent c76 = {MidiMessageType::NOTE_ON, 76, 60, timer.qpcGetFutureTime(now, 300LL)};
-    MidiEvent _c76 = {MidiMessageType::NOTE_OFF, 76, 60, timer.qpcGetFutureTime(now, 350LL)}; 
+    MidiEvent _c76 = {MidiMessageType::NOTE_OFF, 76, 60, timer.qpcGetFutureTime(now, 310LL)}; 
     MidiEvent c79 = {MidiMessageType::NOTE_ON, 79, 70, timer.qpcGetFutureTime(now, 350LL)};
-    MidiEvent _c79 = {MidiMessageType::NOTE_OFF, 79, 70, timer.qpcGetFutureTime(now, 400LL)};
+    MidiEvent _c79 = {MidiMessageType::NOTE_OFF, 79, 70, timer.qpcGetFutureTime(now, 360LL)};
     MidiEvent c83 = {MidiMessageType::NOTE_ON, 83, 80, timer.qpcGetFutureTime(now, 400LL)};
-    MidiEvent _c83 = {MidiMessageType::NOTE_OFF, 83, 80, timer.qpcGetFutureTime(now, 450LL)};
+    MidiEvent _c83 = {MidiMessageType::NOTE_OFF, 83, 80, timer.qpcGetFutureTime(now, 410LL)};
     MidiEvent c84 = {MidiMessageType::NOTE_ON, 84, 90, timer.qpcGetFutureTime(now, 450LL)};
-    MidiEvent _c84 = {MidiMessageType::NOTE_OFF, 84, 90, timer.qpcGetFutureTime(now, 500LL)};
+    MidiEvent _c84 = {MidiMessageType::NOTE_OFF, 84, 90, timer.qpcGetFutureTime(now, 460LL)};
     
 
     std::vector<MidiEvent> events = {c60, _c60, c64, _c64, c67, _c67, c71, _c71, c72, _c72, c76, _c76, c79, _c79, c83, _c83, c84, _c84};
-    REQUIRE(midiScheduler.addEvents(events, 500));
+    midiScheduler.addEvents(events, 500000);
 
-    // Sleep for 1 second to give time for the player to play all 8 notes
+    // Sleep for 2 second to give time for the player to play all 8 notes
     timer.qpcSleepMs(1000);
 }
 
