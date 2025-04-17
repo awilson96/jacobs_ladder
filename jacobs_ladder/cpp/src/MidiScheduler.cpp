@@ -54,30 +54,46 @@ MidiScheduler::~MidiScheduler() {
     mMidiOut->closePort();
 }
 
-void MidiScheduler::addEvent(const MidiEvent &event) {
+void MidiScheduler::addEvent(const Midi::MidiEvent &event) {
     std::lock_guard<std::mutex> lock(mBufferMutex);
     mBuffer.push(event);
 }
 
-void MidiScheduler::addEvent(MidiEvent &event, long long offsetTicks) {
+void MidiScheduler::addEvent(Midi::MidiEvent &event, long long offsetTicks) {
     std::lock_guard<std::mutex> lock(mBufferMutex);
     event.qpcTime += offsetTicks;
     mBuffer.push(event);
 }
 
-void MidiScheduler::addEvents(const std::vector<MidiEvent> &events) {
+void MidiScheduler::addEvent(const Midi::NoteDuration &noteDuration) {
+    
+}
+
+void MidiScheduler::addEvent(const Midi::NoteDuration &noteDuration, double offsetMs) {
+    
+}
+
+void MidiScheduler::addEvents(const std::vector<Midi::MidiEvent> &events) {
     for (const auto &event : events) {
         std::lock_guard<std::mutex> lock(mBufferMutex);
         mBuffer.push(event);
     }
 }
 
-void MidiScheduler::addEvents(std::vector<MidiEvent> &events, long long offsetTicks) {
+void MidiScheduler::addEvents(std::vector<Midi::MidiEvent> &events, long long offsetTicks) {
     for (auto &event : events) {
         std::lock_guard<std::mutex> lock(mBufferMutex);
         event.qpcTime += offsetTicks;
         mBuffer.push(event);
     }
+}
+
+void MidiScheduler::addEvents(std::vector<Midi::NoteDuration> &noteDurations) {
+
+}
+
+void MidiScheduler::addEvents(std::vector<Midi::NoteDuration> &noteDurations, double offsetMs) {
+
 }
 
 void MidiScheduler::pause() {
@@ -104,7 +120,7 @@ bool MidiScheduler::start() {
 void MidiScheduler::stop() {
     mRunning.store(false);
     mPauseCv.notify_all();
-    std::priority_queue<MidiEvent> empty;
+    std::priority_queue<Midi::MidiEvent> empty;
     mQueue.swap(empty);
 }
 
@@ -147,7 +163,7 @@ void MidiScheduler::player() {
 
         // If we have neither been told to pause or stop and the queue is not empty then process the soonest MidiEvent 
         // and query the performance counter for the current time
-        MidiEvent event = mQueue.top();
+        Midi::MidiEvent event = mQueue.top();
         mQueue.pop();
         long long currentTime = mTimer->qpcGetTicks();
 
@@ -191,7 +207,7 @@ void MidiScheduler::player() {
     }
 }
 
-bool MidiScheduler::scheduleEvent(MidiEvent event) {
+bool MidiScheduler::scheduleEvent(Midi::MidiEvent event) {
     if (event.qpcTime >= mTimer->qpcGetTicks()) {
         mQueue.push(event);
         return true;
@@ -199,14 +215,14 @@ bool MidiScheduler::scheduleEvent(MidiEvent event) {
     return false;
 }
 
-bool MidiScheduler::scheduleEvents(std::vector<MidiEvent> events) {
+bool MidiScheduler::scheduleEvents(std::vector<Midi::MidiEvent> events) {
     for (const auto& event : events) {
         scheduleEvent(event);
     }
     return true;
 }
 
-void MidiScheduler::smartSleep(MidiEvent &event) {
+void MidiScheduler::smartSleep(Midi::MidiEvent &event) {
     LARGE_INTEGER now;
     std::lock_guard<std::mutex> lock(mBufferMutex);
     // Query the performance counter each cycle to determine the moment our time budget has run out 

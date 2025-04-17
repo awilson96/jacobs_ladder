@@ -20,10 +20,15 @@ public:
     MidiScheduler(const std::string& outputPortName, bool startImmediately = true,  bool printMsgs = false);
     ~MidiScheduler();
 
-    void addEvent(const MidiEvent &event);
-    void addEvent(MidiEvent &event, long long offsetTicks);
-    void addEvents(const std::vector<MidiEvent> &events);
-    void addEvents(std::vector<MidiEvent> &events, long long offsetTicks);
+    void addEvent(const Midi::MidiEvent &event);
+    void addEvent(Midi::MidiEvent &event, long long offsetTicks);
+    void addEvent(const Midi::NoteDuration &noteDuration);
+    void addEvent(const Midi::NoteDuration &noteDuration, double offsetMs);
+
+    void addEvents(const std::vector<Midi::MidiEvent> &events);
+    void addEvents(std::vector<Midi::MidiEvent> &events, long long offsetTicks);
+    void addEvents(std::vector<Midi::NoteDuration> &noteDurations);
+    void addEvents(std::vector<Midi::NoteDuration> &noteDurations, double offsetMs);
 
     void pause();
     void resume();
@@ -40,8 +45,8 @@ private:
     std::mutex mBufferMutex;
     std::condition_variable mPauseCv;
 
-    std::priority_queue<MidiEvent> mQueue;
-    std::priority_queue<MidiEvent> mBuffer;
+    std::priority_queue<Midi::MidiEvent> mQueue;
+    std::priority_queue<Midi::MidiEvent> mBuffer;
 
     std::unique_ptr<QpcUtils> mTimer;
     std::unique_ptr<RtMidiOut> mMidiOut;
@@ -50,9 +55,9 @@ private:
 
     bool conditionallyPause();
     void player();
-    bool scheduleEvent(MidiEvent event);
-    bool scheduleEvents(std::vector<MidiEvent> events);
-    void smartSleep(MidiEvent &event);
+    bool scheduleEvent(Midi::MidiEvent event);
+    bool scheduleEvents(std::vector<Midi::MidiEvent> events);
+    void smartSleep(Midi::MidiEvent &event);
 
 };
 
