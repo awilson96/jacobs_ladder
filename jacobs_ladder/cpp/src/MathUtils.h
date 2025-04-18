@@ -3,8 +3,8 @@
 #define NOMINMAX
 #endif
 
-#ifndef COMMON_MATH_H
-#define COMMON_MATH_H
+#ifndef MATH_UTILS_H
+#define MATH_UTILS_H
 
 // #include <climits>
 #include <cmath>
@@ -17,7 +17,7 @@
 #undef max
 #undef min
 
-namespace CommonMath {
+namespace MathUtils {
 
     template <class I, class F>
     constexpr I
@@ -33,4 +33,4 @@ namespace CommonMath {
 
 } // Namespace
 
-#endif // COMMON_MATH_H
+#endif // MATH_UTILS_H
