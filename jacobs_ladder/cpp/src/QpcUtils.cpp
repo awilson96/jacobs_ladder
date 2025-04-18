@@ -1,5 +1,7 @@
 // Project includes
 #include "QpcUtils.h"
+#include "CommonMath.h"
+#include "Constants.h"
 
 // System includes
 #include <thread>
@@ -43,7 +45,7 @@ long long QpcUtils::qpcGetFutureTime(long long now, long long ms) const {
         std::cerr << "Error: Invalid time values.\n";
         return -1;
     }
-    return now + (ms * mFrequencyHz) / 1000;
+    return now + static_cast<long long>((ms / MS_TO_SEC_CONVERSION_FACTOR) * mFrequencyHz);
 }
 
 long long QpcUtils::qpcGetTicks() const {
@@ -77,21 +79,21 @@ void QpcUtils::qpcCoarseSleep(long long ms) {
 
 void QpcUtils::qpcSleep(int option, long long dimmensionlessTime) {
     long long dimensionlessTimeInNs;
-    long long conversionFactor;
+    double conversionFactor;
     // If option is 0, convert the time to nanoseconds
     if (option == 0) {
         dimensionlessTimeInNs = dimmensionlessTime;
-        conversionFactor = 1'000'000'000;
+        conversionFactor = NS_TO_SEC_CONVERSION_FACTOR;
     }
     // If option is 1, convert the time to microseconds
     else if (option == 1) {
         dimensionlessTimeInNs = dimmensionlessTime * 1'000;
-        conversionFactor = 1'000'000;
+        conversionFactor = US_TO_SEC_CONVERSION_FACTOR;
     }
     // If option is 2, convert the time to milliseconds
     else if (option == 2) {
         dimensionlessTimeInNs = dimmensionlessTime * 1'000'000;
-        conversionFactor = 1'000;
+        conversionFactor = MS_TO_SEC_CONVERSION_FACTOR;
     }
     // Invalid option, print error message and return
     else {
@@ -104,13 +106,13 @@ void QpcUtils::qpcSleep(int option, long long dimmensionlessTime) {
 
     if (QueryPerformanceCounter(&start)) {
         // Calculate target QPC value (absolute time)
-        long long targetTicks = start.QuadPart + (dimmensionlessTime * mFrequencyHz) / conversionFactor;
+        long long targetTicks = start.QuadPart + CommonMath::FpFloor<long long>((dimmensionlessTime * mFrequencyHz) / conversionFactor);
         
         // If the requested sleep time is greater than 2 times mPrecisionNs, use coarse sleep
         long long threshold = 5 * mPrecisionNs;
         if (dimensionlessTimeInNs > threshold) {
             // Coarse sleep for the requested time minus 2 times the course time resolution 
-            long long coarseSleepTime = static_cast<long long>(dimensionlessTimeInNs - threshold);
+            long long coarseSleepTime = dimensionlessTimeInNs - threshold;
             std::this_thread::sleep_for(std::chrono::nanoseconds(coarseSleepTime));
         }
 
@@ -141,26 +143,26 @@ long long QpcUtils::qpcPrintTimeDiff(int option, long long start, long long end)
         return -1;
     }
 
-    long long conversionFactor;
+    double conversionFactor;
     std::string units;
     // If option is 0, convert the time to nanoseconds
     if (option == 0) {
-        conversionFactor = 1'000'000'000; 
+        conversionFactor = NS_TO_SEC_CONVERSION_FACTOR; 
         units = "ns";
     }
     // If option is 1, convert the time to microseconds
     else if (option == 1) {
-        conversionFactor = 1'000'000;
+        conversionFactor = US_TO_SEC_CONVERSION_FACTOR;
         units = "us";
     }
     // If option is 2, convert the time to milliseconds
     else if (option == 2) {
-        conversionFactor = 1'000; 
+        conversionFactor = MS_TO_SEC_CONVERSION_FACTOR; 
         units = "ms";
     }
 
     // Calculate elapsed time in nanoseconds correctly
-    long long elapsedTime = (end - start) * conversionFactor / mFrequencyHz;
+    long long elapsedTime = CommonMath::FpFloor<long long>((end - start) * conversionFactor / static_cast<double>(mFrequencyHz));
 
     // Force decimal notation with no scientific output
     std::cout << std::fixed << std::setprecision(0)

@@ -11,6 +11,9 @@ int main() {
     std::tuple<double, double, long long, double> stats;
     double percentError;
 
+    long long frequency = timer.qpcGetFrequency();
+    std::cout << "QPC Frequency: " << frequency << std::endl;
+
     // Test the accuracy of sleeps when using the default sleep function (10 ms)
     for (unsigned int i = 0; i < 100; i++) {
         long long start = timer.qpcGetTicks();
