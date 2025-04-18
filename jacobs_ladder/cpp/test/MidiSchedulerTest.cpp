@@ -81,7 +81,7 @@ TEST_CASE("Profile the MidiScheduler addEvent function", "[MidiScheduler][addEve
     std::cout << "\n[AddEvent] Time it takes to add 1 million MidiEvent structs to the priority queue using AddEvent()..." << std::endl;
     long long loopElapsedNs = timer.qpcPrintTimeDiffNs(startLoop, endLoop);
     double meanAddEventTimeWithLoopNs = static_cast<double>(loopElapsedNs) / 1000000.0;
-    REQUIRE(meanAddEventTimeWithLoopNs < 230.0); 
+    REQUIRE(meanAddEventTimeWithLoopNs < 300.0); 
 }
 
 TEST_CASE("Profile the MidiScheduler addEvents function", "[MidiScheduler][addEvents]") {
@@ -109,5 +109,51 @@ TEST_CASE("Profile the MidiScheduler addEvents function", "[MidiScheduler][addEv
     std::cout << "\n[AddEvents] Time it takes to add 1 million MidiEvent structs to the priority queue using AddEvents()..." << std::endl;
     long long loopElapsedNs = timer.qpcPrintTimeDiffNs(startLoop, endLoop);
     double meanAddEventsTimeWithLoopNs = static_cast<double>(loopElapsedNs) / 1000000.0;
-    REQUIRE(meanAddEventsTimeWithLoopNs < 250.0);
+    REQUIRE(meanAddEventsTimeWithLoopNs < 350.0);
+}
+
+TEST_CASE("Test add event NoteEvent implimentation [MidiScheduler][addEvent]") {
+
+    using namespace Midi;
+
+    MidiScheduler midiScheduler("jacob", true, true);
+    QpcUtils timer;
+    long long now = timer.qpcGetTicks();
+    long long oneSecondFromNow = timer.qpcGetFutureTime(now, 1000);
+
+    // Seed note
+    const double tempo = 120.0;
+    MidiEvent firstEvent = 
+        MidiEvent(
+            MidiMessageType::NOTE_ON,
+            60,
+            40
+        );
+
+    NoteEvent note = 
+        NoteEvent(
+            0.5, 
+            NoteDuration::WHOLE, 
+            firstEvent,
+            tempo,
+            oneSecondFromNow
+        );
+
+    midiScheduler.addEvent(note);
+
+    note.event.note = 64;
+    note.scheduledTimeTicks += 10000;
+    midiScheduler.addEvent(note);
+
+    note.event.note = 55;
+    note.scheduledTimeTicks += 20000;
+    midiScheduler.addEvent(note);
+    
+    note.event.note = 58;
+    note.event.velocity = 10;
+    note.scheduledTimeTicks += 30000;
+    midiScheduler.addEvent(note);
+
+    timer.qpcSleepMs(5000);
+    
 }

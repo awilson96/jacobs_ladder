@@ -1,0 +1,71 @@
+#include "MidiScheduler.h"
+#include "MidiDefinitions.h"
+#include "QpcUtils.h"
+
+
+using namespace Midi;
+
+int main(int argc, const char *argv[]) {
+
+    MidiScheduler midiScheduler("jacob", true, true);
+    QpcUtils timer;
+    long long now = timer.qpcGetTicks();
+    long long oneSecondFromNow = timer.qpcGetFutureTime(now, 1000);
+
+    // Seed note
+    double tempo = 120.0;
+    MidiEvent firstEvent = 
+        MidiEvent(
+            MidiMessageType::NOTE_ON,
+            60,
+            100,
+            oneSecondFromNow
+        );
+
+    NoteEvent note = 
+        NoteEvent(
+            0.5, 
+            NoteDuration::QUARTER, 
+            firstEvent,
+            tempo,
+            oneSecondFromNow
+        );
+    
+    midiScheduler.addEvent(note);
+
+    long long previouslyScheduledNoteQpcTime = midiScheduler.getPreviouslyScheduledNoteQpcTime();
+
+    NoteEvent nextNote = NoteEvent(note);
+    nextNote.event.note = 64u;
+    nextNote.scheduledTimeTicks += 1;
+    midiScheduler.addEvent(nextNote);
+
+    NoteEvent finalNote = NoteEvent(nextNote);
+    finalNote.event.note = 67u;
+    finalNote.scheduledTimeTicks += 1;
+    midiScheduler.addEvent(finalNote);
+
+    
+
+    for (uint16_t i = 0; i < 3; i++) {
+        note.scheduledTimeTicks = previouslyScheduledNoteQpcTime;
+        nextNote.scheduledTimeTicks = previouslyScheduledNoteQpcTime+100000;
+        finalNote.scheduledTimeTicks = previouslyScheduledNoteQpcTime+200000;
+        midiScheduler.addEvent(note);
+        previouslyScheduledNoteQpcTime = midiScheduler.getPreviouslyScheduledNoteQpcTime();
+        midiScheduler.addEvent(nextNote);
+        midiScheduler.addEvent(finalNote);
+    }
+
+    timer.qpcSleepMs(4000);
+
+    // midiScheduler.addEvent(MidiEvent(
+    //     MidiMessageType::CONTROL_CHANGE,
+    //     123,
+    //     0,
+    //     timer.qpcGetFutureTime(timer.qpcGetTicks(), 1000)
+    // ));
+
+    // timer.qpcSleepMs(2000);
+
+}
