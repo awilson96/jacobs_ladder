@@ -70,6 +70,12 @@ namespace Midi {
 
         MidiEvent(MidiMessageType status, uint8_t note, uint8_t velocity, long long qpcTime)
         : status(status), note(note), velocity(velocity), qpcTime(qpcTime) {}
+
+        MidiEvent(const MidiEvent& other, long long durationTicks)
+        : status(MidiMessageType::NOTE_OFF),
+          note(other.note),
+          velocity(other.velocity),
+          qpcTime(other.qpcTime + durationTicks) {}
     
         bool operator<(const MidiEvent& other) const {
             return qpcTime > other.qpcTime;
@@ -81,28 +87,35 @@ namespace Midi {
         NoteDuration duration;                      // The length the note is represented for symbolically in context to other notes. Useful for establishing the start time of the next note or rest.
         MidiEvent event;                            // A MidiEvent with valid status, note, and velocity fields. Only the qpcTime is populated using the components of the NoteEvent struct
         double tempo;                               // The current tempo for the note being held. 
-        double scheduledTime;                       // The scheduled start time for the note (NOTE_ON message). If scheduledTime is less than 0, then chaining is assumed (i.e. use the previously scheduled note's end time)
+        long long scheduledTimeTicks;               // The scheduled start time for the note (NOTE_ON message). If scheduledTimeTicks is less than 0, then chaining is assumed (i.e. use the previously scheduled note's end time)
 
         NoteEvent()
         : division(0.5),
           duration(NoteDuration::QUARTER),
           event(),
           tempo(120.0),
-          scheduledTime(-1.0) {}
+          scheduledTimeTicks(-1) {}
 
         NoteEvent(NoteDuration duration, const MidiEvent& event, double tempo)
         : division(0.5),
           duration(duration),
           event(event),
           tempo(tempo),
-          scheduledTime(-1.0) {}
+          scheduledTimeTicks(-1) {}
 
-        NoteEvent(double division, NoteDuration duration, const MidiEvent& event, double tempo, double scheduledTime)
+        NoteEvent(double division, NoteDuration duration, const MidiEvent& event, double tempo, double scheduledTimeTicks)
         : division(division),
-        duration(duration),
-        event(event),
-        tempo(tempo),
-        scheduledTime(scheduledTime) {}
+          duration(duration),
+          event(event),
+          tempo(tempo),
+          scheduledTimeTicks(scheduledTimeTicks) {}
+
+        NoteEvent(const NoteEvent& other)
+        : division(other.division),
+          duration(other.duration),
+          event(other.event),
+          tempo(other.tempo),
+          scheduledTimeTicks(other.scheduledTimeTicks) {}
     };
 
 }
