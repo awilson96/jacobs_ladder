@@ -64,7 +64,11 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 foreach(test_file ${TEST_FILES})
     get_filename_component(test_name ${test_file} NAME_WE)
     add_executable(${test_name} ${test_file})
-    target_link_libraries(${test_name} PRIVATE MyLib ${DEFAULT_LIBS})
+    target_link_libraries(${test_name} PRIVATE MyLib)
+    # Only link Catch2 if the filename ends with Test.cpp
+    if("${test_file}" MATCHES ".*Test\\.cpp$")
+        target_link_libraries(${test_name} PRIVATE ${DEFAULT_LIBS})
+    endif()
 endforeach()
 
 # Pybind11 Integration - Automatically detect files meant for Pybind modules
