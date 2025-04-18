@@ -2,6 +2,7 @@
 #define MIDI_SCHEDULER_H
 
 // Project Includes
+#include "Constants.h"
 #include "MidiDefinitions.h"
 #include "QpcUtils.h"
 #include "rtmidi/RtMidi.h"
@@ -22,13 +23,15 @@ public:
 
     void addEvent(const Midi::MidiEvent &event);
     void addEvent(Midi::MidiEvent &event, long long offsetTicks);
-    void addEvent(const Midi::NoteDuration &noteDuration);
-    void addEvent(const Midi::NoteDuration &noteDuration, double offsetMs);
+    void addEvent(Midi::NoteEvent &noteEvent);
+    void addEvent(Midi::NoteEvent &noteEvent, double offsetMs);
 
     void addEvents(const std::vector<Midi::MidiEvent> &events);
     void addEvents(std::vector<Midi::MidiEvent> &events, long long offsetTicks);
-    void addEvents(std::vector<Midi::NoteDuration> &noteDurations);
-    void addEvents(std::vector<Midi::NoteDuration> &noteDurations, double offsetMs);
+    void addEvents(std::vector<Midi::NoteEvent> &noteEvents);
+    void addEvents(std::vector<Midi::NoteEvent> &noteEvents, double offsetMs);
+
+    long long getPreviouslyScheduledNoteQpcTime();
 
     void pause();
     void resume();
@@ -43,6 +46,7 @@ private:
     std::thread mPlayerThread;
     std::mutex mPauseMutex;
     std::mutex mBufferMutex;
+    std::mutex mPreviouslyScheduledNoteQpcTimeMutex;
     std::condition_variable mPauseCv;
 
     std::priority_queue<Midi::MidiEvent> mQueue;
@@ -50,11 +54,14 @@ private:
 
     std::unique_ptr<QpcUtils> mTimer;
     std::unique_ptr<RtMidiOut> mMidiOut;
-    long long mFrequencyHz {10000};
-    const long long mBudgetNs {50000};
+    long long mFrequencyHz {QPC_FREQUENCY};
+    const long long mBudgetTicks {TEN_MILLISECOND_BUDGET_TICKS};
+    long long mPreviouslyScheduledNoteQpcTime {0}; 
 
     bool conditionallyPause();
+    long long getNoteDurationTicks(Midi::NoteEvent &noteEvent);
     void player();
+    void resetPreviouslyScheduledNoteQpcTime();
     bool scheduleEvent(Midi::MidiEvent event);
     bool scheduleEvents(std::vector<Midi::MidiEvent> events);
     void smartSleep(Midi::MidiEvent &event);
