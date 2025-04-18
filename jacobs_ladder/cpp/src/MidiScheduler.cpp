@@ -1,7 +1,7 @@
 // Project includes
 #include "MidiScheduler.h"
 #include "MidiUtils.h"
-#include "CommonMath.h"
+#include "MathUtils.h"
 
 // System includes
 #include <cstdlib>
@@ -261,14 +261,14 @@ long long MidiScheduler::getNoteDurationTicks(Midi::NoteEvent &noteEvent) {
     noteEvent.event.qpcTime = noteEvent.scheduledTimeTicks + getRandomOffset();
 
     // This converts the duration in from a beat representation (i.e. quarter note) to a ms and QPC ticks representation 
-    long long adjustedDurationMs = CommonMath::FpFloor<long long>(static_cast<long long>(noteEvent.duration) * (60.0 / noteEvent.tempo));
-    long long adjustedDurationQpcTicks = CommonMath::FpFloor<long long>((adjustedDurationMs / MS_TO_SEC_CONVERSION_FACTOR) * mFrequencyHz);
+    long long adjustedDurationMs = MathUtils::FpFloor<long long>(static_cast<long long>(noteEvent.duration) * (60.0 / noteEvent.tempo));
+    long long adjustedDurationQpcTicks = MathUtils::FpFloor<long long>((adjustedDurationMs / MS_TO_SEC_CONVERSION_FACTOR) * mFrequencyHz);
     mPreviouslyScheduledNoteQpcTime = noteEvent.scheduledTimeTicks + adjustedDurationQpcTicks;
 
     // This is the actual length of time between the NOTE_ON and NOTE_OFF messages in terms of QPC tics. By contrast the adjusted duration in ms is the time the note 
     // is meant to occupy in space in therms of beats (i.e. quarter note). This gives the following note a clean time aligned place to start from (the end of the previous 
     // note's adjustedDurationQpcTicks)
-    long long noteDurationTicks = CommonMath::FpFloor<long long>(((noteEvent.division * adjustedDurationMs) / MS_TO_SEC_CONVERSION_FACTOR) * mFrequencyHz);
+    long long noteDurationTicks = MathUtils::FpFloor<long long>(((noteEvent.division * adjustedDurationMs) / MS_TO_SEC_CONVERSION_FACTOR) * mFrequencyHz);
     return noteDurationTicks; 
 }
 

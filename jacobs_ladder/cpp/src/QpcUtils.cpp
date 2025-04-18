@@ -1,6 +1,6 @@
 // Project includes
 #include "QpcUtils.h"
-#include "CommonMath.h"
+#include "MathUtils.h"
 #include "Constants.h"
 
 // System includes
@@ -106,7 +106,7 @@ void QpcUtils::qpcSleep(int option, long long dimmensionlessTime) {
 
     if (QueryPerformanceCounter(&start)) {
         // Calculate target QPC value (absolute time)
-        long long targetTicks = start.QuadPart + CommonMath::FpFloor<long long>((dimmensionlessTime * mFrequencyHz) / conversionFactor);
+        long long targetTicks = start.QuadPart + MathUtils::FpFloor<long long>((dimmensionlessTime * mFrequencyHz) / conversionFactor);
         
         // If the requested sleep time is greater than 2 times mPrecisionNs, use coarse sleep
         long long threshold = 5 * mPrecisionNs;
@@ -162,7 +162,7 @@ long long QpcUtils::qpcPrintTimeDiff(int option, long long start, long long end)
     }
 
     // Calculate elapsed time in nanoseconds correctly
-    long long elapsedTime = CommonMath::FpFloor<long long>((end - start) * conversionFactor / static_cast<double>(mFrequencyHz));
+    long long elapsedTime = MathUtils::FpFloor<long long>((end - start) * conversionFactor / static_cast<double>(mFrequencyHz));
 
     // Force decimal notation with no scientific output
     std::cout << std::fixed << std::setprecision(0)
