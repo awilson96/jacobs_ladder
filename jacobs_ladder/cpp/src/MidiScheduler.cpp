@@ -7,7 +7,10 @@
 #include <cstdlib>
 #include <stdexcept>
 
-MidiScheduler::MidiScheduler(const std::string& outputPortName, bool startImmediately, bool printMsgs) {
+MidiScheduler::MidiScheduler(const std::string& outputPortName, bool startImmediately, bool printMsgs)
+    : mGen(std::random_device{}()),
+      mDist(-1000, 1000)
+    {
     mTimer = std::make_unique<QpcUtils>();
     mFrequencyHz = mTimer->qpcGetFrequency();
     mPrintMsgs.store(printMsgs);
@@ -148,6 +151,10 @@ bool MidiScheduler::conditionallyPause() {
     return false;
 }
 
+long long MidiScheduler::getRandomOffset() {
+    return static_cast<long long>(mDist(mGen));
+}
+
 void MidiScheduler::player() {
     while (mRunning.load()) {
 
@@ -251,7 +258,7 @@ long long MidiScheduler::getNoteDurationTicks(Midi::NoteEvent &noteEvent) {
     }
  
     // Set the MidiEvent Qpc time to the scheduled time in both the case where it has been adjusted and when it has not
-    noteEvent.event.qpcTime = noteEvent.scheduledTimeTicks;
+    noteEvent.event.qpcTime = noteEvent.scheduledTimeTicks + getRandomOffset();
 
     // This converts the duration in from a beat representation (i.e. quarter note) to a ms and QPC ticks representation 
     long long adjustedDurationMs = CommonMath::FpFloor<long long>(static_cast<long long>(noteEvent.duration) * (60.0 / noteEvent.tempo));

@@ -142,16 +142,13 @@ TEST_CASE("Test add event NoteEvent implimentation [MidiScheduler][addEvent]") {
     midiScheduler.addEvent(note);
 
     note.event.note = 64;
-    note.scheduledTimeTicks += 10000;
     midiScheduler.addEvent(note);
 
     note.event.note = 55;
-    note.scheduledTimeTicks += 20000;
     midiScheduler.addEvent(note);
     
     note.event.note = 58;
     note.event.velocity = 10;
-    note.scheduledTimeTicks += 30000;
     midiScheduler.addEvent(note);
 
     timer.qpcSleepMs(5000);

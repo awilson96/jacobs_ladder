@@ -8,6 +8,7 @@
 #include "rtmidi/RtMidi.h"
 
 // System Includes
+#include <random>
 #include <queue>
 #include <vector>
 #include <memory>
@@ -58,8 +59,13 @@ private:
     const long long mBudgetTicks {TEN_MILLISECOND_BUDGET_TICKS};
     long long mPreviouslyScheduledNoteQpcTime {0}; 
 
+    std::mt19937 mGen;
+    std::uniform_int_distribution<> mDist;
+
+
     bool conditionallyPause();
     long long getNoteDurationTicks(Midi::NoteEvent &noteEvent);
+    long long getRandomOffset();
     void player();
     void resetPreviouslyScheduledNoteQpcTime();
     bool scheduleEvent(Midi::MidiEvent event);
