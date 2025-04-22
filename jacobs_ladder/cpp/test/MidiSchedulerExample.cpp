@@ -49,10 +49,10 @@ int main(int argc, const char *argv[]) {
 
     for (uint16_t i = 0; i < 3; i++) {
         note.scheduledTimeTicks = previouslyScheduledNoteQpcTime;
-        nextNote.scheduledTimeTicks = previouslyScheduledNoteQpcTime+100000;
-        finalNote.scheduledTimeTicks = previouslyScheduledNoteQpcTime+200000;
+        nextNote.scheduledTimeTicks = previouslyScheduledNoteQpcTime;
+        finalNote.scheduledTimeTicks = previouslyScheduledNoteQpcTime;
         midiScheduler.addEvent(note);
-        previouslyScheduledNoteQpcTime = midiScheduler.getPreviouslyScheduledNoteQpcTime();
+        previouslyScheduledNoteQpcTime = midiScheduler.getPreviouslyScheduledNoteQpcTimeTicks();
         midiScheduler.addEvent(nextNote);
         midiScheduler.addEvent(finalNote);
     }

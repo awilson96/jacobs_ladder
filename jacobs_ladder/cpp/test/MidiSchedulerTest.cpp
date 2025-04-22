@@ -116,7 +116,7 @@ TEST_CASE("Test add event NoteEvent implimentation [MidiScheduler][addEvent]") {
 
     using namespace Midi;
 
-    MidiScheduler midiScheduler("jacob", true, true);
+    MidiScheduler midiScheduler("jacob", true, false);
     QpcUtils timer;
     long long now = timer.qpcGetTicks();
     long long oneSecondFromNow = timer.qpcGetFutureTime(now, 1000);
@@ -153,4 +153,46 @@ TEST_CASE("Test add event NoteEvent implimentation [MidiScheduler][addEvent]") {
 
     timer.qpcSleepMs(5000);
     
+}
+
+TEST_CASE("Test that we can pause and restart [MidiScheduler][pause]") {
+    using namespace Midi;
+
+    MidiScheduler midiScheduler("jacob", true, true);
+    QpcUtils timer;
+    long long now = timer.qpcGetTicks();
+    long long oneSecondFromNow = timer.qpcGetFutureTime(now, 1000);
+
+    const double tempo = 120.0;
+    MidiEvent firstEvent = 
+        MidiEvent(
+            MidiMessageType::NOTE_ON,
+            61,
+            70
+        );
+
+    NoteEvent note = 
+        NoteEvent(
+            0.5, 
+            NoteDuration::SIXTEENTH, 
+            firstEvent,
+            tempo,
+            oneSecondFromNow
+        );
+
+    midiScheduler.addEvent(note);
+    long long previouslyScheduledNoteQpcTime = midiScheduler.getPreviouslyScheduledNoteQpcTimeTicks();
+    note.scheduledTimeTicks = -1;
+    for (uint32_t i = 0; i < 15; i++) {
+        note.scheduledTimeTicks = previouslyScheduledNoteQpcTime;
+        midiScheduler.addEvent(note);
+        previouslyScheduledNoteQpcTime = midiScheduler.getPreviouslyScheduledNoteQpcTimeTicks();
+    }
+
+    timer.qpcSleepMs(1500);
+    midiScheduler.pause();
+    timer.qpcSleepMs(1000);
+    midiScheduler.resume();
+    timer.qpcSleepMs(4000);
+
 }

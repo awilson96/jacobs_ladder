@@ -83,7 +83,7 @@ void MidiScheduler::addEvent(Midi::NoteEvent &noteEvent) {
     addEvent(noteOff);
 }
 
-void MidiScheduler::addEvent(Midi::NoteEvent &noteEvent, double offsetMs) {
+void MidiScheduler::addEvent(Midi::NoteEvent &noteEvent, Midi::NoteDuration offsetBeats) {
     
 }
 
@@ -106,20 +106,40 @@ void MidiScheduler::addEvents(std::vector<Midi::NoteEvent> &noteEvents) {
 
 }
 
-void MidiScheduler::addEvents(std::vector<Midi::NoteEvent> &noteEvents, double offsetMs) {
+void MidiScheduler::addEvents(std::vector<Midi::NoteEvent> &noteEvents, Midi::NoteDuration offsetBeats) {
 
 }
 
-long long MidiScheduler::getPreviouslyScheduledNoteQpcTime() {
+void MidiScheduler::allNotesOff() {
+    Midi::MidiEvent allNotesOff = 
+        Midi::MidiEvent(
+            Midi::MidiMessageType::CONTROL_CHANGE,
+            ALL_NOTES_OFF,
+            VALUE_OFF,
+            VALUE_OFF
+        );
+    std::vector<unsigned char> message = { 
+        static_cast<unsigned char>(allNotesOff.status),
+        static_cast<unsigned char>(allNotesOff.note),
+        static_cast<unsigned char>(allNotesOff.velocity) 
+    };
+    mTimer->qpcSleepMs(100);
+    mMidiOut->sendMessage(&message);
+}
+
+long long MidiScheduler::getPreviouslyScheduledNoteQpcTimeTicks() {
     std::lock_guard<std::mutex> lock(mPreviouslyScheduledNoteQpcTimeMutex);
     return mPreviouslyScheduledNoteQpcTime;
 }
 
 void MidiScheduler::pause() {
+    std::cout << "pausing..." << std::endl;
     mPaused.store(true);
+    allNotesOff();
 }
 
 void MidiScheduler::resume() {
+    std::cout << "resuming..." << std::endl; 
     {
         std::lock_guard<std::mutex> lock(mPauseMutex);
         mPaused.store(false);
@@ -143,12 +163,10 @@ void MidiScheduler::stop() {
     mQueue.swap(empty);
 }
 
-bool MidiScheduler::conditionallyPause() {
+void MidiScheduler::conditionallyPause() {
     std::unique_lock<std::mutex> lock(mPauseMutex);
     mPauseCv.wait(lock, [this]() { return !mPaused.load() || !mRunning.load(); });
-    if (!mRunning.load()) 
-        return true;
-    return false;
+    return;
 }
 
 long long MidiScheduler::getRandomOffset() {
@@ -158,10 +176,8 @@ long long MidiScheduler::getRandomOffset() {
 void MidiScheduler::player() {
     while (mRunning.load()) {
 
-        // If the user has paused or stopped the player, conditionally pause.
-        // Only returns true when mRunning has been set to false
-        if (conditionallyPause())
-            continue;
+        // If the user has invoked pause(), conditionally pause until they call resume(). Breaks out of pause if stop() is called or if mRunning becomes false.
+        conditionallyPause();
 
         // If the queue is empty reset the previously scheduled note to 0 (i.e. impose the requirement that a qpcTime must be provided and chaining is not allowed)
         if (mQueue.empty()) {
@@ -221,7 +237,7 @@ void MidiScheduler::player() {
         // Smart sleep adds MidiEvents to the priority queue while it is still within mBudgetTicks of the scheduled event time
         // This budget was calculated as approximately 5 times the benchmarked time it takes to run the scheduleEvent() on average.
         // (i.e. 250 ns * 5 = 1250 ns) 
-        smartSleep(event);
+        smartSleep(event.qpcTime);
 
         // This is effectively a high resolution wait_until function for windows 
         LARGE_INTEGER now;
@@ -263,7 +279,12 @@ long long MidiScheduler::getNoteDurationTicks(Midi::NoteEvent &noteEvent) {
     // This converts the duration in from a beat representation (i.e. quarter note) to a ms and QPC ticks representation 
     long long adjustedDurationMs = MathUtils::FpFloor<long long>(static_cast<long long>(noteEvent.duration) * (60.0 / noteEvent.tempo));
     long long adjustedDurationQpcTicks = MathUtils::FpFloor<long long>((adjustedDurationMs / MS_TO_SEC_CONVERSION_FACTOR) * mFrequencyHz);
+
+    // The qpc ticks time marker get's placed at the tail of the currently scheduled note, i.e. if a quarter note is played at the beat where it is released (NOTE_OFF)
+    // Note though that this may not be the actual length that the note way played for (noteDurationTicks), but rather the length of time the note was meant to occupy symbolically (adjustedDurationQpcTicks, or in our previous example: a quarter note)
     mPreviouslyScheduledNoteQpcTime = noteEvent.scheduledTimeTicks + adjustedDurationQpcTicks;
+
+    // std::cout << "mPreviouslyScheduledNoteQpcTime: " << mPreviouslyScheduledNoteQpcTime << std::endl;
 
     // This is the actual length of time between the NOTE_ON and NOTE_OFF messages in terms of QPC tics. By contrast the adjusted duration in ms is the time the note 
     // is meant to occupy in space in therms of beats (i.e. quarter note). This gives the following note a clean time aligned place to start from (the end of the previous 
@@ -277,17 +298,11 @@ bool MidiScheduler::scheduleEvent(Midi::MidiEvent event) {
         mQueue.push(event);
         return true;
     }
+    std::cout << "Warning: exceeded budget for event: " << static_cast<int>(event.note) << std::endl;
     return false;
 }
 
-bool MidiScheduler::scheduleEvents(std::vector<Midi::MidiEvent> events) {
-    for (const auto& event : events) {
-        scheduleEvent(event);
-    }
-    return true;
-}
-
-void MidiScheduler::smartSleep(Midi::MidiEvent &event) {
+void MidiScheduler::smartSleep(long long qpcTime) {
     LARGE_INTEGER now;
     std::lock_guard<std::mutex> lock(mBufferMutex);
     // Query the performance counter each cycle to determine the moment our time budget has run out 
@@ -302,6 +317,6 @@ void MidiScheduler::smartSleep(Midi::MidiEvent &event) {
             break;
         }
         QueryPerformanceCounter(&now);
-    } while (now.QuadPart < event.qpcTime - mBudgetTicks);
+    } while (now.QuadPart < qpcTime - mBudgetTicks);
 }
 
