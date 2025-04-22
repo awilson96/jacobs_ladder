@@ -33,7 +33,7 @@ int main(int argc, const char *argv[]) {
     
     midiScheduler.addEvent(note);
 
-    long long previouslyScheduledNoteQpcTime = midiScheduler.getPreviouslyScheduledNoteQpcTime();
+    long long previouslyScheduledNoteQpcTime = midiScheduler.getPreviouslyScheduledNoteQpcTimeTicks();
 
     NoteEvent nextNote = NoteEvent(note);
     nextNote.event.note = 64u;
@@ -59,13 +59,7 @@ int main(int argc, const char *argv[]) {
 
     timer.qpcSleepMs(4000);
 
-    // midiScheduler.addEvent(MidiEvent(
-    //     MidiMessageType::CONTROL_CHANGE,
-    //     123,
-    //     0,
-    //     timer.qpcGetFutureTime(timer.qpcGetTicks(), 1000)
-    // ));
-
+    // midiScheduler.allNotesOff();
     // timer.qpcSleepMs(2000);
 
 }
