@@ -9,7 +9,7 @@
 
 MidiScheduler::MidiScheduler(const std::string& outputPortName, bool startImmediately, bool printMsgs)
     : mGen(std::random_device{}()),
-      mDist(-1000, 1000)
+      mDist(-10000, 10000)
     {
     mTimer = std::make_unique<QpcUtils>();
     mFrequencyHz = mTimer->qpcGetFrequency();
@@ -84,7 +84,13 @@ void MidiScheduler::addEvent(Midi::NoteEvent &noteEvent) {
 }
 
 void MidiScheduler::addEvent(Midi::NoteEvent &noteEvent, Midi::NoteDuration offsetBeats) {
-    
+    long long adjustedOffsetQpcTicks = beatsToQpcTicks(noteEvent, offsetBeats);
+    noteEvent.event.qpcTime += adjustedOffsetQpcTicks;
+    long long noteDurationTicks = getNoteDurationTicks(noteEvent);
+    Midi::MidiEvent noteOff = Midi::MidiEvent(noteEvent.event, noteDurationTicks);
+
+    addEvent(noteEvent.event);
+    addEvent(noteOff);
 }
 
 void MidiScheduler::addEvents(const std::vector<Midi::MidiEvent> &events) {
@@ -103,11 +109,21 @@ void MidiScheduler::addEvents(std::vector<Midi::MidiEvent> &events, long long of
 }
 
 void MidiScheduler::addEvents(std::vector<Midi::NoteEvent> &noteEvents) {
-
+    for (auto &event : noteEvents) {
+        addEvent(event);
+    }
 }
 
 void MidiScheduler::addEvents(std::vector<Midi::NoteEvent> &noteEvents, Midi::NoteDuration offsetBeats) {
+    for (auto &noteEvent : noteEvents) {
+        long long adjustedOffsetQpcTicks = beatsToQpcTicks(noteEvent, offsetBeats);
+        noteEvent.event.qpcTime += adjustedOffsetQpcTicks;
+        long long noteDurationTicks = getNoteDurationTicks(noteEvent);
+        Midi::MidiEvent noteOff = Midi::MidiEvent(noteEvent.event, noteDurationTicks);
 
+        addEvent(noteEvent.event);
+        addEvent(noteOff);
+    }
 }
 
 void MidiScheduler::allNotesOff() {
@@ -161,6 +177,12 @@ void MidiScheduler::stop() {
     mPauseCv.notify_all();
     std::priority_queue<Midi::MidiEvent> empty;
     mQueue.swap(empty);
+}
+
+long long MidiScheduler::beatsToQpcTicks(Midi::NoteEvent noteEvent, Midi::NoteDuration offsetBeats) {
+    long long adjustedOffsetMs = MathUtils::FpFloor<long long>(static_cast<long long>(offsetBeats) * (60.0 / noteEvent.tempo));
+    long long adjustedOffsetQpcTicks = MathUtils::FpFloor<long long>((adjustedOffsetMs / MS_TO_SEC_CONVERSION_FACTOR) * mFrequencyHz);
+    return adjustedOffsetQpcTicks;
 }
 
 void MidiScheduler::conditionallyPause() {
@@ -289,7 +311,7 @@ long long MidiScheduler::getNoteDurationTicks(Midi::NoteEvent &noteEvent) {
     // This is the actual length of time between the NOTE_ON and NOTE_OFF messages in terms of QPC tics. By contrast the adjusted duration in ms is the time the note 
     // is meant to occupy in space in therms of beats (i.e. quarter note). This gives the following note a clean time aligned place to start from (the end of the previous 
     // note's adjustedDurationQpcTicks)
-    long long noteDurationTicks = MathUtils::FpFloor<long long>(((noteEvent.division * adjustedDurationMs) / MS_TO_SEC_CONVERSION_FACTOR) * mFrequencyHz);
+    long long noteDurationTicks = MathUtils::FpFloor<long long>(noteEvent.division * adjustedDurationQpcTicks);
     return noteDurationTicks; 
 }
 

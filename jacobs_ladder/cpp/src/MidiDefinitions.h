@@ -40,6 +40,8 @@ namespace Midi {
         SEPTUPLET_QUARTER_REST = -571,
         EIGHTH = 500,
         EIGHTH_REST = -500,
+        QUINTUPLET_EIGTH = 400,
+        QUINTUPLET_EIGTH_REST = -400,
         DOTTED_SIXTEENTH = 375,
         DOTTED_SIXTEENTH_REST = -375,
         TRIPLET_EIGHTH = 333,

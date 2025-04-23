@@ -141,6 +141,8 @@ private:
     std::mt19937 mGen;
     std::uniform_int_distribution<> mDist;
 
+    long long beatsToQpcTicks(Midi::NoteEvent noteEvent, Midi::NoteDuration offsetBeats);
+
     /**
      * @brief Pause the player thread using a condition variable only if both mRunning and mPause are true, otherwise continue execution.
      */
