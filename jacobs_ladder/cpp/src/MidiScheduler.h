@@ -50,7 +50,7 @@ public:
      * @param noteEvent a NoteEvent struct to be scheduled
      * @param offsetBeats an offset in terms of beats which gets converted to ticks and added to noteEvent.event.qpcTime
      */
-    void addEvent(Midi::NoteEvent &noteEvent, Midi::NoteDuration offsetBeats);
+    void addEvent(Midi::NoteEvent &noteEvent, Midi::Beats offsetBeats);
 
     /**
      * @brief Add multiple MidiEvents to the schedule
@@ -80,7 +80,7 @@ public:
      * @param noteEvents a vector of NoteEvent structs to be scheduled
      * @param offsetBeats an offset in terms of beats which gets converted to ticks and added to noteEvent.event.qpcTime
      */
-    void addEvents(std::vector<Midi::NoteEvent> &noteEvents, Midi::NoteDuration offsetBeats);
+    void addEvents(std::vector<Midi::NoteEvent> &noteEvents, Midi::Beats offsetBeats);
 
     /**
      * @brief A mechanism for sending the all notes off control change midi message which silences all currently played notes.
@@ -141,7 +141,7 @@ private:
     std::mt19937 mGen;
     std::uniform_int_distribution<> mDist;
 
-    long long beatsToQpcTicks(Midi::NoteEvent noteEvent, Midi::NoteDuration offsetBeats);
+    long long beatsToQpcTicks(Midi::NoteEvent noteEvent, Midi::Beats offsetBeats);
 
     /**
      * @brief Pause the player thread using a condition variable only if both mRunning and mPause are true, otherwise continue execution.
@@ -158,7 +158,7 @@ private:
      * @param noteEvent A noteEvent whose event member variables need to be adjusted in light of tempo, division, and scheduledTimeTicks
      * @return long long 
      */
-    long long getNoteDurationTicks(Midi::NoteEvent &noteEvent);
+    long long getBeatTicks(Midi::NoteEvent &noteEvent);
 
     /**
      * @brief Get the a random tick offset between -1000 and 1000 ticks for separating out notes in time by a few hundred nanoseconds so the Midi processor is able to distinguish between simultaneously occurring NOTE_OFF events

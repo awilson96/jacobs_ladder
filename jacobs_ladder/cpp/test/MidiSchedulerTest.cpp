@@ -98,7 +98,7 @@ TEST_CASE("Test add event NoteEvent implimentation [MidiScheduler][addEvent(Midi
     NoteEvent note = 
         NoteEvent(
             0.5, 
-            NoteDuration::WHOLE, 
+            Beats::WHOLE, 
             firstEvent,
             tempo,
             oneSecondFromNow
@@ -120,7 +120,7 @@ TEST_CASE("Test add event NoteEvent implimentation [MidiScheduler][addEvent(Midi
     
 }
 
-TEST_CASE("Four staccato chords test", "[MidiScheduler][addEvent(Midi::NoteEvent &noteEvent, Midi::NoteDuration offsetBeats)]") {
+TEST_CASE("Four staccato chords test", "[MidiScheduler][addEvent(Midi::NoteEvent &noteEvent, Midi::Beats offsetBeats)]") {
     using namespace Midi;
 
     MidiScheduler midiScheduler("jacob", true, false);
@@ -138,61 +138,61 @@ TEST_CASE("Four staccato chords test", "[MidiScheduler][addEvent(Midi::NoteEvent
     NoteEvent note = 
         NoteEvent(
             0.1, 
-            NoteDuration::HALF, 
+            Beats::HALF, 
             firstEvent,
             tempo,
             timer.qpcGetFutureTime(now, 500)
         );
 
-    midiScheduler.addEvent(note, NoteDuration::WHOLE);
+    midiScheduler.addEvent(note, Beats::WHOLE);
     
     note.event.note = 65;
-    midiScheduler.addEvent(note, NoteDuration::WHOLE);
+    midiScheduler.addEvent(note, Beats::WHOLE);
 
     note.event.note = 68;
-    midiScheduler.addEvent(note, NoteDuration::WHOLE);
+    midiScheduler.addEvent(note, Beats::WHOLE);
 
     note.event.note = 72;
-    midiScheduler.addEvent(note, NoteDuration::WHOLE);
+    midiScheduler.addEvent(note, Beats::WHOLE);
 
     note.scheduledTimeTicks = midiScheduler.getPreviouslyScheduledNoteQpcTimeTicks();
     note.event.note = 62;
-    midiScheduler.addEvent(note, NoteDuration::WHOLE);
+    midiScheduler.addEvent(note, Beats::WHOLE);
 
     note.event.note = 65;
-    midiScheduler.addEvent(note, NoteDuration::WHOLE);
+    midiScheduler.addEvent(note, Beats::WHOLE);
 
     note.event.note = 67;
-    midiScheduler.addEvent(note, NoteDuration::WHOLE);
+    midiScheduler.addEvent(note, Beats::WHOLE);
 
     note.event.note = 71;
-    midiScheduler.addEvent(note, NoteDuration::WHOLE);
+    midiScheduler.addEvent(note, Beats::WHOLE);
 
     note.scheduledTimeTicks = midiScheduler.getPreviouslyScheduledNoteQpcTimeTicks();
     note.event.note = 60;
-    midiScheduler.addEvent(note, NoteDuration::WHOLE);
+    midiScheduler.addEvent(note, Beats::WHOLE);
 
     note.event.note = 63;
-    midiScheduler.addEvent(note, NoteDuration::WHOLE);
+    midiScheduler.addEvent(note, Beats::WHOLE);
 
     note.event.note = 67;
-    midiScheduler.addEvent(note, NoteDuration::WHOLE);
+    midiScheduler.addEvent(note, Beats::WHOLE);
 
     note.event.note = 70;
-    midiScheduler.addEvent(note, NoteDuration::WHOLE);
+    midiScheduler.addEvent(note, Beats::WHOLE);
 
     note.scheduledTimeTicks = midiScheduler.getPreviouslyScheduledNoteQpcTimeTicks();
     note.event.note = 57;
-    midiScheduler.addEvent(note, NoteDuration::WHOLE);
+    midiScheduler.addEvent(note, Beats::WHOLE);
 
     note.event.note = 60;
-    midiScheduler.addEvent(note, NoteDuration::WHOLE);
+    midiScheduler.addEvent(note, Beats::WHOLE);
 
     note.event.note = 63;
-    midiScheduler.addEvent(note, NoteDuration::WHOLE);
+    midiScheduler.addEvent(note, Beats::WHOLE);
 
     note.event.note = 67;
-    midiScheduler.addEvent(note, NoteDuration::WHOLE);
+    midiScheduler.addEvent(note, Beats::WHOLE);
 
     timer.qpcSleepMs(8000);
 
@@ -279,7 +279,7 @@ TEST_CASE("Descend C Major from fastest note division to slowest", "[MidiSchedul
     NoteEvent note = 
         NoteEvent(
             0.99, 
-            NoteDuration::TRIPLET_THIRTYSECOND, 
+            Beats::TRIPLET_THIRTYSECOND, 
             firstEvent,
             tempo,
             timer.qpcGetFutureTime(now, 2000)
@@ -289,59 +289,59 @@ TEST_CASE("Descend C Major from fastest note division to slowest", "[MidiSchedul
 
     note.scheduledTimeTicks = -1;
     note.event.note = 71;
-    note.duration = NoteDuration::THIRTYSECOND;
+    note.duration = Beats::THIRTYSECOND;
     NoteEvent b71 = note;
     
     note.event.note = 69;
-    note.duration = NoteDuration::TRIPLET_SIXTEENTH;
+    note.duration = Beats::TRIPLET_SIXTEENTH;
     NoteEvent a69 = note;
 
     note.event.note = 67;
-    note.duration = NoteDuration::SIXTEENTH;
+    note.duration = Beats::SIXTEENTH;
     NoteEvent g67 = note;
    
     note.event.note = 65;
-    note.duration = NoteDuration::TRIPLET_EIGHTH;
+    note.duration = Beats::TRIPLET_EIGHTH;
     NoteEvent f65 = note;
 
     note.event.note = 64;
-    note.duration = NoteDuration::DOTTED_SIXTEENTH;
+    note.duration = Beats::DOTTED_SIXTEENTH;
     NoteEvent e64 = note;
 
     note.event.note = 62;
-    note.duration = NoteDuration::EIGHTH;
+    note.duration = Beats::EIGHTH;
     NoteEvent d62 = note;
 
     note.event.note = 60;
-    note.duration = NoteDuration::TRIPLET_QUARTER;
+    note.duration = Beats::TRIPLET_QUARTER;
     NoteEvent c60 = note;
 
     note.event.note = 59;
-    note.duration = NoteDuration::DOTTED_EIGHTH;
+    note.duration = Beats::DOTTED_EIGHTH;
     NoteEvent b59 = note;
 
     note.event.note = 57;
-    note.duration = NoteDuration::QUARTER;
+    note.duration = Beats::QUARTER;
     NoteEvent a57 = note;
 
     note.event.note = 55;
-    note.duration = NoteDuration::TRIPLET_HALF;
+    note.duration = Beats::TRIPLET_HALF;
     NoteEvent g55 = note;
 
     note.event.note = 53;
-    note.duration = NoteDuration::DOTTED_QUARTER;
+    note.duration = Beats::DOTTED_QUARTER;
     NoteEvent f53 = note;
 
     note.event.note = 52;
-    note.duration = NoteDuration::HALF;
+    note.duration = Beats::HALF;
     NoteEvent e52 = note;
 
     note.event.note = 50;
-    note.duration = NoteDuration::DOTTED_HALF;
+    note.duration = Beats::DOTTED_HALF;
     NoteEvent d50 = note;
 
     note.event.note = 48;
-    note.duration = NoteDuration::WHOLE;
+    note.duration = Beats::WHOLE;
     NoteEvent c48 = note;
 
     std::vector<NoteEvent> events = {c72, b71, a69, g67, f65, e64, d62, c60, b59, a57, g55, f53, e52, d50, c48};
@@ -350,7 +350,7 @@ TEST_CASE("Descend C Major from fastest note division to slowest", "[MidiSchedul
     timer.qpcSleepMs(10000);
 }
 
-TEST_CASE("Polyrhythm test", "[MidiScheduler][addEvents(std::vector<Midi::NoteEvent> &noteEvents, Midi::NoteDuration offsetBeats)]") {
+TEST_CASE("Polyrhythm test", "[MidiScheduler][addEvents(std::vector<Midi::NoteEvent> &noteEvents, Midi::Beats offsetBeats)]") {
     using namespace Midi;
 
     MidiScheduler midiScheduler("jacob", true, false);
@@ -369,7 +369,7 @@ TEST_CASE("Polyrhythm test", "[MidiScheduler][addEvents(std::vector<Midi::NoteEv
     NoteEvent note = 
         NoteEvent(
             0.2, 
-            NoteDuration::QUINTUPLET_EIGTH, 
+            Beats::QUINTUPLET_EIGTH, 
             firstEvent,
             tempo,
             timer.qpcGetFutureTime(now, 500)
@@ -398,11 +398,11 @@ TEST_CASE("Polyrhythm test", "[MidiScheduler][addEvents(std::vector<Midi::NoteEv
         NoteEvent c72 = note;
 
         std::vector<NoteEvent> events = {eb63, f65, g67, bb70, c72};
-        midiScheduler.addEvents(events, NoteDuration::WHOLE);
+        midiScheduler.addEvents(events, Beats::WHOLE);
     }
 
     note.event.note = 48;
-    note.duration = NoteDuration::QUARTER;
+    note.duration = Beats::QUARTER;
     note.scheduledTimeTicks = startTime;
     NoteEvent c48 = note;
 
@@ -423,7 +423,7 @@ TEST_CASE("Polyrhythm test", "[MidiScheduler][addEvents(std::vector<Midi::NoteEv
         NoteEvent f43 = note;
 
         std::vector<NoteEvent> events = {c48, bb46, ab44, f43};
-        midiScheduler.addEvents(events, NoteDuration::WHOLE);
+        midiScheduler.addEvents(events, Beats::WHOLE);
     }
 
     timer.qpcSleepMs(5000);
@@ -449,7 +449,7 @@ TEST_CASE("Test that we can pause and restart", "[MidiScheduler][pause()]") {
     NoteEvent note = 
         NoteEvent(
             0.5, 
-            NoteDuration::SIXTEENTH, 
+            Beats::SIXTEENTH, 
             firstEvent,
             tempo,
             oneSecondFromNow

@@ -25,7 +25,7 @@ int main(int argc, const char *argv[]) {
     NoteEvent note = 
         NoteEvent(
             0.5, 
-            NoteDuration::QUARTER, 
+            Beats::QUARTER, 
             firstEvent,
             tempo,
             oneSecondFromNow

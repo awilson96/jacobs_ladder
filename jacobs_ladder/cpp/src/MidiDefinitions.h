@@ -17,7 +17,7 @@ namespace Midi {
     };
 
     // Note durations based on 60 BPM in ms where the quarter note is equal to the 60 BPM pulse
-    enum class NoteDuration : int32_t {
+    enum class Beats : int32_t {
         WHOLE = 4000,
         WHOLE_REST = -4000,
         DOTTED_HALF = 3000,
@@ -86,26 +86,26 @@ namespace Midi {
     
     struct NoteEvent {
         double division;                            // The percentage duration length the note is held for (0-1) exclusive. The division is always shorter than duration by some threshold
-        NoteDuration duration;                      // The length the note is represented for symbolically in context to other notes. Useful for establishing the start time of the next note or rest.
+        Beats duration;                      // The length the note is represented for symbolically in context to other notes. Useful for establishing the start time of the next note or rest.
         MidiEvent event;                            // A MidiEvent with valid status, note, and velocity fields. Only the qpcTime is populated using the components of the NoteEvent struct
         double tempo;                               // The current tempo for the note being held. 
         long long scheduledTimeTicks;               // The scheduled start time for the note (NOTE_ON message). If scheduledTimeTicks is less than 0, then chaining is assumed (i.e. use the previously scheduled note's end time)
 
         NoteEvent()
         : division(0.5),
-          duration(NoteDuration::QUARTER),
+          duration(Beats::QUARTER),
           event(),
           tempo(120.0),
           scheduledTimeTicks(-1) {}
 
-        NoteEvent(NoteDuration duration, const MidiEvent& event, double tempo)
+        NoteEvent(Beats duration, const MidiEvent& event, double tempo)
         : division(0.5),
           duration(duration),
           event(event),
           tempo(tempo),
           scheduledTimeTicks(-1) {}
 
-        NoteEvent(double division, NoteDuration duration, const MidiEvent& event, double tempo, double scheduledTimeTicks)
+        NoteEvent(double division, Beats duration, const MidiEvent& event, double tempo, double scheduledTimeTicks)
         : division(division),
           duration(duration),
           event(event),

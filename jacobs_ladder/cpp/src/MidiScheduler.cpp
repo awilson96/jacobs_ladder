@@ -76,18 +76,18 @@ void MidiScheduler::addEvent(Midi::MidiEvent &event, long long offsetTicks) {
 }
 
 void MidiScheduler::addEvent(Midi::NoteEvent &noteEvent) {
-    long long noteDurationTicks = getNoteDurationTicks(noteEvent);
-    Midi::MidiEvent noteOff = Midi::MidiEvent(noteEvent.event, noteDurationTicks);
+    long long beatTicks = getBeatTicks(noteEvent);
+    Midi::MidiEvent noteOff = Midi::MidiEvent(noteEvent.event, beatTicks);
 
     addEvent(noteEvent.event);
     addEvent(noteOff);
 }
 
-void MidiScheduler::addEvent(Midi::NoteEvent &noteEvent, Midi::NoteDuration offsetBeats) {
+void MidiScheduler::addEvent(Midi::NoteEvent &noteEvent, Midi::Beats offsetBeats) {
     long long adjustedOffsetQpcTicks = beatsToQpcTicks(noteEvent, offsetBeats);
     noteEvent.event.qpcTime += adjustedOffsetQpcTicks;
-    long long noteDurationTicks = getNoteDurationTicks(noteEvent);
-    Midi::MidiEvent noteOff = Midi::MidiEvent(noteEvent.event, noteDurationTicks);
+    long long beatTicksTicks = getBeatTicks(noteEvent);
+    Midi::MidiEvent noteOff = Midi::MidiEvent(noteEvent.event, beatTicksTicks);
 
     addEvent(noteEvent.event);
     addEvent(noteOff);
@@ -114,12 +114,12 @@ void MidiScheduler::addEvents(std::vector<Midi::NoteEvent> &noteEvents) {
     }
 }
 
-void MidiScheduler::addEvents(std::vector<Midi::NoteEvent> &noteEvents, Midi::NoteDuration offsetBeats) {
+void MidiScheduler::addEvents(std::vector<Midi::NoteEvent> &noteEvents, Midi::Beats offsetBeats) {
     for (auto &noteEvent : noteEvents) {
         long long adjustedOffsetQpcTicks = beatsToQpcTicks(noteEvent, offsetBeats);
         noteEvent.event.qpcTime += adjustedOffsetQpcTicks;
-        long long noteDurationTicks = getNoteDurationTicks(noteEvent);
-        Midi::MidiEvent noteOff = Midi::MidiEvent(noteEvent.event, noteDurationTicks);
+        long long beatTicksTicks = getBeatTicks(noteEvent);
+        Midi::MidiEvent noteOff = Midi::MidiEvent(noteEvent.event, beatTicksTicks);
 
         addEvent(noteEvent.event);
         addEvent(noteOff);
@@ -179,7 +179,7 @@ void MidiScheduler::stop() {
     mQueue.swap(empty);
 }
 
-long long MidiScheduler::beatsToQpcTicks(Midi::NoteEvent noteEvent, Midi::NoteDuration offsetBeats) {
+long long MidiScheduler::beatsToQpcTicks(Midi::NoteEvent noteEvent, Midi::Beats offsetBeats) {
     long long adjustedOffsetMs = MathUtils::FpFloor<long long>(static_cast<long long>(offsetBeats) * (60.0 / noteEvent.tempo));
     long long adjustedOffsetQpcTicks = MathUtils::FpFloor<long long>((adjustedOffsetMs / MS_TO_SEC_CONVERSION_FACTOR) * mFrequencyHz);
     return adjustedOffsetQpcTicks;
@@ -280,7 +280,7 @@ void MidiScheduler::resetPreviouslyScheduledNoteQpcTime() {
     mPreviouslyScheduledNoteQpcTime = 0;
 }
 
-long long MidiScheduler::getNoteDurationTicks(Midi::NoteEvent &noteEvent) {
+long long MidiScheduler::getBeatTicks(Midi::NoteEvent &noteEvent) {
     std::lock_guard<std::mutex> lock(mPreviouslyScheduledNoteQpcTimeMutex);
     // If the previously scheduled note is equal 0 (i.e. either the buffer has been depleted or this is the first event being added to the queue after instantiation)
     // then throw an invalid argument exception if chaining is attempted (i.e. scheduledTimeTicks is less than 0)
@@ -303,7 +303,7 @@ long long MidiScheduler::getNoteDurationTicks(Midi::NoteEvent &noteEvent) {
     long long adjustedDurationQpcTicks = MathUtils::FpFloor<long long>((adjustedDurationMs / MS_TO_SEC_CONVERSION_FACTOR) * mFrequencyHz);
 
     // The qpc ticks time marker get's placed at the tail of the currently scheduled note, i.e. if a quarter note is played at the beat where it is released (NOTE_OFF)
-    // Note though that this may not be the actual length that the note way played for (noteDurationTicks), but rather the length of time the note was meant to occupy symbolically (adjustedDurationQpcTicks, or in our previous example: a quarter note)
+    // Note though that this may not be the actual length that the note way played for (beatTicks), but rather the length of time the note was meant to occupy symbolically (adjustedDurationQpcTicks, or in our previous example: a quarter note)
     mPreviouslyScheduledNoteQpcTime = noteEvent.scheduledTimeTicks + adjustedDurationQpcTicks;
 
     // std::cout << "mPreviouslyScheduledNoteQpcTime: " << mPreviouslyScheduledNoteQpcTime << std::endl;
@@ -311,8 +311,8 @@ long long MidiScheduler::getNoteDurationTicks(Midi::NoteEvent &noteEvent) {
     // This is the actual length of time between the NOTE_ON and NOTE_OFF messages in terms of QPC tics. By contrast the adjusted duration in ms is the time the note 
     // is meant to occupy in space in therms of beats (i.e. quarter note). This gives the following note a clean time aligned place to start from (the end of the previous 
     // note's adjustedDurationQpcTicks)
-    long long noteDurationTicks = MathUtils::FpFloor<long long>(noteEvent.division * adjustedDurationQpcTicks);
-    return noteDurationTicks; 
+    long long beatTicks = MathUtils::FpFloor<long long>(noteEvent.division * adjustedDurationQpcTicks);
+    return beatTicks; 
 }
 
 bool MidiScheduler::scheduleEvent(Midi::MidiEvent event) {

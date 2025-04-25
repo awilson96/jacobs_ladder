@@ -1,3 +1,6 @@
+#ifndef MIDI_UTILS_H
+#define MIDI_UTILS_H
+
 #include <sstream>
 #include <regex>
 
@@ -19,3 +22,5 @@ std::string normalizePortName(const std::string& portName) {
         return result;
     }
 }
+
+#endif // MIDI_UTILS_H
