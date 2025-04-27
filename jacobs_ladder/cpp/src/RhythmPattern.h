@@ -12,7 +12,7 @@
 
 class RhythmPattern {
 public:
-    RhythmPattern(std::vector<Midi::Beats> beats, double bpm = DEFAULT_BPM);
+    RhythmPattern(RhythmPatternData &rpd);
     ~RhythmPattern();
 
     /**
@@ -27,7 +27,7 @@ public:
      * 
      * @return RhythmPatternData a struct representing the RhythmPattern class's data
      */
-    RhythmPatternData getRhythmPatternData();
+    const RhythmPatternData getRhythmPatternData();
 
     /**
      * @brief Set the Bpm for the RhythmPattern class
@@ -41,6 +41,9 @@ private:
     uint32_t mNumberOfBeats {0};
     int64_t mTotalNumberOfMidiTicks;
     double mBpm; 
+    uint32_t mRepeatNum;
+    SongStage mStage;
+    std::string mName;
 
     /**
      * @brief Converts a beat duration (in ms at 60 BPM) to ticks based on the current BPM

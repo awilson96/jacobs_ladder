@@ -1,9 +1,26 @@
+#include <cassert>
+
 #include "RhythmPattern.h"
 
-RhythmPattern::RhythmPattern(std::vector<Midi::Beats> beats, double bpm)
-    : mBpm(bpm),
-      mBeats(beats) {
-    mNumberOfBeats = beats.size();
+RhythmPattern::RhythmPattern(RhythmPatternData &rpd)
+    : mBeats(rpd.beats),
+      mBpm(rpd.bpm),
+      mRepeatNum(rpd.repeatNum),
+      mStage(rpd.stage),
+      mName(rpd.name)
+{
+    assert(mBeats.size() > 0);
+    assert(mBpm >= 10.0);
+    assert(mRepeatNum >= 1);
+    if (mRepeatNum > 1) {
+        std::vector<Midi::Beats> originalBeats = mBeats;
+        mBeats.reserve(mBeats.size() + mRepeatNum * mBeats.size());
+        
+        for (uint32_t i = 1; i < mRepeatNum; i++) {
+            mBeats.insert(mBeats.end(), originalBeats.begin(), originalBeats.end());
+        }
+    }
+    mNumberOfBeats = mBeats.size();
     mTotalNumberOfMidiTicks = totalMidiTicks();
 }
 
@@ -13,13 +30,8 @@ uint32_t RhythmPattern::getNumberOfBeats() {
     return mNumberOfBeats;
 }
 
-RhythmPatternData RhythmPattern::getRhythmPatternData() {
-    return RhythmPatternData(
-        mBeats,
-        mNumberOfBeats,
-        mTotalNumberOfMidiTicks,
-        mBpm
-    );
+const RhythmPatternData RhythmPattern::getRhythmPatternData() {
+    return RhythmPatternData(mName, mBeats, mBpm, mRepeatNum, mStage, mNumberOfBeats, mTotalNumberOfMidiTicks);
 }
 
 void RhythmPattern::setBpm(double bpm) {

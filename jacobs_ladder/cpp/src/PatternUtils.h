@@ -7,20 +7,38 @@ enum PatternDirection {
     STAT                    // Pattern is stationary neither ascending nor descending when comparing start pitch and end pitch
 };
 
+enum SongStage {
+    BEGINNING,              // Pattern is typically used in the beginning of songs
+    MIDDLE,                 // Pattern is typically used in the middle of songs
+    END,                    // Pattern is typically used in the end of songs
+};
+
 struct RhythmPatternData {
+    std::string name;
     std::vector<Midi::Beats> beats;
+    double bpm;
+    uint32_t repeatNum;
+    SongStage stage;
     uint32_t numberOfBeats;
     int64_t totalNumberOfMidiTicks;
-    double bpm;
-
-    RhythmPatternData(const std::vector<Midi::Beats>& beats,
+    
+    // TODO: Once this is stable make a copy without the numberOfBeats and totaleNumberOfMidiTicks
+    RhythmPatternData(
+        std::string name,
+        const std::vector<Midi::Beats>& beats,
+        double bpm,
+        uint32_t repeatNum,
+        SongStage stage,
         uint32_t numberOfBeats,
-        int64_t totalNumberOfMidiTicks,
-        double bpm)
-    : beats(beats),
+        int64_t totalNumberOfMidiTicks
+        )
+    : name(name),
+    beats(beats),
+    bpm(bpm),
+    repeatNum(repeatNum),
+    stage(stage),
     numberOfBeats(numberOfBeats),
-    totalNumberOfMidiTicks(totalNumberOfMidiTicks),
-    bpm(bpm) {}
+    totalNumberOfMidiTicks(totalNumberOfMidiTicks) {}
 };
 
 #endif // PATTERN_UTILS_H 
