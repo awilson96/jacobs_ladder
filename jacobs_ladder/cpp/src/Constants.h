@@ -11,6 +11,7 @@ static const long long TEN_MILLISECOND_BUDGET_TICKS = 100000;
 static const long long ONE_MILLISECOND_MIN_SEPARATION_TICKS = 10000;
 static const long long QPC_FREQUENCY = 10000000;
 static const long long ONE_POINT_FIVE_MS_IN_TICKS = 15000;
+const long long FIVE_MINUTES_TICKS = 5LL * 60LL * QPC_FREQUENCY;
 
 static constexpr int TICKS_PER_QUARTER_NOTE = 960;
 static constexpr int MS_PER_MINUTE = 60000;

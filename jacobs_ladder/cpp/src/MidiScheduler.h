@@ -19,7 +19,7 @@
 
 class MidiScheduler {
 public:
-    MidiScheduler(const std::string& outputPortName, bool startImmediately = true,  bool printMsgs = false);
+    MidiScheduler(const std::string& outputPortName, bool startImmediately = true,  bool printMsgs = false, int beatsPerMeasure = 4, int beatUnit = 4, double tempoBpm = 120.0);
     ~MidiScheduler();
 
     /**
@@ -88,6 +88,21 @@ public:
     void allNotesOff();
 
     /**
+     * @brief Change the tempo of the scheduler 
+     * 
+     * @param tempo the new beats per minute
+     * @param startTime the qpc time for the scheduler to consider as the first beat
+     */
+    void changeTempo(double tempo, long long startTime);
+
+    /**
+     * @brief Get the Beat Schedule object
+     * 
+     * @return std::vector<std::pair<long long, int>> a vector of qpc time beat number pairs
+     */
+    std::vector<std::pair<long long, int>> getBeatSchedule();
+
+    /**
      * @brief Get the tick time of the previously scheduled MidiEvent (usually NOTE_ON or NOTE_OFF). Often used as a future offset point for creating new sequences of MidiEvents or NoteEvents.
      * 
      * @return long long the qpc tick time of the previously scheduled note
@@ -106,6 +121,13 @@ public:
     void resume();
 
     /**
+     * @brief Shift all of the items in the beat schedule by some offset in ticks.
+     * 
+     * @param offsetTicks An offset (positive or negative) in qpc ticks to shift each item in the vector by
+     */
+    void shiftBeats(long long offsetTicks);
+
+    /**
      * @brief Used to start the player thread if it is not already running. Useful when using startImmediately=false in the constructor allowing the user to decide when they want to start the player thread.
      * 
      * @return true If the player thread was successfully started because it was not previously running
@@ -122,11 +144,20 @@ private:
     std::atomic<bool> mRunning {false};
     std::atomic<bool> mPaused {false};
     std::atomic<bool> mPrintMsgs {false};
+    std::atomic<bool> mShiftBeats {false};
+    std::atomic<size_t> mShiftIndex {0};
+    std::atomic<long long> mOffsetTicks {0};
+
+    int mBeatsPerMeasure {4};
+    int mBeatUnit {4};
+    double mTempoBpm {120.0};
+    std::vector<std::pair<long long, int>> mBeatSchedule;
 
     std::thread mPlayerThread;
     std::mutex mPauseMutex;
     std::mutex mBufferMutex;
     std::mutex mPreviouslyScheduledNoteQpcTimeMutex;
+    std::mutex mBeatScheduleMutex;
     std::condition_variable mPauseCv;
 
     std::priority_queue<Midi::MidiEvent> mQueue;
@@ -177,6 +208,13 @@ private:
     void player();
 
     /**
+     * @brief Pre-calculate the next five minutes of beats upon calling the start() function
+     * 
+     * @param startQpcTime the start time for the calculation to begin 
+     */
+    void preCalculateBeats(long long startQpcTime);
+
+    /**
      * @brief Sets the mPreviouslyScheduledNoteQpcTime to 0 which enforces that a runtime exception will be thrown if chaining is attempted before providing a fully time defined MidiEvent or NoteEvent as a reference point
      * 
      * This method is used by the player thread to reset to starting conditions whenever all of the scheduled notes have been either played or exhausted.
@@ -198,6 +236,15 @@ private:
      * @return false If the event to be added is outside the scheduled time plus its ten millisecond budget and is therefore in the past. Results in the note getting dropped.
      */
     bool scheduleEvent(Midi::MidiEvent event);
+
+    /**
+     * @brief Shift all of the items in the beat schedule by some offset in ticks incrementally and break out when the program flow needs to move on updating the index the function left off on.
+     * 
+     * @param startIndex the index into the beat schedule vector the function left off on
+     * @param qpcTime the qpc time associated with the time of the next note
+     * @return size_t the last index the function left off on
+     */
+    size_t shiftBeatsIncremental(size_t startIndex, long long qpcTime);
 
     /**
      * @brief Continues to pop events from mBuffer adding them to mQueue until either the scheduled time minus mBudget (10 ms) has passed, or there are no more events in mBuffer to be added to mQueue.

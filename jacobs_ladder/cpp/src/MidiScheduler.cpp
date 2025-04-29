@@ -7,9 +7,12 @@
 #include <cstdlib>
 #include <stdexcept>
 
-MidiScheduler::MidiScheduler(const std::string& outputPortName, bool startImmediately, bool printMsgs)
+MidiScheduler::MidiScheduler(const std::string& outputPortName, bool startImmediately, bool printMsgs, int beatsPerMeasure, int beatUnit, double tempoBpm)
     : mGen(std::random_device{}()),
-      mDist(-10000, 10000)
+      mDist(-10000, 10000),
+      mBeatsPerMeasure(beatsPerMeasure),
+      mBeatUnit(beatUnit),
+      mTempoBpm(tempoBpm)
     {
     mTimer = std::make_unique<QpcUtils>();
     mFrequencyHz = mTimer->qpcGetFrequency();
@@ -42,7 +45,10 @@ MidiScheduler::MidiScheduler(const std::string& outputPortName, bool startImmedi
         }
         if (startImmediately) {
             mRunning.store(true);
-            mPlayerThread = std::thread(&MidiScheduler::player, this);
+            if (start())
+                std::cout << "Successfully started player..." << std::endl;
+            else
+                throw std::runtime_error("Unable to start MidiScheduler...");
         }
 
     } catch (const RtMidiError& error) {
@@ -55,6 +61,8 @@ MidiScheduler::MidiScheduler(const std::string& outputPortName, bool startImmedi
 }
 
 MidiScheduler::~MidiScheduler() {
+    // Turn off all currently playing notes
+    allNotesOff();
     // Stop the player() thread and wait for it to join
     stop();
     if (mPlayerThread.joinable())
@@ -143,6 +151,16 @@ void MidiScheduler::allNotesOff() {
     mMidiOut->sendMessage(&message);
 }
 
+void MidiScheduler::changeTempo(double tempo, long long startQpcTime) {
+    mTempoBpm = tempo;
+    preCalculateBeats(startQpcTime);
+}
+
+std::vector<std::pair<long long, int>> MidiScheduler::getBeatSchedule() {
+    std::lock_guard<std::mutex> lock(mBeatScheduleMutex);
+    return mBeatSchedule;
+}
+
 long long MidiScheduler::getPreviouslyScheduledNoteQpcTimeTicks() {
     std::lock_guard<std::mutex> lock(mPreviouslyScheduledNoteQpcTimeMutex);
     return mPreviouslyScheduledNoteQpcTime;
@@ -166,6 +184,12 @@ void MidiScheduler::resume() {
 bool MidiScheduler::start() {
     if (mPlayerThread.joinable())
         return false;
+
+    // Always start the pre-calculation of 5 minutes of futer beats 100 ms from now in the future
+    long long now = mTimer->qpcGetTicks();
+    preCalculateBeats(mTimer->qpcGetFutureTime(now, 100));
+    // long long later = mTimer->qpcGetTicks();
+    // std::cout << "pre-calculate beats time: \n" << mTimer->qpcPrintTimeDiffUs(now, later) << " us" << std::endl;
     
     mRunning.store(true);
     mPlayerThread = std::thread(&MidiScheduler::player, this);
@@ -275,6 +299,27 @@ void MidiScheduler::player() {
     }
 }
 
+void MidiScheduler::preCalculateBeats(long long startQpcTime) {
+    std::lock_guard<std::mutex> lock(mBeatScheduleMutex);
+    mBeatSchedule.clear();
+    double secondsPerBeat = 60.0 / mTempoBpm;
+    long long qpcTicksPerBeat = static_cast<long long>(secondsPerBeat * mFrequencyHz);
+
+    long long currentQpcTime = startQpcTime;
+    int beatNumber = 1;
+    
+    while (currentQpcTime - startQpcTime <= FIVE_MINUTES_TICKS) {
+        mBeatSchedule.emplace_back(currentQpcTime, beatNumber);
+
+        currentQpcTime += qpcTicksPerBeat;
+        beatNumber++;
+        if (beatNumber > mBeatsPerMeasure) {
+            beatNumber = 1;
+        }
+    }
+    std::cout << "Number of beats: " << mBeatSchedule.size() << std::endl;
+}
+
 void MidiScheduler::resetPreviouslyScheduledNoteQpcTime() {
     std::lock_guard<std::mutex> lock(mPreviouslyScheduledNoteQpcTimeMutex);
     mPreviouslyScheduledNoteQpcTime = 0;
@@ -324,6 +369,30 @@ bool MidiScheduler::scheduleEvent(Midi::MidiEvent event) {
     return false;
 }
 
+void MidiScheduler::shiftBeats(long long offsetTicks) {
+     mShiftBeats.store(true);
+     mOffsetTicks.store(offsetTicks);
+}
+
+size_t MidiScheduler::shiftBeatsIncremental(size_t startIndex, long long qpcTime) {
+    LARGE_INTEGER now;
+    QueryPerformanceCounter(&now);
+
+    size_t index = startIndex;
+    std::lock_guard<std::mutex> lock(mBeatScheduleMutex);
+    while (index < mBeatSchedule.size()) {
+        mBeatSchedule[index].first += mOffsetTicks.load();
+        ++index;
+
+        QueryPerformanceCounter(&now);
+        if (now.QuadPart > qpcTime - mBudgetTicks) {
+            break; // ran out of time
+        }
+    }
+    return index; // return new index to resume later
+}
+
+
 void MidiScheduler::smartSleep(long long qpcTime) {
     LARGE_INTEGER now;
     std::lock_guard<std::mutex> lock(mBufferMutex);
@@ -334,6 +403,16 @@ void MidiScheduler::smartSleep(long long qpcTime) {
         if (!mBuffer.empty()) {
             scheduleEvent(mBuffer.top());
             mBuffer.pop();
+        }
+        else if (mShiftBeats.load()){
+            size_t lastIndex = shiftBeatsIncremental(mShiftIndex.load(), qpcTime);
+            mShiftIndex.store(lastIndex);
+            std::lock_guard<std::mutex> lock(mBeatScheduleMutex);
+            if (lastIndex == mBeatSchedule.size() - 1) {
+                std::cout << "Finished shifting beats" <<std::endl;
+                mShiftBeats.store(false);
+                mShiftIndex.store(0);
+            }
         }
         else {
             break;

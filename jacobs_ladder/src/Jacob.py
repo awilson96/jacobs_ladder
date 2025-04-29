@@ -46,7 +46,7 @@ class JacobsLadder:
     def initialize_midi_controller(self):
         """Initializes a MidiController instance in a separate thread for interacting with the user in real time"""
         self.midi_controller = MidiController(
-            input_port="jacob", output_ports=list(map(str, range(12, 24))))
+            input_port="jacob", output_ports=[f"jacob_{i}" for i in range(12)])
 
     def menu(self):
         """Main control loop for diplaying menu options to the user"""
