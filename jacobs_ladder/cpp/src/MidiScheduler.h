@@ -103,6 +103,15 @@ public:
     std::vector<std::pair<long long, int>> getBeatSchedule();
 
     /**
+     * @brief Get the qpc time associated with the soonest beat matching the beatNum 
+     * 
+     * @param beatNum the beat number within some time signature
+     * @param measureNum the number of measures in the future to consider before selecting a beat
+     * @return long long a qpc time corresponding to the next beat matching the beatNum provided by the user
+     */
+    long long getNextBeatByNumber(size_t beatNum, size_t measureNum = 0);
+
+    /**
      * @brief Get the tick time of the previously scheduled MidiEvent (usually NOTE_ON or NOTE_OFF). Often used as a future offset point for creating new sequences of MidiEvents or NoteEvents.
      * 
      * @return long long the qpc tick time of the previously scheduled note
@@ -178,6 +187,14 @@ private:
      * @brief Pause the player thread using a condition variable only if both mRunning and mPause are true, otherwise continue execution.
      */
     void conditionallyPause();
+
+    /**
+     * @brief Get the the qpc time of a future beat using an index into the beat schedule
+     * 
+     * @param index An index in mBeatSchedule ranging from 0 (next beat) to 60000 (beat five minutes from now)
+     * @return std::pair<long long, int> A qpc time/beat number pair corresponding to a future beat in mBeatSchedule at the index provided by the user
+     */
+    std::pair<long long, int> getBeatFromIndex(size_t index);
 
     /**
      * @brief Get the note duration in terms of future qpc ticks by extracting the tempo/division adjusted note duration.

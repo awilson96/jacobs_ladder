@@ -161,6 +161,37 @@ std::vector<std::pair<long long, int>> MidiScheduler::getBeatSchedule() {
     return mBeatSchedule;
 }
 
+long long MidiScheduler::getNextBeatByNumber(size_t beatNum, size_t measureNum) {
+    int beatIndex = 0;
+    int measureIndex = -1;
+    std::pair<long long, int> beat = getBeatFromIndex(beatIndex);
+
+    // If a beat was not successfully retrieved due to that beat having already passed
+    while (beat.first == 0 && beat.second == 0) {
+        beat = getBeatFromIndex(++beatIndex);
+    }
+
+    do {
+        while (beat.second != beatNum) {
+            beat = getBeatFromIndex(++beatIndex);
+            if (beat.second == beatNum) {
+                measureIndex++;
+            }
+        }
+        if (measureNum != measureIndex) {
+            beat = getBeatFromIndex(++beatIndex);
+        }
+    } while (measureNum != measureIndex);
+    
+    std::cout << "\nqpc time: " << beat.first << "\nbeatNum: " << beat.second << std::endl;
+    if (beat.second == beatNum) {
+        return beat.first;
+    }
+    else {
+        throw std::runtime_error("Beat index was incorrectly calculated.");
+    }
+}
+
 long long MidiScheduler::getPreviouslyScheduledNoteQpcTimeTicks() {
     std::lock_guard<std::mutex> lock(mPreviouslyScheduledNoteQpcTimeMutex);
     return mPreviouslyScheduledNoteQpcTime;
@@ -308,12 +339,12 @@ void MidiScheduler::preCalculateBeats(long long startQpcTime) {
     long long currentQpcTime = startQpcTime;
     int beatNumber = 1;
     
-    while (currentQpcTime - startQpcTime <= FIVE_MINUTES_TICKS) {
+    while (currentQpcTime - startQpcTime < FIVE_MINUTES_TICKS) {
         mBeatSchedule.emplace_back(currentQpcTime, beatNumber);
 
         currentQpcTime += qpcTicksPerBeat;
         beatNumber++;
-        if (beatNumber > mBeatsPerMeasure) {
+        if (beatNumber > mBeatUnit) {
             beatNumber = 1;
         }
     }
@@ -323,6 +354,20 @@ void MidiScheduler::preCalculateBeats(long long startQpcTime) {
 void MidiScheduler::resetPreviouslyScheduledNoteQpcTime() {
     std::lock_guard<std::mutex> lock(mPreviouslyScheduledNoteQpcTimeMutex);
     mPreviouslyScheduledNoteQpcTime = 0;
+}
+
+std::pair<long long, int> MidiScheduler::getBeatFromIndex(size_t index) {
+    if (index < 0 || index >= 600) {
+        throw std::runtime_error("Index provided to getBeatFromIndex() is out of range! Got " + index);
+    }
+    long long now = mTimer->qpcGetTicks();
+    std::lock_guard<std::mutex> lock(mBeatScheduleMutex);
+    std::pair<long long, int> beat = mBeatSchedule.at(index);
+    if (beat.first < now) {
+        beat.first = 0;
+        beat.second = 0;
+    }
+    return beat;
 }
 
 long long MidiScheduler::getBeatTicks(Midi::NoteEvent &noteEvent) {

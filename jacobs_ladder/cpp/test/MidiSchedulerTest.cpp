@@ -608,3 +608,25 @@ TEST_CASE("Test successful beat shifting","[MidiScheduler][shiftBeats(long long 
 TEST_CASE("Test change tempo","[MidiScheduler][changeTempo(double tempo, long long startQpcTime)]") {
 
 }
+
+TEST_CASE("Get next beat","[MidiScheduler][getNextBeatByNumber(size_t beatNum)]") {
+    using namespace Midi;
+
+    MidiScheduler midiScheduler("jacob", true, true);
+    QpcUtils timer;
+    long long twoSecondsFromNow = timer.qpcGetFutureTime(timer.qpcGetTicks(), 2000);
+    int beatToSearch = 1;
+
+    std::vector<std::pair<long long, int>> beatSchedule = midiScheduler.getBeatSchedule();
+    for (auto &i : beatSchedule) {
+        std::cout << i.first << " ";
+    }
+    long long qpcTime = midiScheduler.getNextBeatByNumber(beatToSearch);
+    auto it = std::find(beatSchedule.begin(), beatSchedule.end(), std::pair<long long, int>(qpcTime, beatToSearch));
+    REQUIRE(it != beatSchedule.end());
+
+    qpcTime = midiScheduler.getNextBeatByNumber(beatToSearch, 1);
+    std::cout << "\nqpcTime: " << qpcTime << std::endl;
+    it = std::find(beatSchedule.begin(), beatSchedule.end(), std::pair<long long, int>(qpcTime, beatToSearch));
+    REQUIRE(it != beatSchedule.end());
+}
