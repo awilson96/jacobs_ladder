@@ -95,7 +95,7 @@ namespace Midi {
         : division(0.5),
           duration(Beats::QUARTER),
           event(),
-          tempo(120.0),
+          tempo(-1),
           scheduledTimeTicks(-1) {}
 
         NoteEvent(Beats duration, const MidiEvent& event, double tempo)
@@ -104,8 +104,15 @@ namespace Midi {
           event(event),
           tempo(tempo),
           scheduledTimeTicks(-1) {}
+        
+        NoteEvent(double division, Beats duration, const MidiEvent& event, long long scheduledTimeTicks)
+        : division(division),
+          duration(duration),
+          event(event),
+          tempo(-1),
+          scheduledTimeTicks(scheduledTimeTicks) {}
 
-        NoteEvent(double division, Beats duration, const MidiEvent& event, double tempo, double scheduledTimeTicks)
+        NoteEvent(double division, Beats duration, const MidiEvent& event, double tempo, long long scheduledTimeTicks)
         : division(division),
           duration(duration),
           event(event),

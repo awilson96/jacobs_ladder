@@ -137,6 +137,13 @@ public:
     long long getPreviouslyScheduledNoteQpcTimeTicks();
 
     /**
+     * @brief Get the tempo that the MidiScheduler is configured to operate at
+     * 
+     * @return double the tempo
+     */
+    double getTempo();
+
+    /**
      * @brief Pause the player thread from playing and interrupt any currently played notes with allNotesOff() 
      * 
      */
@@ -177,10 +184,10 @@ private:
     std::atomic<size_t> mTempoChangeIndex {0};
     std::atomic<long long> mOffsetTicks {0};
     std::atomic<double> mTempoScalingFactor {1};
+    std::atomic<double> mTempoBpm {120.0};
 
     int mBeatsPerMeasure {4};
     int mBeatUnit {4};
-    double mTempoBpm {120.0};
     std::vector<std::pair<long long, int>> mBeatSchedule;
 
     std::thread mPlayerThread;
@@ -263,6 +270,13 @@ private:
     void preCalculateBeats(long long startQpcTime);
 
     /**
+     * @brief Prune expired beats incrementally breaking out of the process once the time budget has passed
+     * 
+     * @param qpcTime the scheduled time for the next note to play
+     */
+    void pruneExpiredBeatsIncrementally(long long qpcTime);
+
+    /**
      * @brief Sets the mPreviouslyScheduledNoteQpcTime to 0 which enforces that a runtime exception will be thrown if chaining is attempted before providing a fully time defined MidiEvent or NoteEvent as a reference point
      * 
      * This method is used by the player thread to reset to starting conditions whenever all of the scheduled notes have been either played or exhausted.
@@ -292,7 +306,7 @@ private:
      * @param qpcTime the qpc time associated with the time of the next note
      * @return size_t the last index the function left off on
      */
-    size_t shiftBeatsIncremental(size_t startIndex, long long qpcTime);
+    size_t shiftBeatsIncrementally(size_t startIndex, long long qpcTime);
 
     /**
      * @brief Continues to pop events from mBuffer adding them to mQueue until either the scheduled time minus mBudget (10 ms) has passed, or there are no more events in mBuffer to be added to mQueue.
