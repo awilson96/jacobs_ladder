@@ -88,6 +88,24 @@ public:
     void allNotesOff();
 
     /**
+     * @brief Convert a beat into a qpc time offset
+     * 
+     * @param tempo a tempo used for establishing how long the beat should be
+     * @param beat A singular Midi::Beat for converting to a qpc time
+     * @return long long a qpc time
+     */
+    long long beatsToTicks(double tempo, Midi::Beats beat);
+
+    /**
+     * @brief Convert a list of beats into a qpc time offset
+     * 
+     * @param tempo a tempo used for establishing how long the beat should be
+     * @param beats a vector of Midi::Beats for converting to a single qpc time
+     * @return long long a qpc time
+     */
+    long long beatsToTicks(double tempo, std::vector<Midi::Beats> beats);
+
+    /**
      * @brief Change the tempo of the scheduler 
      * 
      * @param tempo the new beats per minute
@@ -154,8 +172,11 @@ private:
     std::atomic<bool> mPaused {false};
     std::atomic<bool> mPrintMsgs {false};
     std::atomic<bool> mShiftBeats {false};
+    std::atomic<bool> mTempoChange {false};
     std::atomic<size_t> mShiftIndex {0};
+    std::atomic<size_t> mTempoChangeIndex {0};
     std::atomic<long long> mOffsetTicks {0};
+    std::atomic<double> mTempoScalingFactor {1};
 
     int mBeatsPerMeasure {4};
     int mBeatUnit {4};
@@ -171,6 +192,7 @@ private:
 
     std::priority_queue<Midi::MidiEvent> mQueue;
     std::priority_queue<Midi::MidiEvent> mBuffer;
+    std::priority_queue<Midi::MidiEvent> mSwapQueue;
 
     std::unique_ptr<QpcUtils> mTimer;
     std::unique_ptr<RtMidiOut> mMidiOut;
@@ -181,12 +203,21 @@ private:
     std::mt19937 mGen;
     std::uniform_int_distribution<> mDist;
 
-    long long beatsToQpcTicks(Midi::NoteEvent noteEvent, Midi::Beats offsetBeats);
+    /**
+     * @brief Convert a beat to an offset of qpc ticks
+     * 
+     * @param noteEvent a NoteEvent struct containing the information relevent to calculating the offset ticks
+     * @param offsetBeats a beat for converting to ticks
+     * @return long long 
+     */
+    long long beatsToQpcTicks(Midi::NoteEvent &noteEvent, Midi::Beats offsetBeats);
 
     /**
      * @brief Pause the player thread using a condition variable only if both mRunning and mPause are true, otherwise continue execution.
      */
     void conditionallyPause();
+
+    size_t changeBeatLengthsIncrementally(size_t startIndex, long long qpcTime);
 
     /**
      * @brief Get the the qpc time of a future beat using an index into the beat schedule

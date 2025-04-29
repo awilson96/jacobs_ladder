@@ -53,8 +53,7 @@ TEST_CASE("Profile the MidiScheduler addEvent function", "[MidiScheduler][addEve
 TEST_CASE("Play every note on the piano very quickly", "[MidiScheduler][addEvent(Midi::MidiEvent &event, long long offsetTicks)]") {
     MidiScheduler midiScheduler("jacob", true);
     QpcUtils timer;
-    long long now = timer.qpcGetTicks();
-    long long later = timer.qpcGetFutureTime(now, 2000);
+    long long nextDowbeat = midiScheduler.getNextBeatByNumber(1);
 
     Midi::MidiEvent event;
     event.note = 108;
@@ -65,7 +64,7 @@ TEST_CASE("Play every note on the piano very quickly", "[MidiScheduler][addEvent
         if (i % 2 == 0) {
             event.status = Midi::MidiMessageType::NOTE_ON;
             event.note -= 1;
-            event.qpcTime = timer.qpcGetFutureTime(later, (count+1) * 5LL);
+            event.qpcTime = timer.qpcGetFutureTime(nextDowbeat, (count+1) * 5LL);
         }
         else {
             event.status = Midi::MidiMessageType::NOTE_OFF;
@@ -77,14 +76,14 @@ TEST_CASE("Play every note on the piano very quickly", "[MidiScheduler][addEvent
     timer.qpcSleepMs(4000);
 }
 
-TEST_CASE("Test add event NoteEvent implimentation [MidiScheduler][addEvent(Midi::NoteEvent &noteEvent)]") {
+TEST_CASE("Test add event NoteEvent implimentation", "[MidiScheduler][addEvent(Midi::NoteEvent &noteEvent)]") {
 
     using namespace Midi;
 
     MidiScheduler midiScheduler("jacob", true, false);
     QpcUtils timer;
     long long now = timer.qpcGetTicks();
-    long long oneSecondFromNow = timer.qpcGetFutureTime(now, 2000);
+    long long nextDownBeat = midiScheduler.getNextBeatByNumber(1);
 
     // Seed note
     const double tempo = 120.0;
@@ -101,19 +100,22 @@ TEST_CASE("Test add event NoteEvent implimentation [MidiScheduler][addEvent(Midi
             Beats::WHOLE, 
             firstEvent,
             tempo,
-            oneSecondFromNow
+            nextDownBeat
         );
 
     midiScheduler.addEvent(note);
 
     note.event.note = 64;
+    note.scheduledTimeTicks +=1;
     midiScheduler.addEvent(note);
 
     note.event.note = 55;
+    note.scheduledTimeTicks +=1;
     midiScheduler.addEvent(note);
     
     note.event.note = 58;
     note.event.velocity = 10;
+    note.scheduledTimeTicks +=1;
     midiScheduler.addEvent(note);
 
     timer.qpcSleepMs(4000);
@@ -125,7 +127,7 @@ TEST_CASE("Four staccato chords test", "[MidiScheduler][addEvent(Midi::NoteEvent
 
     MidiScheduler midiScheduler("jacob", true, false);
     QpcUtils timer;
-    long long now = timer.qpcGetTicks();
+    long long nextDownbeat = midiScheduler.getNextBeatByNumber(1);
 
     const double tempo = 120.0;
     MidiEvent firstEvent = 
@@ -141,7 +143,7 @@ TEST_CASE("Four staccato chords test", "[MidiScheduler][addEvent(Midi::NoteEvent
             Beats::HALF, 
             firstEvent,
             tempo,
-            timer.qpcGetFutureTime(now, 500)
+            nextDownbeat
         );
 
     midiScheduler.addEvent(note, Beats::WHOLE);
@@ -266,7 +268,8 @@ TEST_CASE("Descend C Major from fastest note division to slowest", "[MidiSchedul
 
     MidiScheduler midiScheduler("jacob", false, false);
     QpcUtils timer;
-    long long now = timer.qpcGetTicks();
+    long long nextDownbeat = midiScheduler.getNextBeatByNumber(1);
+    long long beat4 = midiScheduler.getNextBeatByNumber(4);
 
     const double tempo = 120.0;
     MidiEvent firstEvent = 
@@ -282,8 +285,19 @@ TEST_CASE("Descend C Major from fastest note division to slowest", "[MidiSchedul
             Beats::TRIPLET_THIRTYSECOND, 
             firstEvent,
             tempo,
-            timer.qpcGetFutureTime(now, 2000)
+            nextDownbeat
         );
+    
+    NoteEvent leadingRest = 
+        NoteEvent(
+            0.05, 
+            Beats::QUARTER_REST, 
+            firstEvent,
+            tempo,
+            beat4
+        );
+    
+    midiScheduler.addEvent(leadingRest);
 
     NoteEvent c72 = note;
 
@@ -437,7 +451,7 @@ TEST_CASE("Polyrhythm test", "[MidiScheduler][addEvents(std::vector<Midi::NoteEv
 TEST_CASE("Test that we can pause and restart", "[MidiScheduler][pause()]") {
     using namespace Midi;
 
-    MidiScheduler midiScheduler("jacob", false, true);
+    MidiScheduler midiScheduler("jacob", false, false);
     QpcUtils timer;
     long long now = timer.qpcGetTicks();
     long long twoSecondsFromNow = timer.qpcGetFutureTime(now, 2000);
@@ -488,7 +502,7 @@ TEST_CASE("Test that we can pause and restart", "[MidiScheduler][pause()]") {
 TEST_CASE("Test successful beat shifting","[MidiScheduler][shiftBeats(long long offsetTicks)]") {
     using namespace Midi;
 
-    MidiScheduler midiScheduler("jacob", false, true);
+    MidiScheduler midiScheduler("jacob", false, false);
     QpcUtils timer;
     long long now = timer.qpcGetTicks();
     long long twoSecondsFromNow = timer.qpcGetFutureTime(now, 2000);
@@ -606,27 +620,61 @@ TEST_CASE("Test successful beat shifting","[MidiScheduler][shiftBeats(long long 
 }
 
 TEST_CASE("Test change tempo","[MidiScheduler][changeTempo(double tempo, long long startQpcTime)]") {
+    using namespace Midi;
+
+    MidiScheduler midiScheduler("jacob", true, false);
+    QpcUtils timer;
+    long long nextDownBeatOneMeasuereFromNow = midiScheduler.getNextBeatByNumber(1);
+
+    const double tempo = 120.0;
+    MidiEvent firstEvent = 
+        MidiEvent(
+            MidiMessageType::NOTE_ON,
+            60,
+            70
+        );
+
+    NoteEvent note = 
+        NoteEvent(
+            0.05, 
+            Beats::THIRTYSECOND, 
+            firstEvent,
+            tempo,
+            nextDownBeatOneMeasuereFromNow
+        );
+
+    midiScheduler.addEvent(note);
+    note.scheduledTimeTicks += midiScheduler.beatsToTicks(tempo, Beats::THIRTYSECOND);
+    midiScheduler.addEvent(note);
+    for (uint32_t i = 0; i < 70; i++) {
+        note.scheduledTimeTicks = -1;
+        midiScheduler.addEvent(note);
+    }
+
+    timer.qpcSleepMs(5000);
+    midiScheduler.changeTempo(75.0, midiScheduler.getNextBeatByNumber(1, 2));
+
+    timer.qpcSleepMs(7000);
 
 }
 
 TEST_CASE("Get next beat","[MidiScheduler][getNextBeatByNumber(size_t beatNum)]") {
     using namespace Midi;
 
-    MidiScheduler midiScheduler("jacob", true, true);
+    MidiScheduler midiScheduler("jacob", true, false);
     QpcUtils timer;
     long long twoSecondsFromNow = timer.qpcGetFutureTime(timer.qpcGetTicks(), 2000);
     int beatToSearch = 1;
 
     std::vector<std::pair<long long, int>> beatSchedule = midiScheduler.getBeatSchedule();
-    for (auto &i : beatSchedule) {
-        std::cout << i.first << " ";
-    }
+    // for (auto &i : beatSchedule) {
+    //     std::cout << i.first << " ";
+    // }
     long long qpcTime = midiScheduler.getNextBeatByNumber(beatToSearch);
     auto it = std::find(beatSchedule.begin(), beatSchedule.end(), std::pair<long long, int>(qpcTime, beatToSearch));
     REQUIRE(it != beatSchedule.end());
 
     qpcTime = midiScheduler.getNextBeatByNumber(beatToSearch, 1);
-    std::cout << "\nqpcTime: " << qpcTime << std::endl;
     it = std::find(beatSchedule.begin(), beatSchedule.end(), std::pair<long long, int>(qpcTime, beatToSearch));
     REQUIRE(it != beatSchedule.end());
 }

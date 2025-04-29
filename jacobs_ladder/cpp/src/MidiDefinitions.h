@@ -86,7 +86,7 @@ namespace Midi {
     
     struct NoteEvent {
         double division;                            // The percentage duration length the note is held for (0-1) exclusive. The division is always shorter than duration by some threshold
-        Beats duration;                      // The length the note is represented for symbolically in context to other notes. Useful for establishing the start time of the next note or rest.
+        Beats duration;                             // The length the note is represented for symbolically in context to other notes. Useful for establishing the start time of the next note or rest.
         MidiEvent event;                            // A MidiEvent with valid status, note, and velocity fields. Only the qpcTime is populated using the components of the NoteEvent struct
         double tempo;                               // The current tempo for the note being held. 
         long long scheduledTimeTicks;               // The scheduled start time for the note (NOTE_ON message). If scheduledTimeTicks is less than 0, then chaining is assumed (i.e. use the previously scheduled note's end time)

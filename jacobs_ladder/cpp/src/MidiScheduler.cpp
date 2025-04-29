@@ -21,6 +21,13 @@ MidiScheduler::MidiScheduler(const std::string& outputPortName, bool startImmedi
         std::cout << "\n";
     }
     try {
+
+        // Always start the pre-calculation of 5 minutes of future beats 1000 ms from now in the future
+        long long now = mTimer->qpcGetTicks();
+        preCalculateBeats(mTimer->qpcGetFutureTime(now, 1000));
+        // long long later = mTimer->qpcGetTicks();
+        // std::cout << "pre-calculate beats time: \n" << mTimer->qpcPrintTimeDiffUs(now, later) << " us" << std::endl;
+
         mMidiOut = std::make_unique<RtMidiOut>();
 
         unsigned int portCount = mMidiOut->getPortCount();
@@ -87,6 +94,10 @@ void MidiScheduler::addEvent(Midi::NoteEvent &noteEvent) {
     long long beatTicks = getBeatTicks(noteEvent);
     Midi::MidiEvent noteOff = Midi::MidiEvent(noteEvent.event, beatTicks);
 
+    if (beatTicks <= 0) {
+        noteEvent.event.status = Midi::MidiMessageType::NOTE_OFF;
+    }
+
     addEvent(noteEvent.event);
     addEvent(noteOff);
 }
@@ -94,8 +105,12 @@ void MidiScheduler::addEvent(Midi::NoteEvent &noteEvent) {
 void MidiScheduler::addEvent(Midi::NoteEvent &noteEvent, Midi::Beats offsetBeats) {
     long long adjustedOffsetQpcTicks = beatsToQpcTicks(noteEvent, offsetBeats);
     noteEvent.event.qpcTime += adjustedOffsetQpcTicks;
-    long long beatTicksTicks = getBeatTicks(noteEvent);
-    Midi::MidiEvent noteOff = Midi::MidiEvent(noteEvent.event, beatTicksTicks);
+    long long beatTicks = getBeatTicks(noteEvent);
+    Midi::MidiEvent noteOff = Midi::MidiEvent(noteEvent.event, beatTicks);
+
+    if (beatTicks <= 0) {
+        noteEvent.event.status = Midi::MidiMessageType::NOTE_OFF;
+    }
 
     addEvent(noteEvent.event);
     addEvent(noteOff);
@@ -151,8 +166,29 @@ void MidiScheduler::allNotesOff() {
     mMidiOut->sendMessage(&message);
 }
 
+long long MidiScheduler::beatsToTicks(double tempo, Midi::Beats beat) {
+    long long adjustedOffsetMs = MathUtils::FpFloor<long long>(static_cast<long long>(beat) * (60.0 / tempo));
+    long long adjustedOffsetQpcTicks = MathUtils::FpFloor<long long>((adjustedOffsetMs / MS_TO_SEC_CONVERSION_FACTOR) * mFrequencyHz);
+    return adjustedOffsetQpcTicks;
+}
+
+long long MidiScheduler::beatsToTicks(double tempo, std::vector<Midi::Beats> beats) {
+    long long adjustedOffsetQpcTicks = 0;
+    for (auto & beat : beats) {
+        long long adjustedOffsetMs = MathUtils::FpFloor<long long>(static_cast<long long>(beat) * (60.0 / tempo));
+        adjustedOffsetQpcTicks += MathUtils::FpFloor<long long>((adjustedOffsetMs / MS_TO_SEC_CONVERSION_FACTOR) * mFrequencyHz);
+    }
+    
+    return adjustedOffsetQpcTicks;
+}
+
 void MidiScheduler::changeTempo(double tempo, long long startQpcTime) {
+    if (tempo <= 0) {
+        throw std::runtime_error("Tempo must be greater than 0!");
+    }
+    mTempoScalingFactor.store(mTempoBpm / tempo);
     mTempoBpm = tempo;
+    mTempoChange.store(true);
     preCalculateBeats(startQpcTime);
 }
 
@@ -183,7 +219,6 @@ long long MidiScheduler::getNextBeatByNumber(size_t beatNum, size_t measureNum) 
         }
     } while (measureNum != measureIndex);
     
-    std::cout << "\nqpc time: " << beat.first << "\nbeatNum: " << beat.second << std::endl;
     if (beat.second == beatNum) {
         return beat.first;
     }
@@ -215,12 +250,6 @@ void MidiScheduler::resume() {
 bool MidiScheduler::start() {
     if (mPlayerThread.joinable())
         return false;
-
-    // Always start the pre-calculation of 5 minutes of futer beats 100 ms from now in the future
-    long long now = mTimer->qpcGetTicks();
-    preCalculateBeats(mTimer->qpcGetFutureTime(now, 100));
-    // long long later = mTimer->qpcGetTicks();
-    // std::cout << "pre-calculate beats time: \n" << mTimer->qpcPrintTimeDiffUs(now, later) << " us" << std::endl;
     
     mRunning.store(true);
     mPlayerThread = std::thread(&MidiScheduler::player, this);
@@ -234,7 +263,7 @@ void MidiScheduler::stop() {
     mQueue.swap(empty);
 }
 
-long long MidiScheduler::beatsToQpcTicks(Midi::NoteEvent noteEvent, Midi::Beats offsetBeats) {
+long long MidiScheduler::beatsToQpcTicks(Midi::NoteEvent &noteEvent, Midi::Beats offsetBeats) {
     long long adjustedOffsetMs = MathUtils::FpFloor<long long>(static_cast<long long>(offsetBeats) * (60.0 / noteEvent.tempo));
     long long adjustedOffsetQpcTicks = MathUtils::FpFloor<long long>((adjustedOffsetMs / MS_TO_SEC_CONVERSION_FACTOR) * mFrequencyHz);
     return adjustedOffsetQpcTicks;
@@ -244,6 +273,45 @@ void MidiScheduler::conditionallyPause() {
     std::unique_lock<std::mutex> lock(mPauseMutex);
     mPauseCv.wait(lock, [this]() { return !mPaused.load() || !mRunning.load(); });
     return;
+}
+
+size_t MidiScheduler::changeBeatLengthsIncrementally(size_t startIndex, long long qpcTime) {
+    LARGE_INTEGER now;
+    QueryPerformanceCounter(&now);
+
+    std::priority_queue<Midi::MidiEvent> tempQueue = mQueue;
+    size_t index = startIndex;
+    Midi::MidiEvent previousQueueEvent;
+    Midi::MidiEvent previousSwapQueueEvent;
+    size_t queueSize = mQueue.size(); 
+    while (tempQueue.size() > 0) {
+        Midi::MidiEvent event = tempQueue.top();
+        Midi::MidiEvent eventCopy = event;
+        tempQueue.pop();
+        if (index != startIndex) {
+            long long timeDiff = event.qpcTime - previousQueueEvent.qpcTime;
+            long long scaledTimeDiff = static_cast<long long>(mTempoScalingFactor.load() * timeDiff);
+            event.qpcTime = previousSwapQueueEvent.qpcTime + scaledTimeDiff;
+        }
+        previousQueueEvent = eventCopy;
+        previousSwapQueueEvent = event;
+        mSwapQueue.push(event);
+        ++index;
+
+        QueryPerformanceCounter(&now);
+        if (now.QuadPart > qpcTime - mBudgetTicks) {
+            break; 
+        }
+        else if (mSwapQueue.size() >= queueSize && tempQueue.empty()) {
+            std::cout << "Finished adjusting tempo for scheduled notes..." << std::endl;
+            mQueue.swap(mSwapQueue);
+            mSwapQueue.swap(std::priority_queue<Midi::MidiEvent>());
+            mTempoChangeIndex.store(0);
+            mTempoChange.store(false);
+            break;
+        }
+    }
+    return index; 
 }
 
 long long MidiScheduler::getRandomOffset() {
@@ -348,7 +416,6 @@ void MidiScheduler::preCalculateBeats(long long startQpcTime) {
             beatNumber = 1;
         }
     }
-    std::cout << "Number of beats: " << mBeatSchedule.size() << std::endl;
 }
 
 void MidiScheduler::resetPreviouslyScheduledNoteQpcTime() {
@@ -379,9 +446,6 @@ long long MidiScheduler::getBeatTicks(Midi::NoteEvent &noteEvent) {
     }
     // If the scheduled time is less than 0, then chaining is assumed (i.e. the scheduleTime for the current message is equal to the previously scheduled end time)
     else if (noteEvent.scheduledTimeTicks < 0) {
-        if (mPrintMsgs.load()) {
-            std::cout << "Chaining..." << "\n";
-        }  
         noteEvent.scheduledTimeTicks = mPreviouslyScheduledNoteQpcTime;
     }
  
@@ -394,7 +458,7 @@ long long MidiScheduler::getBeatTicks(Midi::NoteEvent &noteEvent) {
 
     // The qpc ticks time marker get's placed at the tail of the currently scheduled note, i.e. if a quarter note is played at the beat where it is released (NOTE_OFF)
     // Note though that this may not be the actual length that the note way played for (beatTicks), but rather the length of time the note was meant to occupy symbolically (adjustedDurationQpcTicks, or in our previous example: a quarter note)
-    mPreviouslyScheduledNoteQpcTime = noteEvent.scheduledTimeTicks + adjustedDurationQpcTicks;
+    mPreviouslyScheduledNoteQpcTime = noteEvent.scheduledTimeTicks + std::abs(adjustedDurationQpcTicks);
 
     // std::cout << "mPreviouslyScheduledNoteQpcTime: " << mPreviouslyScheduledNoteQpcTime << std::endl;
 
@@ -431,10 +495,10 @@ size_t MidiScheduler::shiftBeatsIncremental(size_t startIndex, long long qpcTime
 
         QueryPerformanceCounter(&now);
         if (now.QuadPart > qpcTime - mBudgetTicks) {
-            break; // ran out of time
+            break; 
         }
     }
-    return index; // return new index to resume later
+    return index; 
 }
 
 
@@ -459,8 +523,9 @@ void MidiScheduler::smartSleep(long long qpcTime) {
                 mShiftIndex.store(0);
             }
         }
-        else {
-            break;
+        else if (mTempoChange.load()) {
+            size_t lastIndex = changeBeatLengthsIncrementally(mTempoChangeIndex.load(), qpcTime);
+            mTempoChangeIndex.store(lastIndex);
         }
         QueryPerformanceCounter(&now);
     } while (now.QuadPart < qpcTime - mBudgetTicks);
