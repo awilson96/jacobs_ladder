@@ -48,7 +48,7 @@
         Midi::Beats::HALF
     };
 
-    RhythmPatternData rpd = RhythmPatternData("chicken", beats, 120.0, 2, SongStage::END, 0, 0);
+    RhythmPatternData rpd = RhythmPatternData("chicken", beats, 120.0, 1, SongStage::END, std::vector<Mood>({Mood::ANYMOOD}), 0, 0);
     RhythmPattern chicken = RhythmPattern(rpd);
 
     REQUIRE(chicken.getNumberOfBeats() == 14);

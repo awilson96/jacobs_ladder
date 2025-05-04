@@ -16,6 +16,13 @@ public:
     ~RhythmPattern();
 
     /**
+     * @brief Get the name of the RhythmPattern object
+     * 
+     * @return std::string the name of the RhythmPatterm object
+     */
+    std::string getName();
+
+    /**
      * @brief Get the total number of beats in the RhythmPattern 
      * 
      * @return uint32_t the total number of beats in the RhythmPattern
@@ -37,13 +44,14 @@ public:
     void setBpm(double bpm);
 
 private:
-    std::vector<Midi::Beats> mBeats;
-    uint32_t mNumberOfBeats {0};
-    int64_t mTotalNumberOfMidiTicks;
-    double mBpm; 
-    uint32_t mRepeatNum;
-    SongStage mStage;
-    std::string mName;
+    std::vector<Midi::Beats> mBeats;                // The beats themselves which form the RhythmPattern
+    uint32_t mNumberOfBeats {0};                    // The number of beats after any repitions have been applied
+    int64_t mTotalNumberOfMidiTicks;                // The total amount of time in MidiTicks that this beat takes up
+    double mBpm;                                    // The tempo the rhythm is to be played at
+    uint32_t mRepeatNum;                            // The number of times to repeat the pattern (defaults to 0)
+    SongStage mStage;                               // The stage of the song the pattern typically occurs in
+    std::vector<Mood> mMood;                        // The mood(s) the pattern typically portays
+    std::string mName;                              // The name of the pattern (must be unique)
 
     /**
      * @brief Converts a beat duration (in ms at 60 BPM) to ticks based on the current BPM
