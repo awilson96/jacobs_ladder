@@ -21,6 +21,15 @@ enum Mood {
     ANYMOOD
 };
 
+enum VelocityDynamics {
+    CRESCENDO,
+    PIANO,
+    MEZZO_PIANO,
+    MEZZO_FORTE,
+    FORTE,
+    FORTISSIMO
+};
+
 struct RhythmPatternData {
     std::string name;
     std::vector<Midi::Beats> beats;
@@ -86,6 +95,27 @@ struct HarmonicPatternData {
       direction(direction),
       stage(stage),
       mood(mood) {}
+};
+
+struct VelocityPatternData {
+    std::string name;
+    uint32_t repeatNum;
+    std::vector<int> crop;
+    std::vector<VelocityDynamics> dynamics;
+    std::vector<int> dynamicsInt;
+
+    VelocityPatternData(
+        std::string name,
+        uint32_t repeatNum,
+        std::vector<int> crop,
+        std::vector<VelocityDynamics> dynamics,
+        std::vector<int> dynamicsInt
+        ) 
+    : name(name),
+      repeatNum(repeatNum),
+      crop(crop),
+      dynamics(dynamics),
+      dynamicsInt(dynamicsInt) {}
 };
 
 #endif // PATTERN_UTILS_H 

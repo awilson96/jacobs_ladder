@@ -18,6 +18,11 @@ namespace Midi {
 
     // Note durations based on 60 BPM in ms where the quarter note is equal to the 60 BPM pulse
     enum class Beats : int32_t {
+        SIXTEEN_MEASURES = 64000,
+        EIGHT_MEASURES = 32000,
+        FOUR_MEASURES = 16000,
+        TWO_MEASURES = 8000,
+        MEASURE = 4000,
         WHOLE = 4000,
         WHOLE_REST = -4000,
         DOTTED_HALF = 3000,
