@@ -101,6 +101,13 @@ int main(int argc, const char *argv[]) {
         std::string prefix = names[i];
         int numPorts = counts[i];
 
+        std::wstring basePortName = std::wstring(prefix.begin(), prefix.end());
+            LPVM_MIDI_PORT port = virtualMIDICreatePortEx2(
+                basePortName.c_str(), teVMCallback, 0, MAX_SYSEX_BUFFER, TE_VM_FLAGS_PARSE_RX);
+
+        ports.push_back(port);
+        std::wcout << "Created virtual MIDI port: " << basePortName << std::endl;
+
         for (int j = 0; j < numPorts; ++j) {
             std::wstring portName = std::wstring(prefix.begin(), prefix.end()) + L"_" + std::to_wstring(j);
             LPVM_MIDI_PORT port = virtualMIDICreatePortEx2(
