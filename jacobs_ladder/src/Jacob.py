@@ -2,10 +2,7 @@ import threading
 import time
 
 from .MidiManager import MidiController
-from .HarmonicMajorScales import get_harmonic_major_scales_dict
-from .HarmonicMinorScales import get_harmonic_minor_scales_dict
-from .MajorScales import get_major_scales_dict
-from .MelodicMinorScales import get_melodic_minor_scales_dict
+from .Scales import get_major_scales_dict, get_harmonic_minor_scales_dict, get_harmonic_major_scales_dict, get_melodic_minor_scales_dict
 from .ScaleClassifier import ScaleClassifier
 from .MidiInjector import MidiInjector
 from .Udp import UDPSender 

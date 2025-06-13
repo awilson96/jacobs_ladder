@@ -1,11 +1,12 @@
 import argparse
 import heapq
-import json
 import logging
 import rtmidi
+import sys
 import threading
 import time
 import warnings
+import yaml
 
 from copy import deepcopy
 
@@ -17,7 +18,7 @@ from .TimeKeeper import TimeKeeper
 from .Udp import UDPSender
 
 from .Logging import setup_logging
-from .Utilities import determine_octave
+from .Utilities import determine_octave, parse_midi_controller_config
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
@@ -36,13 +37,7 @@ class MidiController:
     All tuning, chord display, and additional features are handled by other submodules.
     """
 
-    def __init__(self, input_port: str = "jacobs_ladder", 
-                 output_ports: list = [f"jacobs_ladder_{i}" for i in range(12)], 
-                 print_msgs: bool = False,
-                 tuning: dict = None,
-                 tuning_mode: str = None, 
-                 tempo: int = 120, 
-                 time_signature: str = "4/4"):
+    def __init__(self, **kwargs):
         """Class Constructor creates a MidiController object.  MidiController handles MIDI port management, 
         output port instance management, and sustain pedal management.
 
@@ -53,28 +48,54 @@ class MidiController:
             tuning (dict, optional): a dictionary giving the controller its tuning. Defaults to None.
             tuning_mode (str, optional): static, dynamic, or None for no tuning. Defaults to None.
         """
+        allowed_keys = {
+            'input_port', 'output_ports', 'print_msgs',
+            'print_key', 'print_scales', 'scale_includes',
+            'tuning', 'tuning_mode', 'tempo', 'time_signature'
+        }
+
+        for key in kwargs:
+            if key not in allowed_keys:
+                raise ValueError(f"Unknown argument: {key}")
+        
+        self.input_port = kwargs.get('input_port', 'jacobs_ladder')
+        self.output_ports = kwargs.get('output_ports', [f"jacobs_ladder_{i}" for i in range(12)])
+        self.print_msgs = kwargs.get('print_msgs', False)
+        self.print_key = kwargs.get('print_key', False)
+        self.print_scales = kwargs.get('print_scales', False)
+        self.scale_includes = kwargs.get('scale_includes', [])
+        self.tuning = kwargs.get('tuning', None)
+        self.tuning_mode = kwargs.get('tuning_mode', None)
+        self.tempo = kwargs.get('tempo', 120)
+        self.time_signature = kwargs.get('time_signature', "4/4")
+
+        print("Initialized MidiController with:")
+        print(f"  input_port: {self.input_port}")
+        print(f"  output_ports: {self.output_ports}")
+        print(f"  print_msgs: {self.print_msgs}")
+        print(f"  print_key: {self.print_key}")
+        print(f"  print_scales: {self.print_scales}")
+        print(f"  scale_includes: {self.scale_includes}")
+        print(f"  tuning_mode: {self.tuning_mode}")
+        print(f"  tempo: {self.tempo}")
+        print(f"  time_signature: {self.time_signature}")
+
         # Set up logging
-        if input_port == "jacobs_ladder":
+        if self.input_port == "jacobs_ladder":
             self.logger = setup_logging("User")
-        elif input_port == "jacob":
+        elif self.input_port == "jacob":
             self.logger = setup_logging("Jacob")
         else:
-            self.logger = setup_logging(input_port)
+            self.logger = setup_logging(self.input_port)
         self.logger.info("Initializing MidiController...")
         
         # MIDI port management
         self.midi_in = rtmidi.MidiIn()
         self.midi_out_ports = [rtmidi.MidiOut() for _ in range(12)]
-        self.input_port = input_port
-        self.output_ports = output_ports
-        self.logger.info(f"Input port: {input_port}")
-        self.logger.info(f"Output ports: {output_ports}")
-        
-        # Set print settings
-        self.print_msgs = print_msgs
-        print(self.print_msgs)
-        self.logger.info("Printing to the terminal is enabled") if self.print_msgs else \
-            self.logger.info("Printing to the terminal is disabled")
+        self.input_port = self.input_port
+        self.output_ports = self.output_ports
+        self.logger.info(f"Input port: {self.input_port}")
+        self.logger.info(f"Output ports: {self.output_ports}")
         
         # Create midi in and midi out virtual port objects
         self.initialize_ports()
@@ -89,21 +110,19 @@ class MidiController:
         self.sustained_notes = []
         
         # Music Theory
-        self.music_theory = MusicTheory(print_msgs=self.print_msgs, player=input_port if input_port != "jacobs_ladder" else "User")
+        self.music_theory = MusicTheory(print_msgs=self.print_msgs, player=self.input_port if self.input_port != "jacobs_ladder" else "User")
         self.logger.info(f"Initializing MusicTheory...")
 
         # Tuning management
-        self.tuning = tuning
-        self.tuning_mode = tuning_mode
         self.logger.info("Initializing JustIntonation...")
         if self.tuning and self.tuning_mode: 
             self.logger.info("Tuning is enabled")
             self.logger.info(f"Mode is set to \"{self.tuning_mode}\" tuning")
         else:
             self.logger.info("Tuning is disabled")
-        self.just_intonation = JustIntonation(player=input_port if input_port != "jacobs_ladder" else "User", 
+        self.just_intonation = JustIntonation(player=self.input_port if self.input_port != "jacobs_ladder" else "User", 
                                               tuning=self.tuning,
-                                              tuning_mode=tuning_mode)
+                                              tuning_mode=self.tuning_mode)
             
         # Transposition Management
         self.transpose = 0
@@ -112,15 +131,15 @@ class MidiController:
         if self.output_ports == [f"jacobs_ladder_{i}" for i in range(12)]:
             self.udp_sender = UDPSender(host='127.0.0.1', port=50001)
             
-            # Time keeping
-            time_keeper = TimeKeeper(sender=self.udp_sender, tempo=tempo, time_signature=time_signature)
+            # Time keeping FIXME: Get rid of this implimentation in favor of QPC stuff
+            time_keeper = TimeKeeper(sender=self.udp_sender, tempo=self.tempo, time_signature=self.time_signature)
             
-            self.udp_receiver = JacobMonitor(timekeeper=time_keeper, host='127.0.0.1', port=50000, print_msgs=True, tuning_mode=tuning_mode)
+            self.udp_receiver = JacobMonitor(timekeeper=time_keeper, host='127.0.0.1', port=50000, print_msgs=self.print_msgs, tuning_mode=self.tuning_mode)
             self.udp_receiver.start_listener()
             
             self.logger.info("Initializing connection to Jacob...")
         else:
-            self.udp_receiver = JacobMonitor(host='127.0.0.1', port=50002, print_msgs=True, tuning_mode=tuning_mode)
+            self.udp_receiver = JacobMonitor(host='127.0.0.1', port=50002, print_msgs=self.print_msgs, tuning_mode=self.tuning_mode)
             self.udp_receiver.start_listener()
             self.udp_sender = MockSender(host='127.0.0.1', port=50003)
             self.logger.info("Initializing connection to User...")
@@ -216,17 +235,20 @@ class MidiController:
             heapq.heappush(self.message_heap, [note + self.transpose, instance_index, status, velocity, None])
             
             chord = self.music_theory.determine_chord(self.message_heap)
-            key, candidate_keys, ionian_keys = self.music_theory.determine_key(message_heap=self.message_heap, major_only=True)
-            if self.print_msgs:
+            candidate_scales = self.music_theory.get_candidate_scales(message_heap=self.message_heap, scale_includes=self.scale_includes)
+            key = self.music_theory.find_key()
+            if self.print_key:
                 print(f"key: {key}")
-            self.udp_sender.send(candidate_keys)
+            if self.print_scales:
+                print(f"candidate_scales: {candidate_scales}")
+            self.udp_sender.send(candidate_scales)
 
             if self.tuning_mode == "static" or self.tuning_mode == "dynamic":
                 tuning_index, pitch_bend_message, message_heap = self.just_intonation.get_tuning_info(message_heap=self.message_heap, current_msg=[note, instance_index, status, velocity, None], dt=dt, key=key)
                 self.message_heap = message_heap
                 self.midi_out_ports[tuning_index].send_message(pitch_bend_message)
             elif self.tuning_mode == "just-intonation":
-                tuning_index, pitch_bend_message, message_heap = self.just_intonation.get_tuning_info(message_heap=self.message_heap, current_msg=[note, instance_index, status, velocity, None], dt=dt, key=ionian_keys)
+                tuning_index, pitch_bend_message, message_heap = self.just_intonation.get_tuning_info(message_heap=self.message_heap, current_msg=[note, instance_index, status, velocity, None], dt=dt, key=key)
                 self.message_heap = message_heap
                 self.midi_out_ports[tuning_index].send_message(pitch_bend_message)
             else:
@@ -368,56 +390,9 @@ class MidiController:
             self.close_ports()
             
 if __name__ == "__main__":
-    # Set up argument parser
-    parser = argparse.ArgumentParser(description="Initialize the MidiController with specific settings.")
-    
-    # Define the flags for print and tuning with a file path for tuning
-    parser.add_argument('-p', '--print', action='store_true', help="Enable printing to the console.")
-    parser.add_argument('-t', '--tuning', type=str, help="Path to a JSON pitch config.")
-    
-    # Define mutually exclusive group for static and dynamic
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('-s', '--static', action='store_true', help="Enable static tuning.")
-    group.add_argument('-d', '--dynamic', action='store_true', help="Enable dynamic tuning.")
-    group.add_argument('-j', '--just-intonation', action='store_true', help="Enable just intonation tuning.")
-    
-    # Parse arguments
+    parser = argparse.ArgumentParser(description="Load MidiController from YAML config.")
+    parser.add_argument('config_path', type=str, help="Path to YAML config file.")
     args = parser.parse_args()
-    
-    # Ensure -s or -d can only be used if -t is provided
-    if (args.static or args.dynamic) and not args.tuning:
-        print("Error: The -s or -d flag requires the -t <config> flag to be provided.")
-        exit(1)
 
-    # Load tuning from JSON file if -t flag is used
-    pitch_config = None
-    if args.tuning:
-        try:
-            with open(args.tuning, 'r') as f:
-                pitch_config = json.load(f)
-        except FileNotFoundError:
-            print(f"Error: File {args.tuning} not found.")
-            exit(1)
-        except json.JSONDecodeError:
-            print(f"Error: File {args.tuning} is not a valid JSON file.")
-            exit(1)
-            
-    if pitch_config:
-        max_key_length = max(len(f"{key}:") for key in pitch_config.keys())
-        print(f"{'Interval':<{max_key_length}}  Pitch Setting")
-        print('-' * (max_key_length + 20))
-        for key, value in pitch_config.items():
-            print(f"{key:>{max_key_length}}: \t\t{value}")
-            
-    # Determine if static or dynamic tuning is enabled
-    tuning_mode = 'static' if args.static else 'dynamic' if args.dynamic else 'just-intonation' if args.just_intonation else None
-    print(f"Tuning mode: {tuning_mode}")
-    print(f"args.print {args.print}")
-    print_msgs = args.print
-    
-    # Initialize MidiController with parsed flags and static_tuning
-    midi_controller = MidiController(
-        print_msgs=print_msgs,
-        tuning=pitch_config,
-        tuning_mode=tuning_mode
-    )
+    kwargs = parse_midi_controller_config(args.config_path)
+    midi_controller = MidiController(**kwargs)

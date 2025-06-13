@@ -6,10 +6,7 @@ from .DataClasses import Scale
 from .Dictionaries import get_midi_notes
 from .Queue import InOutQueue
 from .TriadDefinitions import TriadDefinitions
-from .HarmonicMajorScales import get_harmonic_major_scales
-from .HarmonicMinorScales import get_harmonic_minor_scales
-from .MajorScales import get_major_scales
-from .MelodicMinorScales import get_melodic_minor_scales
+from .Scales import get_major_scales, get_harmonic_minor_scales, get_harmonic_major_scales, get_melodic_minor_scales
 from .Logging import setup_logging
 from .Utilities import remove_harmonically_redundant_intervals
 
@@ -94,43 +91,43 @@ class MusicTheory:
             return None
     
     
-    def determine_key(self, message_heap: list[list[int]], major_only: bool = False):
-        """Determines candidate keys based on the notes that are currently being held down. Then it compares those candidate
-        keys to the previous QUEUE_SIZE lists of candidate keys and performs the intersection with the current key and each of the previous lists.
-        The key with the most occurences gets returned as it has best described the key for the last QUEUE_SIZE frames.
+    def get_candidate_scales(self, message_heap: list[list[int]], scale_includes: list[str]) -> list[str]:
+        """Get a list of candidate scales which are compatible with the current suspended notes
 
         Args:
-            message_heap (list[list[int]]): a list of currently active notes with their metadata
+            message_heap (list[list[int]]): A list of lists of the form [[note, instance_index, status, velocity], ...]
+            scale_includes (list[str]): A list of scales types to be included in the output
 
         Returns:
-            str: a single key which can represent the key of the last few chords played
+            list[str]: A list of candidiate scales which are compatible with the current suspended notes
         """
         notes = [self.int_note[note[0]] for note in message_heap]
         unique_notes = list(set(notes))
         
         candidate_keys = []
-        for scale in self.major_scales:
-            is_sublist = all(element in scale.notes for element in unique_notes) 
-            if is_sublist:
-                candidate_keys.append(scale.name)
-
-        ionian_keys = deepcopy(candidate_keys)
-        if not major_only:
+        if "Ionian" in scale_includes:
+            for scale in self.major_scales:
+                is_sublist = all(element in scale.notes for element in unique_notes) 
+                if is_sublist:
+                    candidate_keys.append(scale.name)
+        if "Harmonic Minor" in scale_includes:
             for scale in self.harmonic_minor_scales:
                 is_sublist = all(element in scale.notes for element in unique_notes) 
                 if is_sublist:
                     candidate_keys.append(scale.name)
+        if "Harmonic Major" in scale_includes:
             for scale in self.harmonic_major_scales:
                 is_sublist = all(element in scale.notes for element in unique_notes) 
                 if is_sublist:
                     candidate_keys.append(scale.name)
+        if "Melodic Minor" in scale_includes:
             for scale in self.melodic_minor_scales:
                 is_sublist = all(element in scale.notes for element in unique_notes) 
                 if is_sublist:
                     candidate_keys.append(scale.name)
 
         self.history.enqueue(candidate_keys)
-        return self.find_key(), candidate_keys, ionian_keys
+        return candidate_keys
     
     def find_key(self):
         """First check to see if the original key still is compatible with the currently held down notes.  If so return this. 

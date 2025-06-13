@@ -1,6 +1,8 @@
 import math
-from itertools import product
+import sys
+import yaml
 
+from itertools import product
 from .Enums import NoteDivisions
 
 def determine_octave(message_heap: list, note: int):
@@ -90,8 +92,6 @@ def get_root_from_letter_note(letter_note: str):
         list[list[tuple]]: a list of potential ways to tune that note sequence
     """
 
-from itertools import product
-
 def generate_tunings(notes: list[int], root: int = None) -> list[list[tuple]]:
     notes.sort()  # Ensure the notes are sorted
     n = len(notes)
@@ -128,6 +128,76 @@ def generate_tunings(notes: list[int], root: int = None) -> list[list[tuple]]:
             tunings.pop()
 
     return tunings
+
+def parse_midi_controller_config(config_path: str) -> dict:
+    """Parse the MidiController yaml config and do some light field validation
+
+    Args:
+        config_path (str): path to the yaml config
+
+    Returns:
+        dict: the kwargs used to instantiate the MidiController
+    """
+    try:
+        with open(config_path, 'r') as f:
+            config = yaml.safe_load(f)
+    except FileNotFoundError:
+        print(f"Error: File {config_path} not found.")
+        sys.exit(1)
+    except yaml.YAMLError as e:
+        print(f"Error: Could not parse YAML file: {e}")
+        sys.exit(1)
+
+    # --- MIDI ports ---
+    input_port = config.get('input_port', 'jacobs_ladder')
+    output_ports = config.get('output_ports', [f"jacobs_ladder_{i}" for i in range(12)])
+
+    # --- Print behavior ---
+    print_config = config.get('print', {})
+    print_msgs = print_config.get('print_msgs', False)
+    print_key = print_config.get('print_key', False)
+    print_scales = print_config.get('print_scales', False)
+    scale_includes = print_config.get('scale_includes', [])
+
+    # --- Timing ---
+    tempo = config.get('tempo', 120)
+    time_signature = config.get('time_signature', "4/4")
+
+    # --- Tuning ---
+    tuning_mode = config.get('tuning_mode', None)
+    tuning = config.get('tuning', None)
+
+    valid_modes = ('static', 'dynamic', 'just-intonation', 'none', None)
+    if tuning_mode not in valid_modes:
+        print(f"Error: Invalid tuning_mode '{tuning_mode}'. Must be one of {valid_modes}.")
+        sys.exit(1)
+
+    if tuning_mode in ('static', 'dynamic') and not tuning:
+        print("Error: 'tuning_mode' is static or dynamic, but no 'tuning' provided.")
+        sys.exit(1)
+
+    if tuning:
+        print("Tuning settings:")
+        for interval, value in tuning.items():
+            print(f"  {interval:<25}: {value}")
+
+    print(f"Tuning mode: {tuning_mode}")
+    print(f"print_msgs: {print_msgs}")
+
+    kwargs = {
+        'input_port': input_port,
+        'output_ports': output_ports,
+        'print_msgs': print_msgs,
+        'print_key': print_key,
+        'print_scales': print_scales,
+        'scale_includes': scale_includes,
+        'tempo': tempo,
+        'time_signature': time_signature,
+        'tuning_mode': tuning_mode if tuning_mode != 'none' else None,
+        'tuning': tuning
+    }
+
+    return kwargs
 
 def remove_equivalent_tunings(tunings: list[list[tuple]]) -> list[list[tuple]]:
     for tuning in tunings:
