@@ -1,5 +1,6 @@
 from itertools import product
 
+import csv
 import pandas as pd
 import os
 import shutil
@@ -8,14 +9,16 @@ import shutil
 class ScaleTree:
     """Create obscure scales which meet certain criterion"""
     
-    def __init__(self, scale_length: int = 12):
+    def __init__(self, scale_length: int = 12, convert_intervals = False):
         """Constructor for the ScaleTree class
 
         Args:
             scale_length (int, optional): Length of the scale under consideration. Defaults to 12.
         """
         self.scale_length = scale_length
+        self.convert_intervals = convert_intervals
         self.filepath = os.path.join(os.path.dirname(__file__), "possible_scales")
+        self.savepaths = []
         if os.path.exists(self.filepath):
             for filename in os.listdir(self.filepath):
                 if filename != ".gitignore":
@@ -124,6 +127,7 @@ class ScaleTree:
                     
                 if df.shape[0] > 0:
                     df.to_csv(filepath, ",", index=False)
+                    self.savepaths.append(filepath)
                 if disp: 
                     print(f"For scales of degree {degree} with max interval size {max_interval} there are {df.shape[0]} possible scales")
                 
@@ -136,12 +140,45 @@ class ScaleTree:
                     
                     if df.shape[0] > 0:
                         df.to_csv(filepath, ",", index=False)
+                        self.savepaths.append(filepath)
                     if disp:
                         print(f"For scales of degree {degree} with max interval size {interval} there are {df.shape[0]} possible scales") 
         else:
             ValueError("max_interval must either be an integer or a list of integers")
+            
+    def convert_intervals_to_notes(self):
+        semitone_index_to_note = {
+            0: "C", 1: "Db", 2: "D", 3: "Eb", 4: "E", 5: "F", 6: "Gb", 7: "G", 8: "Ab", 9: "A", 10: "Bb", 11: "B"
+            }
+
+        all_note_sequences = []
+        
+        for filepath in self.savepaths:
+            converted_rows = []
+
+            with open(filepath, newline='') as csvfile:
+                reader = csv.reader(csvfile)
+                _ = next(reader)
+
+                for row in reader:
+                    intervals = [int(value) for value in row if value.strip().isdigit()]
+                    notes = []
+                    current_pitch = 0 
+                    notes.append(semitone_index_to_note[current_pitch % 12])
+
+                    for interval in intervals[:-1]:
+                        current_pitch += interval
+                        notes.append(semitone_index_to_note[current_pitch % 12])
+
+                    converted_rows.append(notes)
+
+            with open(filepath, mode='w', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow([f"Note_{i+1}" for i in range(len(converted_rows[0]))])
+                writer.writerows(converted_rows)
+        
 
 if __name__ == "__main__":
-    st = ScaleTree(scale_length=12)
+    st = ScaleTree(scale_length=12, convert_intervals=True)
     st.generate_scales(max_degree=8, max_interval=4, num_consecutive_ones=0, disp=True)
-
+    st.convert_intervals_to_notes()
