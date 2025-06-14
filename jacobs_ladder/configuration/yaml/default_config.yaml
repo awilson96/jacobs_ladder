@@ -19,11 +19,16 @@ print:
   print_msgs: true
   print_key: false
   print_scales: true
-  scale_includes: # possible values include (Ionian, Harmonic Major, Harmonic Minor, Melodic Minor)
-    - "Ionian"
-    - "Harmonic Minor"
-    - "Harmonic Major"
-    - "Melodic Minor"
+  scale_includes:
+    # - "Diminished"                    # Octatonic
+    # - "Ionian"                        # Septatonic
+    # - "Harmonic Minor"                # Septatonic
+    # - "Harmonic Major"                # Septatonic
+    # - "Melodic Minor"                 # Septatonic
+    # - "Diminished Blues"              # Septatonic
+    # - "Diminished Harmonic"           # Septatonic
+    # - "Whole Tone"                    # Hexatonic
+    - "Pentatonic"                    # Pentatonic
 
 # --- Timing ---
 tempo: 120

@@ -6,7 +6,7 @@ from .DataClasses import Scale
 from .Dictionaries import get_midi_notes
 from .Queue import InOutQueue
 from .TriadDefinitions import TriadDefinitions
-from .Scales import get_major_scales, get_harmonic_minor_scales, get_harmonic_major_scales, get_melodic_minor_scales
+from .Scales import *
 from .Logging import setup_logging
 from .Utilities import remove_harmonically_redundant_intervals
 
@@ -37,10 +37,15 @@ class MusicTheory:
         self.int_note:              dict[int, str]              = get_midi_notes()
         
         # Scales used for justly tuning between two chords from different potential scales
-        self.harmonic_major_scales: list[Scale]                 = get_harmonic_major_scales()
-        self.harmonic_minor_scales: list[Scale]                 = get_harmonic_minor_scales()
-        self.major_scales:          list[Scale]                 = get_major_scales()
-        self.melodic_minor_scales:  list[Scale]                 = get_melodic_minor_scales()
+        self.diminished_scales:           list[Scale]                 = get_diminished_scales()
+        self.major_scales:                list[Scale]                 = get_major_scales()
+        self.harmonic_minor_scales:       list[Scale]                 = get_harmonic_minor_scales()
+        self.harmonic_major_scales:       list[Scale]                 = get_harmonic_major_scales()
+        self.melodic_minor_scales:        list[Scale]                 = get_melodic_minor_scales()
+        self.diminished_blues_scales:     list[Scale]                 = get_diminished_blues_scales()
+        self.diminished_harmonic_scales:  list[Scale]                 = get_diminished_harmonic_scales()
+        self.whole_tone_scales:           list[Scale]                 = get_whole_tone_scales()
+        self.pentatonic_scales:           list[Scale]                 = get_pentatonic_scales()
         
         # Used for matching triads in a more robust way
         self.triad_definitions = TriadDefinitions()
@@ -105,26 +110,42 @@ class MusicTheory:
         unique_notes = list(set(notes))
         
         candidate_keys = []
+        if "Diminished" in scale_includes:
+            for scale in self.diminished_scales:
+                if all(element in scale.notes for element in unique_notes):
+                    candidate_keys.append(scale.name)
         if "Ionian" in scale_includes:
             for scale in self.major_scales:
-                is_sublist = all(element in scale.notes for element in unique_notes) 
-                if is_sublist:
+                if all(element in scale.notes for element in unique_notes):
                     candidate_keys.append(scale.name)
         if "Harmonic Minor" in scale_includes:
             for scale in self.harmonic_minor_scales:
-                is_sublist = all(element in scale.notes for element in unique_notes) 
-                if is_sublist:
+                if all(element in scale.notes for element in unique_notes):
                     candidate_keys.append(scale.name)
         if "Harmonic Major" in scale_includes:
             for scale in self.harmonic_major_scales:
-                is_sublist = all(element in scale.notes for element in unique_notes) 
-                if is_sublist:
+                if all(element in scale.notes for element in unique_notes):
                     candidate_keys.append(scale.name)
         if "Melodic Minor" in scale_includes:
             for scale in self.melodic_minor_scales:
-                is_sublist = all(element in scale.notes for element in unique_notes) 
-                if is_sublist:
+                if all(element in scale.notes for element in unique_notes):
                     candidate_keys.append(scale.name)
+        if "Diminished Blues" in scale_includes:
+            for scale in self.diminished_blues_scales:
+                if all(element in scale.notes for element in unique_notes):
+                    candidate_keys.append(scale.name)
+        if "Diminished Harmonic" in scale_includes:
+            for scale in self.diminished_harmonic_scales:
+                if all(element in scale.notes for element in unique_notes):
+                    candidate_keys.append(scale.name)
+        if "Whole Tone" in scale_includes:
+            for scale in self.whole_tone_scales:
+                if all(element in scale.notes for element in unique_notes):
+                    candidate_keys.append(scale.name)
+        if "Pentatonic" in scale_includes:
+            for scale in self.major_scales:
+                if all(element in scale.notes for element in unique_notes):
+                    candidate_keys.append(scale.name.split()[0] + " Pentatonic")
 
         self.history.enqueue(candidate_keys)
         return candidate_keys
