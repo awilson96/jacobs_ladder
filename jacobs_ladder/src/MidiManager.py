@@ -50,7 +50,7 @@ class MidiController:
         """
         allowed_keys = {
             'input_port', 'output_ports', 'print_msgs',
-            'print_key', 'print_scales', 'scale_includes',
+            'print_key', 'print_avoid_notes_only', 'print_scales', 'scale_includes',
             'tuning', 'tuning_mode', 'tempo', 'time_signature'
         }
 
@@ -62,6 +62,7 @@ class MidiController:
         self.output_ports = kwargs.get('output_ports', [f"jacobs_ladder_{i}" for i in range(12)])
         self.print_msgs = kwargs.get('print_msgs', False)
         self.print_key = kwargs.get('print_key', False)
+        self.print_avoid_notes_only = kwargs.get('print_avoid_notes_only', False)
         self.print_scales = kwargs.get('print_scales', False)
         self.scale_includes = kwargs.get('scale_includes', [])
         self.tuning = kwargs.get('tuning', None)
@@ -74,6 +75,7 @@ class MidiController:
         print(f"  output_ports: {self.output_ports}")
         print(f"  print_msgs: {self.print_msgs}")
         print(f"  print_key: {self.print_key}")
+        print(f"  print_avoid_notes_only: {self.print_avoid_notes_only}")
         print(f"  print_scales: {self.print_scales}")
         print(f"  scale_includes: {self.scale_includes}")
         print(f"  tuning_mode: {self.tuning_mode}")
@@ -237,9 +239,9 @@ class MidiController:
             chord = self.music_theory.determine_chord(self.message_heap)
             candidate_scales = self.music_theory.get_candidate_scales(message_heap=self.message_heap, scale_includes=self.scale_includes)
             key = self.music_theory.find_key()
-            if self.print_key:
+            if self.print_key and not self.print_avoid_notes_only:
                 print(f"key: {key}")
-            if self.print_scales:
+            if self.print_scales and not self.print_avoid_notes_only:
                 print(f"candidate_scales: {candidate_scales}")
             self.udp_sender.send(candidate_scales)
 

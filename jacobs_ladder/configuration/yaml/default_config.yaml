@@ -19,15 +19,17 @@ print:
   print_msgs: true
   print_key: false
   print_scales: true
+  print_avoid_notes_only: true
   scale_includes:
-    # - "Diminished"                    # Octatonic
-    # - "Ionian"                        # Septatonic
-    # - "Harmonic Minor"                # Septatonic
-    # - "Harmonic Major"                # Septatonic
-    # - "Melodic Minor"                 # Septatonic
-    # - "Diminished Blues"              # Septatonic
-    # - "Diminished Harmonic"           # Septatonic
-    # - "Whole Tone"                    # Hexatonic
+    - "Avoid"                         # Who knows
+    - "Diminished"                    # Octatonic
+    - "Ionian"                        # Septatonic
+    - "Harmonic Minor"                # Septatonic
+    - "Harmonic Major"                # Septatonic
+    - "Melodic Minor"                 # Septatonic
+    - "Diminished Blues"              # Septatonic
+    - "Diminished Harmonic"           # Septatonic
+    - "Whole Tone"                    # Hexatonic
     - "Pentatonic"                    # Pentatonic
 
 # --- Timing ---

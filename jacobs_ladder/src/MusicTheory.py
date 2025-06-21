@@ -108,47 +108,58 @@ class MusicTheory:
         """
         notes = [self.int_note[note[0]] for note in message_heap]
         unique_notes = list(set(notes))
+        avoid_notes = set({'A', 'A♭', 'B', 'B♭', 'C', 'D', 'D♭', 'E', 'E♭', 'F', 'G', 'G♭'})
         
         candidate_keys = []
         if "Diminished" in scale_includes:
             for scale in self.diminished_scales:
                 if all(element in scale.notes for element in unique_notes):
-                    candidate_keys.append(scale.name)
+                    candidate_keys.append(scale)
         if "Ionian" in scale_includes:
             for scale in self.major_scales:
                 if all(element in scale.notes for element in unique_notes):
-                    candidate_keys.append(scale.name)
+                    candidate_keys.append(scale)
         if "Harmonic Minor" in scale_includes:
             for scale in self.harmonic_minor_scales:
                 if all(element in scale.notes for element in unique_notes):
-                    candidate_keys.append(scale.name)
+                    candidate_keys.append(scale)
         if "Harmonic Major" in scale_includes:
             for scale in self.harmonic_major_scales:
                 if all(element in scale.notes for element in unique_notes):
-                    candidate_keys.append(scale.name)
+                    candidate_keys.append(scale)
         if "Melodic Minor" in scale_includes:
             for scale in self.melodic_minor_scales:
                 if all(element in scale.notes for element in unique_notes):
-                    candidate_keys.append(scale.name)
+                    candidate_keys.append(scale)
         if "Diminished Blues" in scale_includes:
             for scale in self.diminished_blues_scales:
                 if all(element in scale.notes for element in unique_notes):
-                    candidate_keys.append(scale.name)
+                    candidate_keys.append(scale)
         if "Diminished Harmonic" in scale_includes:
             for scale in self.diminished_harmonic_scales:
                 if all(element in scale.notes for element in unique_notes):
-                    candidate_keys.append(scale.name)
+                    candidate_keys.append(scale)
         if "Whole Tone" in scale_includes:
             for scale in self.whole_tone_scales:
                 if all(element in scale.notes for element in unique_notes):
-                    candidate_keys.append(scale.name)
+                    candidate_keys.append(scale)
         if "Pentatonic" in scale_includes:
-            for scale in self.major_scales:
+            for scale in self.pentatonic_scales:
                 if all(element in scale.notes for element in unique_notes):
-                    candidate_keys.append(scale.name.split()[0] + " Pentatonic")
+                    candidate_keys.append(scale)
+        if "Avoid" in scale_includes:
+            for candidate in candidate_keys:
+                for note in candidate.notes:
+                    if note in avoid_notes:
+                        avoid_notes.remove(note)
+            if self.print:
+                if avoid_notes:
+                    print(f"\r{sorted(list(avoid_notes))}")
 
-        self.history.enqueue(candidate_keys)
-        return candidate_keys
+        candidate_key_names = [candidate_key.name for candidate_key in candidate_keys]
+
+        self.history.enqueue(candidate_key_names)
+        return candidate_key_names
     
     def find_key(self):
         """First check to see if the original key still is compatible with the currently held down notes.  If so return this. 
@@ -486,8 +497,7 @@ class MusicTheory:
         return None
     
     def get_tetrad(self, intervals: list[int], notes: list[int]):
-        """
-        Get tetrad chord based on a list of three intervals and a list of notes
+        """Get tetrad chord based on a list of three intervals and a list of notes
 
         Args:
             intervals (list[int]): a list of intervals between sorted notes (lowest to highest)
@@ -552,3 +562,78 @@ class MusicTheory:
             
         tetrad: str = ""
         return tetrad
+    
+    def get_pentad(self, intervals: list[int], notes: list[int]) -> str:
+        """Get pentad chord based on a list of four intervals and a list of notes
+
+        Args:
+            intervals (list[int]): a list of intervals between sorted notes (lowest to highest)
+            notes (list[int]): a list of sorted notes (lowest to highest)
+
+        Returns:
+            str: a stringified description of the chord
+        """
+
+        bass, baritone, tenor, alto, soprano = notes
+        bass, baritone, tenor, alto, soprano = self.int_note[bass], self.int_note[baritone], self.int_note[tenor], self.int_note[alto], self.int_note[soprano]
+
+        match intervals:
+            case [1,2,1,4]: # C,Db,Eb,E,Ab
+                pass
+            case [1,2,2,3]: # C,Db,Eb,F,Ab
+                pass
+            case [1,2,2,4]: # C,Db,Eb,F,A
+                pass
+            case [1,2,3,2]: # C,Db,Eb,Gb,Ab
+                pass
+            case [1,2,3,3]: # C,Db,Eb,Gb,A
+                pass
+            case [1,2,3,4]: # C,Db,Eb,Gb,Bb
+                pass
+            case [1,2,4,1]: # C,Db,Eb,G,Ab
+                pass
+            case [1,2,4,2]: # C,Db,Eb,G,A
+                pass
+            case [1,2,4,3]: # C,Db,Eb,G,Bb
+                pass
+            case [1,3,1,3]: # C,Db,E,F,Ab
+                pass
+            case [1,3,1,4]: # C,Db,E,F,A
+                pass
+            case [1,3,2,2]: # C,Db,E,Gb,Ab
+                pass
+            case [1,3,2,3]: # C,Db,E,Gb,A
+                pass
+            case [1,3,2,4]: # C,Db,E,Gb,Bb
+                pass
+            case [1,3,3,1]: # C,Db,E,G,Ab
+                pass
+            case [1,3,3,2]: # C,Db,E,G,A
+                pass
+            case [1,3,3,3]: # C,Db,E,G,Bb
+                pass
+            case [1,3,4,2]: # C,Db,E,Ab,Bb
+                pass
+            case [1,4,1,4]: # C,Db,F,Gb,Bb
+                pass
+            case [1,4,2,2]: # C,Db,F,G,A
+                pass
+            case [1,4,2,3]: # C,Db,F,G,Bb
+                pass
+            case [1,4,3,2]: # C,Db,F,Ab,Bb
+                pass
+            case [2,2,2,2]: # C,D,E,Gb,Ab
+                pass
+            case [2,2,2,3]: # C,D,E,Gb,A
+                pass
+            case [2,2,3,2]: # C,D,E,G,A
+                pass
+
+
+
+
+
+
+
+
+

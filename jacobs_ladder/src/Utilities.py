@@ -156,6 +156,7 @@ def parse_midi_controller_config(config_path: str) -> dict:
     print_config = config.get('print', {})
     print_msgs = print_config.get('print_msgs', False)
     print_key = print_config.get('print_key', False)
+    print_avoid_notes_only = print_config.get('print_avoid_notes_only', False)
     print_scales = print_config.get('print_scales', False)
     scale_includes = print_config.get('scale_includes', [])
 
@@ -189,6 +190,7 @@ def parse_midi_controller_config(config_path: str) -> dict:
         'output_ports': output_ports,
         'print_msgs': print_msgs,
         'print_key': print_key,
+        'print_avoid_notes_only': print_avoid_notes_only,
         'print_scales': print_scales,
         'scale_includes': scale_includes,
         'tempo': tempo,
