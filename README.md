@@ -9,7 +9,7 @@ loopMIDI is a program used to setup virtual ports for routing Jacobs-Ladder and 
 To get started with running MidiManager.py do the following:
 1. Download MIDI-OX and loopMIDI
 2. Setup two virtual ports in loopMIDI. This is done by creating a name for the port and pressing the plus sign.  Name the first port `jacobs_ladder` and the second port `jacob`. 
-3. Next you will need to make 12 output ports labelled [0, 1, 2, ... 23]. This creates tweleve output ports per MidiController instance as you need one output port for every unique note per instance (12 unique notes times 2 instances). 
+3. Next you will need to make 12 output ports labelled [0, 1, 2, ... 23]. This creates twelve output ports per MidiController instance as you need one output port for every unique note per instance (12 unique notes times 2 instances). 
 4. You can close out of the loopMIDI program as the ports stay up after the application is closed.  To stop the connection you must click on the port in loopMIDI and then click the minus sign.
 5. Now open up MIDI-OX and select Options > Midi Devices...
 6. A new window will open with all of the devices you have available for MIDI input and output. For Midi Input select your keyboard, and for Midi output select the ports you created in step 2 called `jacobs_ladder`
@@ -54,13 +54,9 @@ Clean and Rebuild
     - Dynamic tuning according to key
     - Incremental note transition tuning model
     - Minimum pitch drift model
-    - Configurable tuning allowing the user to select whih intervals to use
-    - Create default tuning configs
-    - Create static tuning capability with no pitch drift
+    - Configurable tuning allowing the user to select which intervals to use
 6. Accurate key determination
     - Only change key when it results in a better tuning
-    - Keep the key the same if the key is still in the list
-    - Only keep track of the major keys until major keys no longer describe the notes being played
 7. Rhythem generators capable of creating complex rhythems for Jacob to play
     - Individual note rhythem
     - Chord rhythem
@@ -71,7 +67,14 @@ Clean and Rebuild
     - Commonly used motifs
     - Key independance
     - Tempo independance
-    - Lick identification
+    - Lick 
+9. Come up with a chord annotation scheme that makes sense and look into algos that can do this automatically
+10. Create a GUI for the overall system
+11. Integrate RhythmPatterns, VelocityPatterns, and HarmonicPatterns together to produce musical output using some form of Midi generation (cpp implimentation)
+12. Design a plan() method for fitting the pattern(s) within a target time frame (i.e one measure, 4 measures, 2 measures and 3 eigth notes, etc.)
+13. Create a Midi database creation tool from source separated audio files (start with bass). Impliment an FFT for extracting the midi data for multiple frequency registers and instruments.
+14. Create a genre determination algorithm (ML)
+15. Create LLM like architecture for creating a musical `meaning` space and use it for performing unsupervised learning, music research tasks, classification of good vs bad based on specific user interactions.
 
 ## Midi Database sources
 - https://soundsoft.de/
