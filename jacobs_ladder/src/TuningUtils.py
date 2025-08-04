@@ -32,12 +32,15 @@ def generate_ratios(limit, max_exponent=2):
         numerators.add(num)
     
     # Generate ratios as fractions and filter based on floor division
-    ratios = {Fraction(n, d) for n in numerators for d in numerators if n >= d and (n // d) < 2 and n < 50}
+    ratios = {Fraction(n, d) for n in numerators for d in numerators if n >= d and (n // d) < 2 and n < 1000}
     
     return sorted(ratios)
 
 if __name__ == "__main__":
     # Example usage
-    ratios = generate_ratios(7)
+    limit = 7
+    ratios = generate_ratios(limit)
     for r in ratios:
         print(r)
+
+    print(f"There are {len(ratios)} {limit}-limit ratios")

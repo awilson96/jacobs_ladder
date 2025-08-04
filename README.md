@@ -75,6 +75,7 @@ Clean and Rebuild
 13. Create a Midi database creation tool from source separated audio files (start with bass). Impliment an FFT for extracting the midi data for multiple frequency registers and instruments.
 14. Create a genre determination algorithm (ML)
 15. Create LLM like architecture for creating a musical `meaning` space and use it for performing unsupervised learning, music research tasks, classification of good vs bad based on specific user interactions.
+16. Create a negative harmony conversion option
 
 ## Midi Database sources
 - https://soundsoft.de/

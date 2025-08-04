@@ -205,8 +205,6 @@ class JustIntonation:
     
     def get_harmonic_potential_dict(self, keys):
         pass
-
-
         
     def get_diad_pitch(self, interval: int):
         """Given an interval between two notes, return the analog pitch value expressed as a range from 0-16383 
