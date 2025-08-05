@@ -202,24 +202,36 @@ def parse_midi_controller_config(config_path: str) -> dict:
 
     return kwargs
 
-def remove_equivalent_tunings(tunings: list[list[tuple]], root: int) -> list[list[tuple]]:
-    done = False
-    while not done:
-        done = False
-        removed_tuple = False
-        for i in range(len(tunings)):
-            for j in range(len(tunings[i])):
-                if tunings[i][j][1] != root and tunings[i][tunings[i][j][1]][1] != root and tunings[i][tunings[i][j][1]][1] == j:
-                    del tunings[i]
-                    removed_tuple = True
-                    break
-            if removed_tuple:
-                break
+def remove_cycles(tunings: list[list[tuple]], root: int) -> list[list[tuple]]:
+    """Remove cycles from a list of potential tunings by checking recursively to see if any tunings
+    do not terminate in a root. 
 
-            if i == len(tunings)-1:
-                done = True
+    Args:
+        tunings (list[list[tuple]]): A list of potential tunings for a given list of sorted notes
+        root (int): the root note about which other notes should be tuned (does not need to be the lowest note)
 
-    return tunings
+    Returns:
+        list[list[tuple]]: a list of tunings with no cyclic tunings present
+    """
+    def reaches_root(tuning: list[tuple], idx: int, visited: set) -> bool:
+        # Index eventually terminates in a root
+        if idx == root:
+            return True
+        # Cycle detected, index does not terminate in a root
+        if idx in visited:
+            return False  
+        visited.add(idx)
+        next_idx = tuning[idx][1]
+        return reaches_root(tuning, next_idx, visited)
+
+    valid_tunings = []
+    for tuning in tunings:
+        # If all of the notes are tuned in reference to another note which recursively eventually results 
+        # in tuning relative to the root, then append that tuning to the list of valid tunings
+        if all(reaches_root(tuning, i, set()) for i in range(len(tuning))):
+            valid_tunings.append(tuning)
+
+    return valid_tunings
 
 def remove_harmonically_redundant_intervals(message_heap: list[list[int]]):
     """Take in a message heap and return a sorted message heap with redundant harmonies excluded 
