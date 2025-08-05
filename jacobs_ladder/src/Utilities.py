@@ -239,4 +239,5 @@ if __name__ == "__main__":
     pitch_wheel_value = calculate_analog_pitch_wheel_value_from_cents_offset(cents_offset=cents_offset)
     print(pitch_wheel_value)
 
-    generate_tunings([60, 61, 62], root=0)
+    tunings = generate_tunings([60, 64, 67], root=0)
+    print(tunings)
