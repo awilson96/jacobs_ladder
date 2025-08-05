@@ -82,8 +82,9 @@ def get_root_from_letter_note(letter_note: str):
             return 66
         case "G":
             return 67
-        
-"""Given a list of notes, generate all possible tunings based on the intervals between the notes.
+
+def generate_tunings(notes: list[int], root: int = None) -> list[list[tuple]]:
+    """Given a list of notes, generate all possible tunings based on the intervals between the notes.
 
     Args:
         notes (list[int]): a list of MIDI note numbers
@@ -91,8 +92,6 @@ def get_root_from_letter_note(letter_note: str):
     Returns:
         list[list[tuple]]: a list of potential ways to tune that note sequence
     """
-
-def generate_tunings(notes: list[int], root: int = None) -> list[list[tuple]]:
     notes.sort()  # Ensure the notes are sorted
     n = len(notes)
     tunings = []
@@ -126,8 +125,10 @@ def generate_tunings(notes: list[int], root: int = None) -> list[list[tuple]]:
             seen_intervals.add(interval_signature)
         else:
             tunings.pop()
+        
+        new_tunings = remove_equivalent_tunings(tunings=tunings, root=root)
 
-    return tunings
+    return new_tunings
 
 def parse_midi_controller_config(config_path: str) -> dict:
     """Parse the MidiController yaml config and do some light field validation
@@ -201,10 +202,24 @@ def parse_midi_controller_config(config_path: str) -> dict:
 
     return kwargs
 
-def remove_equivalent_tunings(tunings: list[list[tuple]]) -> list[list[tuple]]:
-    for tuning in tunings:
-        for index, ref, interval in tuning:
-            print(index, ref, interval)
+def remove_equivalent_tunings(tunings: list[list[tuple]], root: int) -> list[list[tuple]]:
+    done = False
+    while not done:
+        done = False
+        removed_tuple = False
+        for i in range(len(tunings)):
+            for j in range(len(tunings[i])):
+                if tunings[i][j][1] != root and tunings[i][tunings[i][j][1]][1] != root and tunings[i][tunings[i][j][1]][1] == j:
+                    del tunings[i]
+                    removed_tuple = True
+                    break
+            if removed_tuple:
+                break
+
+            if i == len(tunings)-1:
+                done = True
+
+    return tunings
 
 def remove_harmonically_redundant_intervals(message_heap: list[list[int]]):
     """Take in a message heap and return a sorted message heap with redundant harmonies excluded 
@@ -239,5 +254,7 @@ if __name__ == "__main__":
     pitch_wheel_value = calculate_analog_pitch_wheel_value_from_cents_offset(cents_offset=cents_offset)
     print(pitch_wheel_value)
 
-    tunings = generate_tunings([60, 64, 67], root=0)
-    print(tunings)
+    tunings = generate_tunings([60, 64, 67, 71, 74], root=0)
+    for tuning in tunings:
+        print(tuning)
+    
