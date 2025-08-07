@@ -76,6 +76,7 @@ Clean and Rebuild
 14. Create a genre determination algorithm (ML)
 15. Create LLM like architecture for creating a musical `meaning` space and use it for performing unsupervised learning, music research tasks, classification of good vs bad based on specific user interactions.
 16. Create a negative harmony conversion option
+17. Integrate tuning selection into JI from TuningUtils.py and add support to determine the list of possible tunings for roots which are not present in the current list of held down notes
 
 ## Midi Database sources
 - https://soundsoft.de/
