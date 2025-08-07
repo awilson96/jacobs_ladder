@@ -369,8 +369,6 @@ if __name__ == "__main__":
     tunings.extend(generate_tunings([60, 64, 67], root=1))
     tunings.extend(generate_tunings([60, 64, 67], root=2))
 
-    cents_offset = get_cents_offset_from_tuning(root=0, notes=[60, 64, 67], tuning=tunings[0])
-
     tuning_config = read_tuning_config(name="5-limit-ratios")
 
     tuning_ratio = select_tuning_ratio(relationship=(2,0,7), tuning_config=tuning_config, method="random")
