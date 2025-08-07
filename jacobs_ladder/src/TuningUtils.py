@@ -5,11 +5,11 @@ import os
 from itertools import product
 from fractions import Fraction
 
-def calculate_cents_from_interval(interval: float):
+def __calculate_cents_from_interval__(interval: float):
     return math.log2(interval) * 1200
 
 def calculate_cents_offset_from_interval(interval: float):
-    cents = calculate_cents_from_interval(interval=interval)
+    cents = __calculate_cents_from_interval__(interval=interval)
     nearest_interval_cents_value = round(cents, -2)
     return cents - nearest_interval_cents_value
 
@@ -278,8 +278,18 @@ def create_tuning_config(ratios: list[Fraction], intervals: list[int], name: str
             tuning_config[interval] = []
         if "-"+ str(interval) not in tuning_config.keys():
             tuning_config["-" + str(interval)] = []
-        tuning_config[interval].append(f"{ratio.numerator}/{ratio.denominator}")
-        tuning_config["-" + str(interval)].append(f"{ratio.denominator}/{ratio.numerator}")
+        cents_offset = calculate_cents_offset_from_interval(float(ratio))
+        cents_offset_inverse = calculate_cents_offset_from_interval(float(ratio.denominator / ratio.numerator))
+        analog_pitch_wheel_value_offset = calculate_analog_pitch_wheel_value_from_cents_offset(cents_offset) - 8192
+        analog_pitch_wheel_value_offset_inverse = calculate_analog_pitch_wheel_value_from_cents_offset(cents_offset_inverse) - 8192
+        positive_ratio = f"{ratio.numerator}/{ratio.denominator}"
+        negative_ratio = f"{ratio.denominator}/{ratio.numerator}"
+        postive_metadata = {positive_ratio: {"cents offset": round(cents_offset, 3), 
+                                             "analog pitch wheel value offset": analog_pitch_wheel_value_offset}}
+        negative_metadata = {negative_ratio: {"cents offset": round(cents_offset_inverse, 3), 
+                                              "analog pitch wheel value offset": analog_pitch_wheel_value_offset_inverse}}
+        tuning_config[interval].append(postive_metadata)
+        tuning_config["-" + str(interval)].append(negative_metadata)
 
     filename = os.path.join("configuration", "json", "pitch", f"{name}.json") 
     with open(filename, "w") as json_file:

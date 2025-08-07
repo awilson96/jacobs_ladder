@@ -1,234 +1,1134 @@
 {
     "0": [
-        "225/224",
-        "64/63",
-        "50/49",
-        "49/48",
-        "36/35"
+        {
+            "225/224": {
+                "cents offset": 7.712,
+                "analog pitch wheel value offset": 316
+            }
+        },
+        {
+            "64/63": {
+                "cents offset": 27.264,
+                "analog pitch wheel value offset": 1117
+            }
+        },
+        {
+            "50/49": {
+                "cents offset": 34.976,
+                "analog pitch wheel value offset": 1433
+            }
+        },
+        {
+            "49/48": {
+                "cents offset": 35.697,
+                "analog pitch wheel value offset": 1462
+            }
+        },
+        {
+            "36/35": {
+                "cents offset": 48.77,
+                "analog pitch wheel value offset": 1998
+            }
+        }
     ],
     "-0": [
-        "224/225",
-        "63/64",
-        "49/50",
-        "48/49",
-        "35/36"
+        {
+            "224/225": {
+                "cents offset": -7.712,
+                "analog pitch wheel value offset": -316
+            }
+        },
+        {
+            "63/64": {
+                "cents offset": -27.264,
+                "analog pitch wheel value offset": -1117
+            }
+        },
+        {
+            "49/50": {
+                "cents offset": -34.976,
+                "analog pitch wheel value offset": -1433
+            }
+        },
+        {
+            "48/49": {
+                "cents offset": -35.697,
+                "analog pitch wheel value offset": -1462
+            }
+        },
+        {
+            "35/36": {
+                "cents offset": -48.77,
+                "analog pitch wheel value offset": -1998
+            }
+        }
     ],
     "1": [
-        "25/24",
-        "21/20",
-        "16/15",
-        "15/14",
-        "160/147",
-        "49/45"
+        {
+            "25/24": {
+                "cents offset": -29.328,
+                "analog pitch wheel value offset": -1201
+            }
+        },
+        {
+            "21/20": {
+                "cents offset": -15.533,
+                "analog pitch wheel value offset": -636
+            }
+        },
+        {
+            "16/15": {
+                "cents offset": 11.731,
+                "analog pitch wheel value offset": 481
+            }
+        },
+        {
+            "15/14": {
+                "cents offset": 19.443,
+                "analog pitch wheel value offset": 796
+            }
+        },
+        {
+            "160/147": {
+                "cents offset": 46.707,
+                "analog pitch wheel value offset": 1913
+            }
+        },
+        {
+            "49/45": {
+                "cents offset": 47.428,
+                "analog pitch wheel value offset": 1943
+            }
+        }
     ],
     "-1": [
-        "24/25",
-        "20/21",
-        "15/16",
-        "14/15",
-        "147/160",
-        "45/49"
+        {
+            "24/25": {
+                "cents offset": 29.328,
+                "analog pitch wheel value offset": 1201
+            }
+        },
+        {
+            "20/21": {
+                "cents offset": 15.533,
+                "analog pitch wheel value offset": 636
+            }
+        },
+        {
+            "15/16": {
+                "cents offset": -11.731,
+                "analog pitch wheel value offset": -481
+            }
+        },
+        {
+            "14/15": {
+                "cents offset": -19.443,
+                "analog pitch wheel value offset": -796
+            }
+        },
+        {
+            "147/160": {
+                "cents offset": -46.707,
+                "analog pitch wheel value offset": -1913
+            }
+        },
+        {
+            "45/49": {
+                "cents offset": -47.428,
+                "analog pitch wheel value offset": -1943
+            }
+        }
     ],
     "2": [
-        "35/32",
-        "192/175",
-        "441/400",
-        "10/9",
-        "28/25",
-        "9/8",
-        "8/7",
-        "225/196"
+        {
+            "35/32": {
+                "cents offset": -44.86,
+                "analog pitch wheel value offset": -1837
+            }
+        },
+        {
+            "192/175": {
+                "cents offset": -39.498,
+                "analog pitch wheel value offset": -1618
+            }
+        },
+        {
+            "441/400": {
+                "cents offset": -31.066,
+                "analog pitch wheel value offset": -1272
+            }
+        },
+        {
+            "10/9": {
+                "cents offset": -17.596,
+                "analog pitch wheel value offset": -721
+            }
+        },
+        {
+            "28/25": {
+                "cents offset": -3.802,
+                "analog pitch wheel value offset": -156
+            }
+        },
+        {
+            "9/8": {
+                "cents offset": 3.91,
+                "analog pitch wheel value offset": 160
+            }
+        },
+        {
+            "8/7": {
+                "cents offset": 31.174,
+                "analog pitch wheel value offset": 1277
+            }
+        },
+        {
+            "225/196": {
+                "cents offset": 38.886,
+                "analog pitch wheel value offset": 1593
+            }
+        }
     ],
     "-2": [
-        "32/35",
-        "175/192",
-        "400/441",
-        "9/10",
-        "25/28",
-        "8/9",
-        "7/8",
-        "196/225"
+        {
+            "32/35": {
+                "cents offset": 44.86,
+                "analog pitch wheel value offset": 1837
+            }
+        },
+        {
+            "175/192": {
+                "cents offset": 39.498,
+                "analog pitch wheel value offset": 1618
+            }
+        },
+        {
+            "400/441": {
+                "cents offset": 31.066,
+                "analog pitch wheel value offset": 1272
+            }
+        },
+        {
+            "9/10": {
+                "cents offset": 17.596,
+                "analog pitch wheel value offset": 721
+            }
+        },
+        {
+            "25/28": {
+                "cents offset": 3.802,
+                "analog pitch wheel value offset": 156
+            }
+        },
+        {
+            "8/9": {
+                "cents offset": -3.91,
+                "analog pitch wheel value offset": -160
+            }
+        },
+        {
+            "7/8": {
+                "cents offset": -31.174,
+                "analog pitch wheel value offset": -1277
+            }
+        },
+        {
+            "196/225": {
+                "cents offset": -38.886,
+                "analog pitch wheel value offset": -1593
+            }
+        }
     ],
     "3": [
-        "7/6",
-        "75/64",
-        "288/245",
-        "25/21",
-        "6/5",
-        "175/144",
-        "60/49"
+        {
+            "7/6": {
+                "cents offset": -33.129,
+                "analog pitch wheel value offset": -1357
+            }
+        },
+        {
+            "75/64": {
+                "cents offset": -25.418,
+                "analog pitch wheel value offset": -1041
+            }
+        },
+        {
+            "288/245": {
+                "cents offset": -20.056,
+                "analog pitch wheel value offset": -821
+            }
+        },
+        {
+            "25/21": {
+                "cents offset": 1.847,
+                "analog pitch wheel value offset": 76
+            }
+        },
+        {
+            "6/5": {
+                "cents offset": 15.641,
+                "analog pitch wheel value offset": 641
+            }
+        },
+        {
+            "175/144": {
+                "cents offset": 37.543,
+                "analog pitch wheel value offset": 1538
+            }
+        },
+        {
+            "60/49": {
+                "cents offset": -49.383,
+                "analog pitch wheel value offset": -2023
+            }
+        }
     ],
     "-3": [
-        "6/7",
-        "64/75",
-        "245/288",
-        "21/25",
-        "5/6",
-        "144/175",
-        "49/60"
+        {
+            "6/7": {
+                "cents offset": 33.129,
+                "analog pitch wheel value offset": 1357
+            }
+        },
+        {
+            "64/75": {
+                "cents offset": 25.418,
+                "analog pitch wheel value offset": 1041
+            }
+        },
+        {
+            "245/288": {
+                "cents offset": 20.056,
+                "analog pitch wheel value offset": 821
+            }
+        },
+        {
+            "21/25": {
+                "cents offset": -1.847,
+                "analog pitch wheel value offset": -76
+            }
+        },
+        {
+            "5/6": {
+                "cents offset": -15.641,
+                "analog pitch wheel value offset": -641
+            }
+        },
+        {
+            "144/175": {
+                "cents offset": -37.543,
+                "analog pitch wheel value offset": -1538
+            }
+        },
+        {
+            "49/60": {
+                "cents offset": 49.383,
+                "analog pitch wheel value offset": 2023
+            }
+        }
     ],
     "4": [
-        "49/40",
-        "56/45",
-        "5/4",
-        "63/50",
-        "80/63",
-        "245/192",
-        "32/25",
-        "9/7"
+        {
+            "49/40": {
+                "cents offset": -48.662,
+                "analog pitch wheel value offset": -1993
+            }
+        },
+        {
+            "56/45": {
+                "cents offset": -21.398,
+                "analog pitch wheel value offset": -876
+            }
+        },
+        {
+            "5/4": {
+                "cents offset": -13.686,
+                "analog pitch wheel value offset": -561
+            }
+        },
+        {
+            "63/50": {
+                "cents offset": 0.108,
+                "analog pitch wheel value offset": 4
+            }
+        },
+        {
+            "80/63": {
+                "cents offset": 13.578,
+                "analog pitch wheel value offset": 556
+            }
+        },
+        {
+            "245/192": {
+                "cents offset": 22.011,
+                "analog pitch wheel value offset": 902
+            }
+        },
+        {
+            "32/25": {
+                "cents offset": 27.373,
+                "analog pitch wheel value offset": 1121
+            }
+        },
+        {
+            "9/7": {
+                "cents offset": 35.084,
+                "analog pitch wheel value offset": 1437
+            }
+        }
     ],
     "-4": [
-        "40/49",
-        "45/56",
-        "4/5",
-        "50/63",
-        "63/80",
-        "192/245",
-        "25/32",
-        "7/9"
+        {
+            "40/49": {
+                "cents offset": 48.662,
+                "analog pitch wheel value offset": 1993
+            }
+        },
+        {
+            "45/56": {
+                "cents offset": 21.398,
+                "analog pitch wheel value offset": 876
+            }
+        },
+        {
+            "4/5": {
+                "cents offset": 13.686,
+                "analog pitch wheel value offset": 561
+            }
+        },
+        {
+            "50/63": {
+                "cents offset": -0.108,
+                "analog pitch wheel value offset": -4
+            }
+        },
+        {
+            "63/80": {
+                "cents offset": -13.578,
+                "analog pitch wheel value offset": -556
+            }
+        },
+        {
+            "192/245": {
+                "cents offset": -22.011,
+                "analog pitch wheel value offset": -902
+            }
+        },
+        {
+            "25/32": {
+                "cents offset": -27.373,
+                "analog pitch wheel value offset": -1121
+            }
+        },
+        {
+            "7/9": {
+                "cents offset": -35.084,
+                "analog pitch wheel value offset": -1437
+            }
+        }
     ],
     "5": [
-        "64/49",
-        "98/75",
-        "21/16",
-        "4/3",
-        "75/56",
-        "200/147",
-        "49/36",
-        "48/35"
+        {
+            "64/49": {
+                "cents offset": -37.652,
+                "analog pitch wheel value offset": -1542
+            }
+        },
+        {
+            "98/75": {
+                "cents offset": -36.931,
+                "analog pitch wheel value offset": -1513
+            }
+        },
+        {
+            "21/16": {
+                "cents offset": -29.219,
+                "analog pitch wheel value offset": -1197
+            }
+        },
+        {
+            "4/3": {
+                "cents offset": -1.955,
+                "analog pitch wheel value offset": -80
+            }
+        },
+        {
+            "75/56": {
+                "cents offset": 5.757,
+                "analog pitch wheel value offset": 236
+            }
+        },
+        {
+            "200/147": {
+                "cents offset": 33.021,
+                "analog pitch wheel value offset": 1353
+            }
+        },
+        {
+            "49/36": {
+                "cents offset": 33.742,
+                "analog pitch wheel value offset": 1382
+            }
+        },
+        {
+            "48/35": {
+                "cents offset": 46.815,
+                "analog pitch wheel value offset": 1918
+            }
+        }
     ],
     "-5": [
-        "49/64",
-        "75/98",
-        "16/21",
-        "3/4",
-        "56/75",
-        "147/200",
-        "36/49",
-        "35/48"
+        {
+            "49/64": {
+                "cents offset": 37.652,
+                "analog pitch wheel value offset": 1542
+            }
+        },
+        {
+            "75/98": {
+                "cents offset": 36.931,
+                "analog pitch wheel value offset": 1513
+            }
+        },
+        {
+            "16/21": {
+                "cents offset": 29.219,
+                "analog pitch wheel value offset": 1197
+            }
+        },
+        {
+            "3/4": {
+                "cents offset": 1.955,
+                "analog pitch wheel value offset": 80
+            }
+        },
+        {
+            "56/75": {
+                "cents offset": -5.757,
+                "analog pitch wheel value offset": -236
+            }
+        },
+        {
+            "147/200": {
+                "cents offset": -33.021,
+                "analog pitch wheel value offset": -1353
+            }
+        },
+        {
+            "36/49": {
+                "cents offset": -33.742,
+                "analog pitch wheel value offset": -1382
+            }
+        },
+        {
+            "35/48": {
+                "cents offset": -46.815,
+                "analog pitch wheel value offset": -1918
+            }
+        }
     ],
     "6": [
-        "441/320",
-        "25/18",
-        "7/5",
-        "45/32",
-        "64/45",
-        "10/7",
-        "36/25"
+        {
+            "441/320": {
+                "cents offset": -44.752,
+                "analog pitch wheel value offset": -1833
+            }
+        },
+        {
+            "25/18": {
+                "cents offset": -31.283,
+                "analog pitch wheel value offset": -1281
+            }
+        },
+        {
+            "7/5": {
+                "cents offset": -17.488,
+                "analog pitch wheel value offset": -716
+            }
+        },
+        {
+            "45/32": {
+                "cents offset": -9.776,
+                "analog pitch wheel value offset": -400
+            }
+        },
+        {
+            "64/45": {
+                "cents offset": 9.776,
+                "analog pitch wheel value offset": 400
+            }
+        },
+        {
+            "10/7": {
+                "cents offset": 17.488,
+                "analog pitch wheel value offset": 716
+            }
+        },
+        {
+            "36/25": {
+                "cents offset": 31.283,
+                "analog pitch wheel value offset": 1281
+            }
+        }
     ],
     "-6": [
-        "320/441",
-        "18/25",
-        "5/7",
-        "32/45",
-        "45/64",
-        "7/10",
-        "25/36"
+        {
+            "320/441": {
+                "cents offset": 44.752,
+                "analog pitch wheel value offset": 1833
+            }
+        },
+        {
+            "18/25": {
+                "cents offset": 31.283,
+                "analog pitch wheel value offset": 1281
+            }
+        },
+        {
+            "5/7": {
+                "cents offset": 17.488,
+                "analog pitch wheel value offset": 716
+            }
+        },
+        {
+            "32/45": {
+                "cents offset": 9.776,
+                "analog pitch wheel value offset": 400
+            }
+        },
+        {
+            "45/64": {
+                "cents offset": -9.776,
+                "analog pitch wheel value offset": -400
+            }
+        },
+        {
+            "7/10": {
+                "cents offset": -17.488,
+                "analog pitch wheel value offset": -716
+            }
+        },
+        {
+            "25/36": {
+                "cents offset": -31.283,
+                "analog pitch wheel value offset": -1281
+            }
+        }
     ],
     "7": [
-        "35/24",
-        "72/49",
-        "147/100",
-        "112/75",
-        "3/2",
-        "32/21",
-        "75/49",
-        "49/32"
+        {
+            "35/24": {
+                "cents offset": -46.815,
+                "analog pitch wheel value offset": -1918
+            }
+        },
+        {
+            "72/49": {
+                "cents offset": -33.742,
+                "analog pitch wheel value offset": -1382
+            }
+        },
+        {
+            "147/100": {
+                "cents offset": -33.021,
+                "analog pitch wheel value offset": -1353
+            }
+        },
+        {
+            "112/75": {
+                "cents offset": -5.757,
+                "analog pitch wheel value offset": -236
+            }
+        },
+        {
+            "3/2": {
+                "cents offset": 1.955,
+                "analog pitch wheel value offset": 80
+            }
+        },
+        {
+            "32/21": {
+                "cents offset": 29.219,
+                "analog pitch wheel value offset": 1197
+            }
+        },
+        {
+            "75/49": {
+                "cents offset": 36.931,
+                "analog pitch wheel value offset": 1513
+            }
+        },
+        {
+            "49/32": {
+                "cents offset": 37.652,
+                "analog pitch wheel value offset": 1542
+            }
+        }
     ],
     "-7": [
-        "24/35",
-        "49/72",
-        "100/147",
-        "75/112",
-        "2/3",
-        "21/32",
-        "49/75",
-        "32/49"
+        {
+            "24/35": {
+                "cents offset": 46.815,
+                "analog pitch wheel value offset": 1918
+            }
+        },
+        {
+            "49/72": {
+                "cents offset": 33.742,
+                "analog pitch wheel value offset": 1382
+            }
+        },
+        {
+            "100/147": {
+                "cents offset": 33.021,
+                "analog pitch wheel value offset": 1353
+            }
+        },
+        {
+            "75/112": {
+                "cents offset": 5.757,
+                "analog pitch wheel value offset": 236
+            }
+        },
+        {
+            "2/3": {
+                "cents offset": -1.955,
+                "analog pitch wheel value offset": -80
+            }
+        },
+        {
+            "21/32": {
+                "cents offset": -29.219,
+                "analog pitch wheel value offset": -1197
+            }
+        },
+        {
+            "49/75": {
+                "cents offset": -36.931,
+                "analog pitch wheel value offset": -1513
+            }
+        },
+        {
+            "32/49": {
+                "cents offset": -37.652,
+                "analog pitch wheel value offset": -1542
+            }
+        }
     ],
     "8": [
-        "14/9",
-        "25/16",
-        "63/40",
-        "100/63",
-        "8/5",
-        "45/28",
-        "80/49",
-        "49/30"
+        {
+            "14/9": {
+                "cents offset": -35.084,
+                "analog pitch wheel value offset": -1437
+            }
+        },
+        {
+            "25/16": {
+                "cents offset": -27.373,
+                "analog pitch wheel value offset": -1121
+            }
+        },
+        {
+            "63/40": {
+                "cents offset": -13.578,
+                "analog pitch wheel value offset": -556
+            }
+        },
+        {
+            "100/63": {
+                "cents offset": -0.108,
+                "analog pitch wheel value offset": -4
+            }
+        },
+        {
+            "8/5": {
+                "cents offset": 13.686,
+                "analog pitch wheel value offset": 561
+            }
+        },
+        {
+            "45/28": {
+                "cents offset": 21.398,
+                "analog pitch wheel value offset": 876
+            }
+        },
+        {
+            "80/49": {
+                "cents offset": 48.662,
+                "analog pitch wheel value offset": 1993
+            }
+        },
+        {
+            "49/30": {
+                "cents offset": 49.383,
+                "analog pitch wheel value offset": 2023
+            }
+        }
     ],
     "-8": [
-        "9/14",
-        "16/25",
-        "40/63",
-        "63/100",
-        "5/8",
-        "28/45",
-        "49/80",
-        "30/49"
+        {
+            "9/14": {
+                "cents offset": 35.084,
+                "analog pitch wheel value offset": 1437
+            }
+        },
+        {
+            "16/25": {
+                "cents offset": 27.373,
+                "analog pitch wheel value offset": 1121
+            }
+        },
+        {
+            "40/63": {
+                "cents offset": 13.578,
+                "analog pitch wheel value offset": 556
+            }
+        },
+        {
+            "63/100": {
+                "cents offset": 0.108,
+                "analog pitch wheel value offset": 4
+            }
+        },
+        {
+            "5/8": {
+                "cents offset": -13.686,
+                "analog pitch wheel value offset": -561
+            }
+        },
+        {
+            "28/45": {
+                "cents offset": -21.398,
+                "analog pitch wheel value offset": -876
+            }
+        },
+        {
+            "49/80": {
+                "cents offset": -48.662,
+                "analog pitch wheel value offset": -1993
+            }
+        },
+        {
+            "30/49": {
+                "cents offset": -49.383,
+                "analog pitch wheel value offset": -2023
+            }
+        }
     ],
     "9": [
-        "105/64",
-        "288/175",
-        "5/3",
-        "42/25",
-        "245/144",
-        "12/7"
+        {
+            "105/64": {
+                "cents offset": -42.905,
+                "analog pitch wheel value offset": -1757
+            }
+        },
+        {
+            "288/175": {
+                "cents offset": -37.543,
+                "analog pitch wheel value offset": -1538
+            }
+        },
+        {
+            "5/3": {
+                "cents offset": -15.641,
+                "analog pitch wheel value offset": -641
+            }
+        },
+        {
+            "42/25": {
+                "cents offset": -1.847,
+                "analog pitch wheel value offset": -76
+            }
+        },
+        {
+            "245/144": {
+                "cents offset": 20.056,
+                "analog pitch wheel value offset": 821
+            }
+        },
+        {
+            "12/7": {
+                "cents offset": 33.129,
+                "analog pitch wheel value offset": 1357
+            }
+        }
     ],
     "-9": [
-        "64/105",
-        "175/288",
-        "3/5",
-        "25/42",
-        "144/245",
-        "7/12"
+        {
+            "64/105": {
+                "cents offset": 42.905,
+                "analog pitch wheel value offset": 1757
+            }
+        },
+        {
+            "175/288": {
+                "cents offset": 37.543,
+                "analog pitch wheel value offset": 1538
+            }
+        },
+        {
+            "3/5": {
+                "cents offset": 15.641,
+                "analog pitch wheel value offset": 641
+            }
+        },
+        {
+            "25/42": {
+                "cents offset": 1.847,
+                "analog pitch wheel value offset": 76
+            }
+        },
+        {
+            "144/245": {
+                "cents offset": -20.056,
+                "analog pitch wheel value offset": -821
+            }
+        },
+        {
+            "7/12": {
+                "cents offset": -33.129,
+                "analog pitch wheel value offset": -1357
+            }
+        }
     ],
     "10": [
-        "392/225",
-        "7/4",
-        "16/9",
-        "25/14",
-        "9/5",
-        "800/441",
-        "175/96",
-        "64/35"
+        {
+            "392/225": {
+                "cents offset": -38.886,
+                "analog pitch wheel value offset": -1593
+            }
+        },
+        {
+            "7/4": {
+                "cents offset": -31.174,
+                "analog pitch wheel value offset": -1277
+            }
+        },
+        {
+            "16/9": {
+                "cents offset": -3.91,
+                "analog pitch wheel value offset": -160
+            }
+        },
+        {
+            "25/14": {
+                "cents offset": 3.802,
+                "analog pitch wheel value offset": 156
+            }
+        },
+        {
+            "9/5": {
+                "cents offset": 17.596,
+                "analog pitch wheel value offset": 721
+            }
+        },
+        {
+            "800/441": {
+                "cents offset": 31.066,
+                "analog pitch wheel value offset": 1272
+            }
+        },
+        {
+            "175/96": {
+                "cents offset": 39.498,
+                "analog pitch wheel value offset": 1618
+            }
+        },
+        {
+            "64/35": {
+                "cents offset": 44.86,
+                "analog pitch wheel value offset": 1837
+            }
+        }
     ],
     "-10": [
-        "225/392",
-        "4/7",
-        "9/16",
-        "14/25",
-        "5/9",
-        "441/800",
-        "96/175",
-        "35/64"
+        {
+            "225/392": {
+                "cents offset": 38.886,
+                "analog pitch wheel value offset": 1593
+            }
+        },
+        {
+            "4/7": {
+                "cents offset": 31.174,
+                "analog pitch wheel value offset": 1277
+            }
+        },
+        {
+            "9/16": {
+                "cents offset": 3.91,
+                "analog pitch wheel value offset": 160
+            }
+        },
+        {
+            "14/25": {
+                "cents offset": -3.802,
+                "analog pitch wheel value offset": -156
+            }
+        },
+        {
+            "5/9": {
+                "cents offset": -17.596,
+                "analog pitch wheel value offset": -721
+            }
+        },
+        {
+            "441/800": {
+                "cents offset": -31.066,
+                "analog pitch wheel value offset": -1272
+            }
+        },
+        {
+            "96/175": {
+                "cents offset": -39.498,
+                "analog pitch wheel value offset": -1618
+            }
+        },
+        {
+            "35/64": {
+                "cents offset": -44.86,
+                "analog pitch wheel value offset": -1837
+            }
+        }
     ],
     "11": [
-        "90/49",
-        "147/80",
-        "28/15",
-        "15/8"
+        {
+            "90/49": {
+                "cents offset": -47.428,
+                "analog pitch wheel value offset": -1943
+            }
+        },
+        {
+            "147/80": {
+                "cents offset": -46.707,
+                "analog pitch wheel value offset": -1913
+            }
+        },
+        {
+            "28/15": {
+                "cents offset": -19.443,
+                "analog pitch wheel value offset": -796
+            }
+        },
+        {
+            "15/8": {
+                "cents offset": -11.731,
+                "analog pitch wheel value offset": -481
+            }
+        }
     ],
     "-11": [
-        "49/90",
-        "80/147",
-        "15/28",
-        "8/15"
+        {
+            "49/90": {
+                "cents offset": 47.428,
+                "analog pitch wheel value offset": 1943
+            }
+        },
+        {
+            "80/147": {
+                "cents offset": 46.707,
+                "analog pitch wheel value offset": 1913
+            }
+        },
+        {
+            "15/28": {
+                "cents offset": 19.443,
+                "analog pitch wheel value offset": 796
+            }
+        },
+        {
+            "8/15": {
+                "cents offset": 11.731,
+                "analog pitch wheel value offset": 481
+            }
+        }
     ],
     "12": [
-        "40/21",
-        "48/25",
-        "35/18",
-        "96/49",
-        "49/25",
-        "63/32",
-        "448/225"
+        {
+            "40/21": {
+                "cents offset": 15.533,
+                "analog pitch wheel value offset": 636
+            }
+        },
+        {
+            "48/25": {
+                "cents offset": 29.328,
+                "analog pitch wheel value offset": 1201
+            }
+        },
+        {
+            "35/18": {
+                "cents offset": -48.77,
+                "analog pitch wheel value offset": -1998
+            }
+        },
+        {
+            "96/49": {
+                "cents offset": -35.697,
+                "analog pitch wheel value offset": -1462
+            }
+        },
+        {
+            "49/25": {
+                "cents offset": -34.976,
+                "analog pitch wheel value offset": -1433
+            }
+        },
+        {
+            "63/32": {
+                "cents offset": -27.264,
+                "analog pitch wheel value offset": -1117
+            }
+        },
+        {
+            "448/225": {
+                "cents offset": -7.712,
+                "analog pitch wheel value offset": -316
+            }
+        }
     ],
     "-12": [
-        "21/40",
-        "25/48",
-        "18/35",
-        "49/96",
-        "25/49",
-        "32/63",
-        "225/448"
+        {
+            "21/40": {
+                "cents offset": -15.533,
+                "analog pitch wheel value offset": -636
+            }
+        },
+        {
+            "25/48": {
+                "cents offset": -29.328,
+                "analog pitch wheel value offset": -1201
+            }
+        },
+        {
+            "18/35": {
+                "cents offset": 48.77,
+                "analog pitch wheel value offset": 1998
+            }
+        },
+        {
+            "49/96": {
+                "cents offset": 35.697,
+                "analog pitch wheel value offset": 1462
+            }
+        },
+        {
+            "25/49": {
+                "cents offset": 34.976,
+                "analog pitch wheel value offset": 1433
+            }
+        },
+        {
+            "32/63": {
+                "cents offset": 27.264,
+                "analog pitch wheel value offset": 1117
+            }
+        },
+        {
+            "225/448": {
+                "cents offset": 7.712,
+                "analog pitch wheel value offset": 316
+            }
+        }
     ]
 }
