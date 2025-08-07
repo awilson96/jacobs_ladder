@@ -126,7 +126,7 @@ def generate_tunings(notes: list[int], root: int = None) -> list[list[tuple]]:
         else:
             tunings.pop()
         
-        new_tunings = remove_equivalent_tunings(tunings=tunings, root=root)
+        new_tunings = remove_cycles(tunings=tunings, root=root)
 
     return new_tunings
 
@@ -202,6 +202,33 @@ def parse_midi_controller_config(config_path: str) -> dict:
 
     return kwargs
 
+def reaches_root(root: int, tuning: list[tuple], idx: int, visited: set) -> bool:
+    """Recursive function which determines if a given tuning (list of tuples of (index, root, interval)) 
+    reaches the global root or if it has a cycle. It does this by adding each parent to the visited set
+    and detecting if there are cycles by ensuring that the next parent is not in the visited list, with a 
+    termination condition on either reaching the root (returns True) for cycles (returns False)
+
+    Args:
+        root (int): The global root we wish to reach for each node in the graph
+        tuning (list[tuple]): a list of tuples representing (index, root, interval) describing a particular 
+                              tuning configuration.
+        idx (int): the index of the current tuple under consideration (NOTE: a single tuple represents a single note
+                   with its relationship(s) to the other notes currently being played)
+        visited (set): a set of parent nodes that have already been visited when recursively searching the space
+
+    Returns:
+        bool: returns True if we reach the global root and false otherwise
+    """
+    # Index eventually terminates in a root
+    if idx == root:
+        return True
+    # Cycle detected, index does not terminate in a root
+    if idx in visited:
+        return False  
+    visited.add(idx)
+    next_idx = tuning[idx][1]
+    return reaches_root(root, tuning, next_idx, visited)
+
 def remove_cycles(tunings: list[list[tuple]], root: int) -> list[list[tuple]]:
     """Remove cycles from a list of potential tunings by checking recursively to see if any tunings
     do not terminate in a root. 
@@ -213,22 +240,11 @@ def remove_cycles(tunings: list[list[tuple]], root: int) -> list[list[tuple]]:
     Returns:
         list[list[tuple]]: a list of tunings with no cyclic tunings present
     """
-    def reaches_root(tuning: list[tuple], idx: int, visited: set) -> bool:
-        # Index eventually terminates in a root
-        if idx == root:
-            return True
-        # Cycle detected, index does not terminate in a root
-        if idx in visited:
-            return False  
-        visited.add(idx)
-        next_idx = tuning[idx][1]
-        return reaches_root(tuning, next_idx, visited)
-
     valid_tunings = []
     for tuning in tunings:
         # If all of the notes are tuned in reference to another note which recursively eventually results 
         # in tuning relative to the root, then append that tuning to the list of valid tunings
-        if all(reaches_root(tuning, i, set()) for i in range(len(tuning))):
+        if all(reaches_root(root, tuning, i, set()) for i in range(len(tuning))):
             valid_tunings.append(tuning)
 
     return valid_tunings
@@ -266,7 +282,12 @@ if __name__ == "__main__":
     pitch_wheel_value = calculate_analog_pitch_wheel_value_from_cents_offset(cents_offset=cents_offset)
     print(pitch_wheel_value)
 
-    tunings = generate_tunings([60, 64, 67, 71, 74], root=0)
+    tunings = []
+    tunings.extend(generate_tunings([60, 64, 67], root=0))
+    tunings.extend(generate_tunings([60, 64, 67], root=1))
+    tunings.extend(generate_tunings([60, 64, 67], root=2))
     for tuning in tunings:
         print(tuning)
+
+    
     
