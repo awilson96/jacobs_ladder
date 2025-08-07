@@ -65,25 +65,6 @@ def generate_tunings(notes: list[int], root: int = None) -> list[list[tuple]]:
 
     return tunings_sign_editted
 
-def get_cents_offset_from_tuning(root: int, notes: list[int], tuning: list[tuple[int]], mask: list[int]=[]) -> list[int]:
-    assert len(notes) == len(tuning)
-    assert root >= 0 and root < len(tuning)
-
-    if not mask:
-        mask = [1] * len(notes)
-    else:
-        assert len(notes) == len(mask)
-
-    cents_offsets = []
-    for relationship, msk in zip(tuning, mask):
-        index, reference, relative_interval = relationship
-        if msk == 0 or index == reference and relative_interval == 0:
-            cents_offsets.append(0)
-        else:
-            cents_offsets.append(1)
-
-    return cents_offsets
-
 def reaches_root(root: int, tuning: list[tuple], idx: int, visited: set) -> bool:
     """Recursive function which determines if a given tuning (list of tuples of (index, root, interval)) 
     reaches the global root or if it has a cycle. It does this by adding each parent to the visited set
@@ -390,11 +371,8 @@ if __name__ == "__main__":
 
     cents_offset = get_cents_offset_from_tuning(root=0, notes=[60, 64, 67], tuning=tunings[0])
 
-    print(f"tuning {tunings[0]} cents offset: {cents_offset}")
-
     tuning_config = read_tuning_config(name="5-limit-ratios")
 
     tuning_ratio = select_tuning_ratio(relationship=(2,0,7), tuning_config=tuning_config, method="random")
-    print(tuning_ratio)
     
     display_tunings(tunings=tunings, tuning_config=tuning_config)
