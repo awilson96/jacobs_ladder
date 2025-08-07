@@ -1,3 +1,6 @@
+import json
+import os
+
 from itertools import product
 from fractions import Fraction
 
@@ -31,7 +34,8 @@ def generate_ratios(limit, max_exponent=2):
     
     # Generate ratios as fractions and filter based on floor division
     ratios = {Fraction(n, d) for n in numerators for d in numerators if n >= d and (n // d) < 2 and n < 1000}
-    
+    ratios.discard(Fraction(1, 1))
+
     return sorted(ratios)
 
 def determine_interval_based_on_ratio(ratio: Fraction | list[Fraction]) -> int | list[int]:
@@ -48,15 +52,15 @@ def determine_interval_based_on_ratio(ratio: Fraction | list[Fraction]) -> int |
     if isinstance(ratio, list):
         interval_list = []
         for rat in ratio:
-            interval_list.append(get_interval_from_ratio(ratio=rat))
+            interval_list.append(__get_interval_from_ratio__(ratio=rat))
         return interval_list
 
     elif isinstance(ratio, Fraction):
-        return get_interval_from_ratio(ratio=ratio)
+        return __get_interval_from_ratio__(ratio=ratio)
     else:
         return TypeError("Unknown ratio data type. Expected either a Fration of list[Fraction]")
     
-def get_interval_from_ratio(ratio: Fraction) -> int:
+def __get_interval_from_ratio__(ratio: Fraction) -> int:
     """Given a ratio as a Fraction in the range from 0-2 inclusive, determine the interval from -12 to 12 inclusive 
     assuming that all intervals surpassing the plus or minus 1 octave boundary are mapped to intervals within the 
     boundary (i.e. a major 10th is mapped to a major 3rd).
@@ -115,17 +119,32 @@ def get_interval_from_ratio(ratio: Fraction) -> int:
         # If the ratio is not in the interval range assume an octave relationship since this function is
         # only ever supposed to be used in the range of plus or minus 1 octave
         return -12
+    
+def create_tuning_config(ratios: list[Fraction], intervals: list[int], name: str) -> None:
+    tuning_config = {}
+    for ratio, interval in zip(ratios, intervals):
+        if interval not in tuning_config.keys():
+            tuning_config[interval] = []
+        if "-"+ str(interval) not in tuning_config.keys():
+            tuning_config["-" + str(interval)] = []
+        tuning_config[interval].append(f"{ratio.numerator}/{ratio.denominator}")
+        tuning_config["-" + str(interval)].append(f"{ratio.denominator}/{ratio.numerator}")
+
+    filename = os.path.join("configuration", "json", "pitch", f"{name}.json") 
+    with open(filename, "w") as json_file:
+        json.dump(tuning_config, json_file, indent=4)
+
+    print(f"Writing tuning configuration \"{filename}\"")
 
 if __name__ == "__main__":
     # Example usage
     limit = 7
     ratios = generate_ratios(limit)
-    for r in ratios:
-        print(r)
-
     intervals = determine_interval_based_on_ratio(ratio=ratios)
 
     for interval, ratio in zip(intervals, ratios):
         print(f"Ratio: {ratio} Interval: {interval}")
 
     print(f"There are {len(ratios)} {limit}-limit ratios")
+
+    create_tuning_config(ratios=ratios, intervals=intervals, name="7-limit-ratios")

@@ -126,9 +126,10 @@ def generate_tunings(notes: list[int], root: int = None) -> list[list[tuple]]:
         else:
             tunings.pop()
         
-        new_tunings = remove_cycles(tunings=tunings, root=root)
+        tunings_cycles_removed = remove_cycles(tunings=tunings, root=root)
+        tunings_sign_editted = __edit_sign__(tunings=tunings_cycles_removed)
 
-    return new_tunings
+    return tunings_sign_editted
 
 def parse_midi_controller_config(config_path: str) -> dict:
     """Parse the MidiController yaml config and do some light field validation
@@ -275,19 +276,70 @@ def remove_harmonically_redundant_intervals(message_heap: list[list[int]]):
             harmonically_unique_message_heap.append(entry)
             unique_instances.add(instance)
     
-    return harmonically_unique_message_heap
+    return 
+
+def __edit_sign__(tunings: list[list[tuple[int]]]) -> list[tuple[int]]:
+    """Takes in a list of tunings and changes the sign of the relative interval in each if it needs to be tuned down 
+    relative to the root. Otherwise the relative interval in each tuning is positive.
+
+    Args:
+        tuning (list[tuple[int]]): a list of tuples representing a tuning where the tuple 
+                                   represents (idx, ref, interval)
+
+    Returns:
+        list[list[tuple[int]]]: modified tunings which contain the sign associated with the relative intervals
+    """
+    final_result = []
+    for tuning in tunings:
+        result = []
+        for idx, ref, interval in tuning:
+            # Make sure it's negative
+            if idx < ref:
+                interval = -abs(interval)
+            # Keep it positive
+            else:
+                interval = abs(interval)
+            result.append((idx, ref, interval))
+        final_result.append(result)
+    return final_result
+
+def get_cents_offset_from_tuning(root: int, notes: list[int], tuning: list[tuple[int]], mask: list[int]=[]) -> list[int]:
+    assert len(notes) == len(tuning)
+    assert root >= 0 and root < len(tuning)
+
+    if not mask:
+        mask = [1] * len(notes)
+    else:
+        assert len(notes) == len(mask)
+
+    cents_offsets = []
+    for relationship, msk in zip(tuning, mask):
+        index, reference, relative_interval = relationship
+        if msk == 0 or index == reference and relative_interval == 0:
+            cents_offsets.append(0)
+        else:
+            cents_offsets.append(1)
+
+    return cents_offsets
 
 if __name__ == "__main__":
     cents_offset = calculate_cents_offset_from_interval(8/7)
     pitch_wheel_value = calculate_analog_pitch_wheel_value_from_cents_offset(cents_offset=cents_offset)
     print(pitch_wheel_value)
 
+
+
     tunings = []
     tunings.extend(generate_tunings([60, 64, 67], root=0))
     tunings.extend(generate_tunings([60, 64, 67], root=1))
     tunings.extend(generate_tunings([60, 64, 67], root=2))
+
+    cents_offset = get_cents_offset_from_tuning(root=0, notes=[60, 64, 67], tuning=tunings[0])
+    
     for tuning in tunings:
         print(tuning)
+
+    print(f"tuning {tunings[0]} cents offset: {cents_offset}")
 
     
     
