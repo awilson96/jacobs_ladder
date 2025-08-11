@@ -21,7 +21,7 @@ class JustIntonation:
     creating pitch drift as would be expected in true Just Intonation."""
     def __init__(self, **kwargs):
 
-        allowed_keys = {"player", "tuning", "tuning_mode", "tuning_limit", "tuning_pref"}
+        allowed_keys = {"player", "tuning", "tuning_mode", "tuning_config", "tuning_pref"}
 
         for key in kwargs:
             if key not in allowed_keys:
@@ -38,8 +38,8 @@ class JustIntonation:
         self.tuning_config = read_tuning_config(name="5-limit-ratios")
         self.tuning_pref = read_tuning_config(name="5-limit-pref")
         self.tuning_limit = kwargs.get("tuning_limit", 5) 
-        if self.tuning_limit != 5:
-            self.tuning_config = read_tuning_config(name=f"{self.tuning_limit}-limit-ratios")
+        if kwargs.get("tuning_config", "5-limit-ratios") != "5-limit-ratios":
+            self.tuning_config = read_tuning_config(name=kwargs.get("tuning_config", "5-limit-ratios"))
         if kwargs.get("tuning_pref", "5-limit-pref") != "5-limit-pref":
             self.tuning_pref = read_tuning_config(name=kwargs.get("tuning_pref", "5-limit-pref"))
         
@@ -644,7 +644,7 @@ if __name__ == "__main__":
         "player": "User", 
         "tuning": None, 
         "tuning_mode": "just-intonation", 
-        "tuning_limit": 7, 
+        "tuning_config": "7-limit-ratios", 
         "tuning_pref": "7-limit-pref"
     }
     JI = JustIntonation(**kwargs)

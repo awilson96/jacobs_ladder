@@ -1,4 +1,6 @@
+import json
 import math
+import os
 import sys
 import yaml
 
@@ -108,8 +110,12 @@ def parse_midi_controller_config(config_path: str) -> dict:
     time_signature = config.get('time_signature', "4/4")
 
     # --- Tuning ---
-    tuning_mode = config.get('tuning_mode', None)
-    tuning = config.get('tuning', None)
+    tuning_configuration = config.get('tuning_configuration', {})
+    player = tuning_configuration.get('player', 'User')
+    tuning_mode = tuning_configuration.get('tuning_mode', 'none')
+    tuning_config = tuning_configuration.get('tuning_config', '5-limit-ratios')
+    tuning_pref = tuning_configuration.get('tuning_pref', '5-limit-pref')
+    tuning = tuning_configuration.get('tuning', None)
 
     valid_modes = ('static', 'dynamic', 'just-intonation', 'none', None)
     if tuning_mode not in valid_modes:
@@ -120,13 +126,15 @@ def parse_midi_controller_config(config_path: str) -> dict:
         print("Error: 'tuning_mode' is static or dynamic, but no 'tuning' provided.")
         sys.exit(1)
 
-    if tuning:
-        print("Tuning settings:")
-        for interval, value in tuning.items():
-            print(f"  {interval:<25}: {value}")
-
-    print(f"Tuning mode: {tuning_mode}")
-    print(f"print_msgs: {print_msgs}")
+    formatted_tuning_config = {
+        'tuning_config': {
+            'player': player,
+            'tuning': tuning,
+            'tuning_mode': tuning_mode,
+            'tuning_config': tuning_config,
+            'tuning_pref': tuning_pref
+        }
+    }
 
     kwargs = {
         'input_port': input_port,
@@ -138,8 +146,7 @@ def parse_midi_controller_config(config_path: str) -> dict:
         'scale_includes': scale_includes,
         'tempo': tempo,
         'time_signature': time_signature,
-        'tuning_mode': tuning_mode if tuning_mode != 'none' else None,
-        'tuning': tuning
+        **formatted_tuning_config
     }
 
     return kwargs
@@ -173,7 +180,8 @@ def remove_harmonically_redundant_intervals(message_heap: list[list[int]]):
     return harmonically_unique_message_heap
 
 if __name__ == "__main__":
-    pass
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "configuration", "yaml", "default_config.yaml")
+    config = parse_midi_controller_config(config_path=path)
 
     
     

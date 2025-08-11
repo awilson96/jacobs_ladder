@@ -37,28 +37,32 @@ tempo: 120
 time_signature: "4/4"
 
 # --- Tuning ---
-tuning_mode: none  # dynamic, static, just-intonation, or none
-tuning:
-  "minor_second_up": 8673       # 16/15 = +11.731  c
-  "major_second_up": 8352       # 9/8   = +3.910   c
-  "minor_third_up": 8833        # 6/5   = +15.641  c
-  "major_third_up": 7631        # 5/4   = -13.686  c
-  "perfect_fourth_up": 8112     # 4/3   = -1.955   c
-  "tritone_up": 7792            # 45/32 = -9.776   c
-  "perfect_fifth_up": 8272      # 3/2   = +1.955   c
-  "minor_sixth_up": 8753        # 8/5   = +13.686  c
-  "major_sixth_up": 7551        # 5/3   = -15.641  c
-  "minor_seventh_up": 8913      # 9/5   = +17.596  c
-  "major_seventh_up": 7711      # 15/8  = -11.731  c
-  "minor_second_down": 7711     # 15/16 = -11.731  c
-  "major_second_down": 8032     # 8/9   = -3.910   c
-  "minor_third_down": 7551      # 5/6   = -15.641  c
-  "major_third_down": 8753      # 4/5   = +13.686  c
-  "perfect_fourth_down": 8272   # 3/4   = +1.955   c
-  "tritone_down": 8592          # 32/45 = +9.776   c
-  "perfect_fifth_down": 8112    # 2/3   = -1.955   c
-  "minor_sixth_down": 7631      # 5/8   = -13.686  c
-  "major_sixth_down": 8833      # 3/5   = +15.641  c
-  "minor_seventh_down": 7471    # 5/9   = -17.596  c
-  "major_seventh_down": 8673    # 15/16 = -11.731  c
-  "octave": 8192                # 2/1 | 1/2
+tuning_configuration:
+  player: "User"
+  tuning:
+    "minor_second_up": 8673       # 16/15 = +11.731  c
+    "major_second_up": 8352       # 9/8   = +3.910   c
+    "minor_third_up": 8833        # 6/5   = +15.641  c
+    "major_third_up": 7631        # 5/4   = -13.686  c
+    "perfect_fourth_up": 8112     # 4/3   = -1.955   c
+    "tritone_up": 7792            # 45/32 = -9.776   c
+    "perfect_fifth_up": 8272      # 3/2   = +1.955   c
+    "minor_sixth_up": 8753        # 8/5   = +13.686  c
+    "major_sixth_up": 7551        # 5/3   = -15.641  c
+    "minor_seventh_up": 8913      # 9/5   = +17.596  c
+    "major_seventh_up": 7711      # 15/8  = -11.731  c
+    "minor_second_down": 7711     # 15/16 = -11.731  c
+    "major_second_down": 8032     # 8/9   = -3.910   c
+    "minor_third_down": 7551      # 5/6   = -15.641  c
+    "major_third_down": 8753      # 4/5   = +13.686  c
+    "perfect_fourth_down": 8272   # 3/4   = +1.955   c
+    "tritone_down": 8592          # 32/45 = +9.776   c
+    "perfect_fifth_down": 8112    # 2/3   = -1.955   c
+    "minor_sixth_down": 7631      # 5/8   = -13.686  c
+    "major_sixth_down": 8833      # 3/5   = +15.641  c
+    "minor_seventh_down": 7471    # 5/9   = -17.596  c
+    "major_seventh_down": 8673    # 15/16 = -11.731  c
+    "octave": 8192                # 2/1 | 1/2
+  tuning_mode: just-intonation # dynamic, static, just-intonation, or none
+  tuning_config: 5-limit-ratios
+  tuning_pref: 5-limit-pref
