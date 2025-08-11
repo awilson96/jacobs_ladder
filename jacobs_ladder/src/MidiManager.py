@@ -28,8 +28,7 @@ warnings.filterwarnings("ignore", message="RtMidiIn::getNextMessage.*user callba
 
 
 class MidiController:
-    """
-    This is a Midi Keyboard interface which allows for the manipulation of real time Midi data.
+    """This is a Midi Keyboard interface which allows for the manipulation of real time Midi data.
     MidiController maps 1 input port to 12 output ports used for single note manipulation.
     The MidiController does this to take advantage of the pitch wheel which globally alters the pitch of all 16 channels.
     By separating each note on to a unique rtmidi.MidiOut port, individual tuning of notes is possible.
@@ -51,7 +50,8 @@ class MidiController:
         allowed_keys = {
             'input_port', 'output_ports', 'print_msgs',
             'print_key', 'print_avoid_notes_only', 'print_scales', 'scale_includes',
-            'tuning', 'tuning_mode', 'tempo', 'time_signature'
+            'tempo', 'time_signature', 'player', 'tuning', 'tuning_mode', 'tuning_config',
+            'tuning_pref'
         }
 
         for key in kwargs:
@@ -69,18 +69,6 @@ class MidiController:
         self.tuning_mode = kwargs.get('tuning_mode', None)
         self.tempo = kwargs.get('tempo', 120)
         self.time_signature = kwargs.get('time_signature', "4/4")
-
-        print("Initialized MidiController with:")
-        print(f"  input_port: {self.input_port}")
-        print(f"  output_ports: {self.output_ports}")
-        print(f"  print_msgs: {self.print_msgs}")
-        print(f"  print_key: {self.print_key}")
-        print(f"  print_avoid_notes_only: {self.print_avoid_notes_only}")
-        print(f"  print_scales: {self.print_scales}")
-        print(f"  scale_includes: {self.scale_includes}")
-        print(f"  tuning_mode: {self.tuning_mode}")
-        print(f"  tempo: {self.tempo}")
-        print(f"  time_signature: {self.time_signature}")
 
         # Set up logging
         if self.input_port == "jacobs_ladder":
@@ -122,10 +110,9 @@ class MidiController:
             self.logger.info(f"Mode is set to \"{self.tuning_mode}\" tuning")
         else:
             self.logger.info("Tuning is disabled")
-        self.just_intonation = JustIntonation(player=self.input_port if self.input_port != "jacobs_ladder" else "User", 
-                                              tuning=self.tuning,
-                                              tuning_mode=self.tuning_mode)
+        self.just_intonation = JustIntonation(**kwargs.get("tuning_config", None))
             
+        sys.exit(0)
         # Transposition Management
         self.transpose = 0
         
@@ -153,8 +140,7 @@ class MidiController:
         self.logger.info("Exiting...")
 
     def initialize_ports(self):
-        """
-        Initialize input and output ports based on user provided values
+        """Initialize input and output ports based on user provided values
 
         Raises:
             ValueError: If the input/output port is not found, an error is raised
@@ -191,9 +177,7 @@ class MidiController:
             raise RuntimeError(f"Failed to open output port '{port_name}'")
 
     def close_ports(self):
-        """
-        Closes all opened input and output ports.
-        """
+        """Closes all opened input and output ports."""
         # Close MIDI input port
         if self.midi_in.is_port_open():
             self.midi_in.close_port()
@@ -209,8 +193,7 @@ class MidiController:
         self.udp_receiver.stop()
 
     def filter(self, message: tuple, timestamp: float):
-        """
-        Filter used to set the MIDI callback.
+        """Filter used to set the MIDI callback.
         The MIDI callback filters out only the messages you want to process within the callback.
         The filter handles NOTE_ON, NOTE_OFF, CONTROL_CHANGE, and ALL_NOTES_OFF message types.
         The filter is called by start_listening() and can be thought of as the main control loop.
@@ -349,6 +332,11 @@ class MidiController:
             self.logger.info(f"Tuning mode state change: {previous_tuning_mode}->Equal Temperment")
     
     def delete_suspended_note(self, sus_note: list):
+        """Delete notes which have been sustained when the associated NOTE_OFF message has already been played
+
+        Args:
+            sus_note (list): a list of suspended (or sustained) notes to be deleted
+        """
         for index, sublist in enumerate(self.message_heap):
             if sublist[0] == sus_note[0]:
                 del self.message_heap[index]
@@ -396,5 +384,5 @@ if __name__ == "__main__":
     parser.add_argument('config_path', type=str, help="Path to YAML config file.")
     args = parser.parse_args()
 
-    kwargs = parse_midi_controller_config(args.config_path)
+    kwargs = parse_midi_controller_config(args.config_path, print_config=True)
     midi_controller = MidiController(**kwargs)

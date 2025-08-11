@@ -74,7 +74,7 @@ def get_root_from_letter_note(letter_note: str):
         case "G":
             return 67
 
-def parse_midi_controller_config(config_path: str) -> dict:
+def parse_midi_controller_config(config_path: str, print_config=False) -> dict:
     """Parse the MidiController yaml config and do some light field validation
 
     Args:
@@ -149,6 +149,10 @@ def parse_midi_controller_config(config_path: str) -> dict:
         **formatted_tuning_config
     }
 
+    if print_config:
+        print("Initializing MidiController with parameters:")
+        print(json.dumps(kwargs, indent=4))
+
     return kwargs
 
 def remove_harmonically_redundant_intervals(message_heap: list[list[int]]):
@@ -182,6 +186,6 @@ def remove_harmonically_redundant_intervals(message_heap: list[list[int]]):
 if __name__ == "__main__":
     path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "configuration", "yaml", "default_config.yaml")
     config = parse_midi_controller_config(config_path=path)
-
+    print(json.dumps(config, indent=4))
     
     
