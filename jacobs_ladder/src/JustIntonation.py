@@ -7,29 +7,55 @@ from .Dictionaries import midi_notes
 from .Enums import Pitch
 from .Logging import setup_logging
 from .Utilities import determine_octave, get_root_from_letter_note, remove_harmonically_redundant_intervals
+from .TuningUtils import read_tuning_config
 from jacobs_ladder.bindings.tuning_utils import generate_tunings
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
 __date__ = "November 11th 2023 (creation)"
 
-
 class JustIntonation:
-    """
-    Just Intonation is a class used for pitch manipulating individual notes such that the outcome of each chord and/or melodic sequence remains in perfect pitch with the currenlty suspended notes.
-    The secondary goal of the class is to ensure that after silence, new notes must be in pitch with the previously played notes creating pitch drift as would be expected in true Just Intonation.
-    """
-    def __init__(self, player: str = None, tuning: dict = None, tuning_mode: str = None):
-        self.logger = setup_logging(f"JustIntonation{player.capitalize()}")
+    """Just Intonation is a class used for pitch manipulating individual notes such that the outcome of each 
+    chord and/or melodic sequence remains in perfect pitch with the currenlty suspended notes. The secondary goal 
+    of the class is to ensure that after silence, new notes must be in pitch with the previously played notes 
+    creating pitch drift as would be expected in true Just Intonation."""
+    def __init__(self, **kwargs):
+
+        allowed_keys = {"player", "tuning", "tuning_mode", "tuning_limit", "tuning_pref"}
+
+        for key in kwargs:
+            if key not in allowed_keys:
+                raise ValueError(f"Unknown argument: {key}")
+            
+        self.player = kwargs.get("player", "User")
+        self.logger = setup_logging(f"JustIntonation{self.player.capitalize()}")
         self.center_frequency = 8192
         self.pitch_table = {key: 8192 for key in range(-11, 12)}
         self.previous_root = 60
         self.root = 60
-        self.tuning = tuning
-        self.tuning_mode = tuning_mode
+        self.tuning = kwargs.get("tuning", None)
+        self.tuning_mode = kwargs.get("tuning_mode", None)
+        self.tuning_config = read_tuning_config(name="5-limit-ratios")
+        self.tuning_pref = read_tuning_config(name="5-limit-pref")
+        self.tuning_limit = kwargs.get("tuning_limit", 5) 
+        if self.tuning_limit != 5:
+            self.tuning_config = read_tuning_config(name=f"{self.tuning_limit}-limit-ratios")
+        if kwargs.get("tuning_pref", "5-limit-pref") != "5-limit-pref":
+            self.tuning_pref = read_tuning_config(name=kwargs.get("tuning_pref", "5-limit-pref"))
         
         if self.tuning:
             self.calculate_pitch_table(offset=0)
+
+        # print(f"{self.player=}")
+        # print(f"{self.center_frequency=}")
+        # print(f"{self.pitch_table=}")
+        # print(f"{self.previous_root=}")
+        # print(f"{self.root=}")
+        # print(f"{self.tuning=}")
+        # print(f"{self.tuning_mode=}")
+        # print(f"{self.tuning_config=}")
+        # print(f"{self.tuning_pref=}")
+        # print(f"{self.tuning_limit=}")
         
     def calculate_pitch_table(self, offset):
         """Calculate the new pitch table based on the currently held down notes with respect to the most recently played note
@@ -58,13 +84,12 @@ class JustIntonation:
         return intervals
 
     def get_pitch_bend_message(self, message_heap_elem: list):
-        """
-        Gets the formed MIDI pitch bend message to be sent by the MidiManager
+        """Gets the formed MIDI pitch bend message to be sent by the MidiManager
 
         Args:
-            message_heap_elem (list): a singular message_heap list representing a single note plus metadata of the form [note, instance_index, status, velocity, pitch]
+            message_heap_elem (list): a singular message_heap list representing a single note plus metadata 
+                                      of the form [note, instance_index, status, velocity, pitch]
         """
-
         # Ensure pitch bend amount is within the valid range
         pitch_bend_amount = max(0, min(16383, message_heap_elem[4]))
 
@@ -201,10 +226,6 @@ class JustIntonation:
             else:
                 sorted_message_heap = remove_harmonically_redundant_intervals(message_heap)
                 keys = [k.split(" ")[0] for k in key]
-                
-    
-    def get_harmonic_potential_dict(self, keys):
-        pass
         
     def get_diad_pitch(self, interval: int):
         """Given an interval between two notes, return the analog pitch value expressed as a range from 0-16383 
@@ -565,3 +586,67 @@ class JustIntonation:
             instance_index (int): the instance index of the note which has received the note off message
         """
         pass
+
+    def select_tuning_ratio(self, relationship: tuple[int], method: str) -> dict:
+        """Select a JI tuning based on the interval relationship. There are two supported methods, random (which 
+        uniformly chooses a potential tuning matching the interval type) or singular which selects a preferred
+        tuning based on user input at instantiation
+
+        Args:
+            relationship (tuple[int]): the tuple representing (index, reference, and relative_interval)
+            method (str): a method for selecting a tuning ratio 
+
+        Returns:
+            dict: a dictionary with keys "ratio", "cents_offset", and "analog_pitch_wheel_value_offset"
+        """
+        assert method in ["random", "singular"]
+        assert len(relationship) == 3 and isinstance(relationship[2], int)
+
+        index, reference, relative_interval = relationship
+        if relative_interval == 0:
+            return {"ratio": '1/1', "cents_offset": 0.000, "analog_pitch_wheel_value_offset": 0}
+        
+        tuning_ratios = self.tuning_config[str(relative_interval)]
+        if method == "random":
+            choice = random.choice(tuning_ratios)
+            ratio = str(list(choice.keys())[0])
+            cents_offset = choice[ratio]["cents offset"]
+            analog_pitch_wheel_value_offset = choice[ratio]["analog pitch wheel value offset"]
+            return {"ratio": ratio, "cents_offset": cents_offset, 
+                    "analog_pitch_wheel_value_offset": analog_pitch_wheel_value_offset}
+
+        elif method == "singular":
+            if len(tuning_ratios) == 1:
+                return tuning_ratios[0]
+            else:
+                choice = self.tuning_pref[str(relative_interval)]
+                ratio = str(list(choice[0].keys())[0])
+                cents_offset = choice[0][ratio]["cents offset"]
+                analog_pitch_wheel_value_offset = choice[0][ratio]["analog pitch wheel value offset"]
+                return {"ratio": ratio, "cents_offset": cents_offset, 
+                        "analog_pitch_wheel_value_offset": analog_pitch_wheel_value_offset}
+
+    def display_tunings(self, tunings: list[list[tuple[int]]], tuning_config: dict):
+        """Display the different tuning options available for a given chord
+
+        Args:
+            tunings (list[list[tuple[int]]]): a list of potential valid tunings for a given chord
+            tuning_config (dict): a dictionary with tuning metadata for some n-limit JI list of frequency ratios
+        """
+        for tuning in tunings:
+            ratios = []
+            for relationship in tuning:
+                ratios.append(self.select_tuning_ratio(relationship=relationship, tuning_config=tuning_config, method="random")["ratio"])
+            print(f"{tuning}\t{ratios}")
+
+if __name__ == "__main__":
+    kwargs = {
+        "player": "User", 
+        "tuning": None, 
+        "tuning_mode": "just-intonation", 
+        "tuning_limit": 7, 
+        "tuning_pref": "7-limit-pref"
+    }
+    JI = JustIntonation(**kwargs)
+    tuning_ratio = JI.select_tuning_ratio(relationship=(1, 1, 10), method="singular")
+    print(tuning_ratio)

@@ -297,60 +297,10 @@ def read_tuning_config(name: str) -> dict:
     Returns:
         dict: a dictionary representing the json config
     """
-    filename = os.path.join("configuration", "json", "pitch", f"{name}.json") 
+    filename = os.path.join("jacobs_ladder", "configuration", "json", "pitch", f"{name}.json") 
     with open(filename, "r") as json_file:
         tuning_config = json.load(json_file)
     return tuning_config
-
-# TODO: Move this to JustIntonation.py since these things need to be class methods instead of having so many args
-def select_tuning_ratio(relationship: tuple[int], tuning_config: dict, method: str) -> dict:
-    """Select a JI tuning based on the interval relationship. There are two supported methods, random (which 
-    uniformly chooses a potential tuning matching the interval type) or singular which selects a preferred
-    tuning based on user input at instantiation
-
-    Args:
-        relationship (tuple[int]): the tuple representing (index, reference, and relative_interval)
-        tuning_config (dict): a tuning config dictionary telling the program how to tune each ratio
-        method (str): a method for selecting a tuning ratio 
-
-    Returns:
-        dict: a dictionary with keys "ratio", "cents_offset", and "analog_pitch_wheel_value_offset"
-    """
-    assert method in ["random", "singular"]
-    assert len(relationship) == 3 and isinstance(relationship[2], int)
-
-    index, reference, relative_interval = relationship
-    if relative_interval == 0:
-        return {"ratio": '1/1', "cents_offset": 0.000, "analog_pitch_wheel_value_offset": 0}
-    
-    tuning_ratios = tuning_config[str(relative_interval)]
-    if method == "random":
-        choice = random.choice(tuning_ratios)
-        ratio = str(list(choice.keys())[0])
-        cents_offset = choice[ratio]["cents offset"]
-        analog_pitch_wheel_value_offset = choice[ratio]["analog pitch wheel value offset"]
-        return {"ratio": ratio, "cents_offset": cents_offset, 
-                "analog_pitch_wheel_value_offset": analog_pitch_wheel_value_offset}
-
-    elif method == "singular":
-        if len(tuning_ratios) == 1:
-            return tuning_ratios[0]
-        else:
-            # TODO: Implement this method using self so that you can access the preffered interval for this ratio
-            pass
-
-def display_tunings(tunings: list[list[tuple[int]]], tuning_config: dict):
-    """Display the different tuning options available for a given chord
-
-    Args:
-        tunings (list[list[tuple[int]]]): a list of potential valid tunings for a given chord
-        tuning_config (dict): a dictionary with tuning metadata for some n-limit JI list of frequency ratios
-    """
-    for tuning in tunings:
-        ratios = []
-        for relationship in tuning:
-            ratios.append(select_tuning_ratio(relationship=relationship, tuning_config=tuning_config, method="random")["ratio"])
-        print(f"{tuning}\t{ratios}")
 
 if __name__ == "__main__":
     # Example usage
@@ -370,7 +320,3 @@ if __name__ == "__main__":
     tunings.extend(generate_tunings([60, 64, 67], root=2))
 
     tuning_config = read_tuning_config(name="5-limit-ratios")
-
-    tuning_ratio = select_tuning_ratio(relationship=(2,0,7), tuning_config=tuning_config, method="random")
-    
-    display_tunings(tunings=tunings, tuning_config=tuning_config)

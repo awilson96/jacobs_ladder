@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 def setup_logging(app_name: str) -> logging.Logger:
-    log_filename = f"./logs/{app_name}.log"
+    log_filename = f"./jacobs_ladder/logs/{app_name}.log"
     
     # Create a logger
     logger = logging.getLogger(app_name)
