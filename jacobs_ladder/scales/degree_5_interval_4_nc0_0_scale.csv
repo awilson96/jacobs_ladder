@@ -1,9 +1,9 @@
 note1, note2, note3, note4, note5, scale,
 C, D, E, G, A, C(add 2) 6, Pentatonic scale
 C, E, F#, A, B, A Minor 1st Inversion 9 #11, Dorian pentatonic scale
-C, Db, Eb, G, Ab, C Major 7 1st Inversion 11, Phrygian pentatonic scale
-C, D, Eb, G, Ab, C Minor 9 b13, Aeolian pentatonic scale
-C, Db, Eb, Gb, Ab, Ab Dominant 1st Inversion 11, Locrian pentatonic scale
+C, E, F, G, B, C Major 7 11, Phrygian pentatonic scale
+C, E, F, A, B, A Minor 1st Inversion 9 11, Aeolian pentatonic scale
+C, E, F, G, Bb, C Dominant 11, Locrian pentatonic scale
 
 C, D, E, F, A, F Maj 6/7 1st Inversion, Minor 9 pentatonic scale
 C, D, Eb, F, A, F Dominant 6 2nd Inversion, Dominant 6 pentatonic scale
