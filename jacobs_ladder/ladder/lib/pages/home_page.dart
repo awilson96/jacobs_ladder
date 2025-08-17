@@ -42,10 +42,19 @@ class _HomePageState extends State<HomePage> {
       drawer: Drawer(
         child: Column(
           children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.deepPurple),
-              child: Text('Ladder Menu',
-                  style: TextStyle(color: Colors.white, fontSize: 24)),
+            Container(
+              height: 56,
+              width: double.infinity,
+              color: Color.fromARGB(255, 52, 64, 52),
+              alignment: Alignment.center,
+              child: const Text(
+                'Menu',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
             ListTile(
               leading: const Icon(Icons.looks_one),
