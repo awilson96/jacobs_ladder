@@ -14,12 +14,18 @@ class _PianoState extends State<Piano> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final whiteKeyCount = 52; // total white keys on an 88-key piano
-    final whiteKeyWidth = screenWidth / whiteKeyCount;
+    final usableWidth = screenWidth < 1560 ? 1560 : screenWidth;
+    final whiteKeyWidth = usableWidth / 52;
 
-    final whiteKeyHeight = 220.0; // arbitrary fixed height for white keys
-    final blackKeyHeight = whiteKeyHeight * (3.5 / 5.5); // scale according to real-world ratio
-    final blackKeyWidth = whiteKeyWidth * 0.6; // keep width ratio as before
+
+    // Original heights (real-world proportions)
+    final originalWhiteKeyHeight = 220.0;
+    final originalBlackKeyHeight = originalWhiteKeyHeight * (3.5 / 5.5);
+
+    // Scale down vertically by 50%
+    final whiteKeyHeight = originalWhiteKeyHeight * 0.5; // 110 px
+    final blackKeyHeight = originalBlackKeyHeight * 0.5; // ~70 px
+    final blackKeyWidth = whiteKeyWidth * 0.6; // width ratio unchanged
 
     final whiteKeys = [
       'A', 'B',

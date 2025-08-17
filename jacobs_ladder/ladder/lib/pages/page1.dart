@@ -6,12 +6,21 @@ class Page1 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const minPianoWidth = 1560.0; // 52 white keys × 30 px minimum each
+
     return Column(
       children: [
         Expanded(
           child: Center(child: Text('Page 1')),
         ),
-        const Piano(), // piano at bottom
+        // Piano with minimum width and horizontal scroll fallback
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minWidth: minPianoWidth),
+            child: const Piano(),
+          ),
+        ),
       ],
     );
   }
