@@ -1,20 +1,28 @@
 import 'package:flutter/material.dart';
 
-class Piano extends StatelessWidget {
+class Piano extends StatefulWidget {
   const Piano({super.key});
+
+  @override
+  _PianoState createState() => _PianoState();
+}
+
+class _PianoState extends State<Piano> {
+  final Map<int, bool> whiteKeyPressed = {};
+  final Map<int, bool> blackKeyPressed = {};
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final whiteKeyCount = 52; // total white keys on an 88-key piano
     final whiteKeyWidth = screenWidth / whiteKeyCount;
-    final whiteKeyHeight = 200.0;
-    final blackKeyWidth = whiteKeyWidth * 0.6;
-    final blackKeyHeight = whiteKeyHeight * 0.6;
 
-    // White keys in order starting from A0
+    final whiteKeyHeight = 220.0; // arbitrary fixed height for white keys
+    final blackKeyHeight = whiteKeyHeight * (3.5 / 5.5); // scale according to real-world ratio
+    final blackKeyWidth = whiteKeyWidth * 0.6; // keep width ratio as before
+
     final whiteKeys = [
-      'A', 'B', // first partial octave
+      'A', 'B',
       'C', 'D', 'E', 'F', 'G', 'A', 'B',
       'C', 'D', 'E', 'F', 'G', 'A', 'B',
       'C', 'D', 'E', 'F', 'G', 'A', 'B',
@@ -22,21 +30,23 @@ class Piano extends StatelessWidget {
       'C', 'D', 'E', 'F', 'G', 'A', 'B',
       'C', 'D', 'E', 'F', 'G', 'A', 'B',
       'C', 'D', 'E', 'F', 'G', 'A', 'B',
-      'C' // final C8
+      'C'
     ];
 
-    // Build white keys
+    final blackKeyPattern = {'C': true, 'D': true, 'F': true, 'G': true, 'A': true};
+
     List<Widget> buildWhiteKeys() {
       return List.generate(whiteKeys.length, (index) {
+        final isPressed = whiteKeyPressed[index] ?? false;
         return GestureDetector(
-          onTap: () {
-            print('White key ${whiteKeys[index]} pressed');
-          },
+          onTapDown: (_) => setState(() => whiteKeyPressed[index] = true),
+          onTapUp: (_) => setState(() => whiteKeyPressed[index] = false),
+          onTapCancel: () => setState(() => whiteKeyPressed[index] = false),
           child: Container(
             width: whiteKeyWidth,
             height: whiteKeyHeight,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isPressed ? Colors.yellow[200] : Colors.white,
               border: Border.all(color: Colors.black),
             ),
           ),
@@ -44,28 +54,31 @@ class Piano extends StatelessWidget {
       });
     }
 
-    // Black keys appear after these white notes in an octave
-    final blackKeyPattern = {'C': true, 'D': true, 'F': true, 'G': true, 'A': true};
-
-    // Build black keys
     List<Widget> buildBlackKeys() {
       List<Widget> keys = [];
-      for (int i = 0; i < whiteKeys.length - 1; i++) { // <-- skip last white key
+      for (int i = 0; i < whiteKeys.length - 1; i++) {
         if (blackKeyPattern.containsKey(whiteKeys[i])) {
+          final isPressed = blackKeyPressed[i] ?? false;
           double left = (i + 1) * whiteKeyWidth - blackKeyWidth / 2;
           keys.add(Positioned(
             left: left,
             top: 0,
             child: GestureDetector(
-              onTap: () {
-                print('Black key above ${whiteKeys[i]} pressed');
-              },
+              onTapDown: (_) => setState(() => blackKeyPressed[i] = true),
+              onTapUp: (_) => setState(() => blackKeyPressed[i] = false),
+              onTapCancel: () => setState(() => blackKeyPressed[i] = false),
               child: Container(
                 width: blackKeyWidth,
                 height: blackKeyHeight,
                 decoration: BoxDecoration(
-                  color: Colors.black,
-                  borderRadius: BorderRadius.circular(4),
+                  color: isPressed ? Colors.yellow[200] : Colors.black,
+                  border: Border.all(color: Colors.black, width: 1),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.zero,
+                    topRight: Radius.zero,
+                    bottomLeft: Radius.circular(4),
+                    bottomRight: Radius.circular(4),
+                  ),
                 ),
               ),
             ),
@@ -79,10 +92,7 @@ class Piano extends StatelessWidget {
       height: whiteKeyHeight,
       child: Stack(
         children: [
-          Row(
-            mainAxisSize: MainAxisSize.max,
-            children: buildWhiteKeys(),
-          ),
+          Row(children: buildWhiteKeys()),
           ...buildBlackKeys(),
         ],
       ),
