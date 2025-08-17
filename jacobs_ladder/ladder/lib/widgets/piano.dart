@@ -11,16 +11,15 @@ class _PianoState extends State<Piano> {
   final Map<int, bool> whiteKeyPressed = {};
   final Map<int, bool> blackKeyPressed = {};
 
-  // Fixed total piano width for 52 keys
   static const double fixedPianoWidth = 1560.0;
+  static const double whiteKeyHeight = 110.0;
+  static const double blackKeyHeight = 70.0;
+  static const double blackKeyWidthRatio = 0.6;
 
   @override
   Widget build(BuildContext context) {
-    // Calculate key sizes based on fixed width
     final double whiteKeyWidth = fixedPianoWidth / 52;
-    final double whiteKeyHeight = 220.0 * 0.5; // 110 px, scaled vertically
-    final double blackKeyHeight = (220.0 * (3.5 / 5.5)) * 0.5; // ~70 px
-    final double blackKeyWidth = whiteKeyWidth * 0.6;
+    final double blackKeyWidth = whiteKeyWidth * blackKeyWidthRatio;
 
     final whiteKeys = [
       'A', 'B',
@@ -75,8 +74,6 @@ class _PianoState extends State<Piano> {
                   color: isPressed ? Colors.yellow[200] : Colors.black,
                   border: Border.all(color: Colors.black, width: 1),
                   borderRadius: const BorderRadius.only(
-                    topLeft: Radius.zero,
-                    topRight: Radius.zero,
                     bottomLeft: Radius.circular(4),
                     bottomRight: Radius.circular(4),
                   ),
@@ -89,14 +86,50 @@ class _PianoState extends State<Piano> {
       return keys;
     }
 
-    return Center(
+    // Panel dimensions
+    const double bottomExtensionWidth = 30.0;
+    const double topExtensionHeight = 100.0;
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
       child: SizedBox(
-        width: fixedPianoWidth,
-        height: whiteKeyHeight,
+        width: fixedPianoWidth + 2 * bottomExtensionWidth,
+        height: whiteKeyHeight + topExtensionHeight, // ✅ no bottom extension
         child: Stack(
+          clipBehavior: Clip.none,
           children: [
-            Row(children: buildWhiteKeys()),
-            ...buildBlackKeys(),
+            // Wooden panel background
+            Positioned(
+              left: 0,
+              top: 0,
+              child: Container(
+                width: fixedPianoWidth + 2 * bottomExtensionWidth,
+                height: whiteKeyHeight + topExtensionHeight, // ✅ stops at keys
+                decoration: BoxDecoration(
+                  image: const DecorationImage(
+                    image: AssetImage('assets/gradient.png'),
+                    fit: BoxFit.cover,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+
+            // Piano keys (shifted right to account for left extension)
+            Positioned(
+              left: bottomExtensionWidth,
+              top: topExtensionHeight,
+              child: SizedBox(
+                width: fixedPianoWidth,
+                height: whiteKeyHeight,
+                child: Stack(
+                  children: [
+                    Row(children: buildWhiteKeys()),
+                    ...buildBlackKeys(),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
