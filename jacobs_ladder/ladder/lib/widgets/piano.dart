@@ -11,21 +11,16 @@ class _PianoState extends State<Piano> {
   final Map<int, bool> whiteKeyPressed = {};
   final Map<int, bool> blackKeyPressed = {};
 
+  // Fixed total piano width for 52 keys
+  static const double fixedPianoWidth = 1560.0;
+
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final usableWidth = screenWidth < 1560 ? 1560 : screenWidth;
-    final whiteKeyWidth = usableWidth / 52;
-
-
-    // Original heights (real-world proportions)
-    final originalWhiteKeyHeight = 220.0;
-    final originalBlackKeyHeight = originalWhiteKeyHeight * (3.5 / 5.5);
-
-    // Scale down vertically by 50%
-    final whiteKeyHeight = originalWhiteKeyHeight * 0.5; // 110 px
-    final blackKeyHeight = originalBlackKeyHeight * 0.5; // ~70 px
-    final blackKeyWidth = whiteKeyWidth * 0.6; // width ratio unchanged
+    // Calculate key sizes based on fixed width
+    final double whiteKeyWidth = fixedPianoWidth / 52;
+    final double whiteKeyHeight = 220.0 * 0.5; // 110 px, scaled vertically
+    final double blackKeyHeight = (220.0 * (3.5 / 5.5)) * 0.5; // ~70 px
+    final double blackKeyWidth = whiteKeyWidth * 0.6;
 
     final whiteKeys = [
       'A', 'B',
@@ -94,13 +89,16 @@ class _PianoState extends State<Piano> {
       return keys;
     }
 
-    return SizedBox(
-      height: whiteKeyHeight,
-      child: Stack(
-        children: [
-          Row(children: buildWhiteKeys()),
-          ...buildBlackKeys(),
-        ],
+    return Center(
+      child: SizedBox(
+        width: fixedPianoWidth,
+        height: whiteKeyHeight,
+        child: Stack(
+          children: [
+            Row(children: buildWhiteKeys()),
+            ...buildBlackKeys(),
+          ],
+        ),
       ),
     );
   }
