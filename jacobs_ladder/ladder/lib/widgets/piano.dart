@@ -11,16 +11,17 @@ class _PianoState extends State<Piano> {
   final Map<int, bool> whiteKeyPressed = {};
   final Map<int, bool> blackKeyPressed = {};
 
-  static const double fixedPianoWidth = 1560.0;
   static const double whiteKeyHeight = 110.0;
   static const double blackKeyHeight = 70.0;
   static const double blackKeyWidthRatio = 0.6;
 
   @override
   Widget build(BuildContext context) {
-    final double whiteKeyWidth = fixedPianoWidth / 52;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final pianoWidth = screenWidth * 0.9;
+    final double whiteKeyWidth = pianoWidth / 52;
     final double blackKeyWidth = whiteKeyWidth * blackKeyWidthRatio;
-
+    
     final whiteKeys = [
       'A', 'B',
       'C', 'D', 'E', 'F', 'G', 'A', 'B',
@@ -93,8 +94,8 @@ class _PianoState extends State<Piano> {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: SizedBox(
-        width: fixedPianoWidth + 2 * bottomExtensionWidth,
-        height: whiteKeyHeight + topExtensionHeight, // ✅ no bottom extension
+        width: pianoWidth + 2 * bottomExtensionWidth,
+        height: whiteKeyHeight + topExtensionHeight, // no bottom extension
         child: Stack(
           clipBehavior: Clip.none,
           children: [
@@ -103,8 +104,8 @@ class _PianoState extends State<Piano> {
               left: 0,
               top: 0,
               child: Container(
-                width: fixedPianoWidth + 2 * bottomExtensionWidth,
-                height: whiteKeyHeight + topExtensionHeight, // ✅ stops at keys
+                width: pianoWidth + 2 * bottomExtensionWidth,
+                height: whiteKeyHeight + topExtensionHeight, // stops at keys
                 decoration: BoxDecoration(
                   image: const DecorationImage(
                     image: AssetImage('assets/gradient.png'),
@@ -120,7 +121,7 @@ class _PianoState extends State<Piano> {
               left: bottomExtensionWidth,
               top: topExtensionHeight,
               child: SizedBox(
-                width: fixedPianoWidth,
+                width: pianoWidth,
                 height: whiteKeyHeight,
                 child: Stack(
                   children: [
