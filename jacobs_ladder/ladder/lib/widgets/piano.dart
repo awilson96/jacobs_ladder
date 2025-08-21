@@ -11,17 +11,39 @@ class _PianoState extends State<Piano> {
   final Map<int, bool> whiteKeyPressed = {};
   final Map<int, bool> blackKeyPressed = {};
 
-  static const double whiteKeyHeight = 110.0;
-  static const double blackKeyHeight = 70.0;
+  // Ratios for black keys relative to white keys
+  static const double blackKeyHeightRatio = 0.65;
   static const double blackKeyWidthRatio = 0.6;
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    // Scaling bounds
+    const minWindowHeight = 350.0; // smallest vertical window
+    const maxWindowHeight = 700.0; // cap growth
+    const minWhiteKeyHeight = 110.0;
+    const maxWhiteKeyHeight = 180.0;
+
+    // Linear factor [0,1]
+    double tLinear = ((screenHeight - minWindowHeight) /
+            (maxWindowHeight - minWindowHeight))
+        .clamp(0.0, 1.0);
+
+    // Parabolic factor
+    double t = 0.5 * tLinear * tLinear; // quadratic growth
+
+    // Scale key heights
+    final whiteKeyHeight =
+        minWhiteKeyHeight + (maxWhiteKeyHeight - minWhiteKeyHeight) * t;
+    final blackKeyHeight = whiteKeyHeight * blackKeyHeightRatio;
+
+    // Piano width (fixed proportion of screen)
     final pianoWidth = screenWidth * 0.9;
     final double whiteKeyWidth = pianoWidth / 52;
     final double blackKeyWidth = whiteKeyWidth * blackKeyWidthRatio;
-    
+
     final whiteKeys = [
       'A', 'B',
       'C', 'D', 'E', 'F', 'G', 'A', 'B',
@@ -95,7 +117,7 @@ class _PianoState extends State<Piano> {
       scrollDirection: Axis.horizontal,
       child: SizedBox(
         width: pianoWidth + 2 * bottomExtensionWidth,
-        height: whiteKeyHeight + topExtensionHeight, // no bottom extension
+        height: whiteKeyHeight + topExtensionHeight,
         child: Stack(
           clipBehavior: Clip.none,
           children: [
@@ -105,7 +127,7 @@ class _PianoState extends State<Piano> {
               top: 0,
               child: Container(
                 width: pianoWidth + 2 * bottomExtensionWidth,
-                height: whiteKeyHeight + topExtensionHeight, // stops at keys
+                height: whiteKeyHeight + topExtensionHeight,
                 decoration: BoxDecoration(
                   image: const DecorationImage(
                     image: AssetImage('assets/gradient.png'),
@@ -116,7 +138,7 @@ class _PianoState extends State<Piano> {
               ),
             ),
 
-            // Piano keys (shifted right to account for left extension)
+            // Piano keys
             Positioned(
               left: bottomExtensionWidth,
               top: topExtensionHeight,
