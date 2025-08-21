@@ -8,8 +8,7 @@ from itertools import product
 from .Enums import NoteDivisions
 
 def determine_octave(message_heap: list, note: int):
-    """
-    Determine if the current note is an octave of any of the currently active notes.
+    """Determine if the current note is an octave of any of the currently active notes.
 
     Args:
         note (int): an active note to check against self.message_heap

@@ -113,8 +113,7 @@ class _PianoState extends State<Piano> {
     const double bottomExtensionWidth = 30.0;
     const double topExtensionHeight = 100.0;
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
+    return InteractiveViewer(
       child: SizedBox(
         width: pianoWidth + 2 * bottomExtensionWidth,
         height: whiteKeyHeight + topExtensionHeight,
@@ -137,7 +136,6 @@ class _PianoState extends State<Piano> {
                 ),
               ),
             ),
-
             // Piano keys
             Positioned(
               left: bottomExtensionWidth,

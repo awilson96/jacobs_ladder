@@ -1,7 +1,9 @@
 // System imports
+import 'dart:developer' as dev;
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:window_size/window_size.dart' as window_size;
+import 'package:flutter/foundation.dart';
 
 // Local imports
 import 'app.dart';
@@ -9,7 +11,8 @@ import 'app.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+  if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
+    dev.log("Desktop Application was selected");
     final screens = await window_size.getScreenList();
     if (screens.isNotEmpty) {
       final screen = screens.first;
@@ -24,6 +27,8 @@ void main() async {
       // fallback if no screen info
       window_size.setWindowMinSize(const Size(400, 350));
     }
+  } else {
+      dev.log("Web application was selected.");
   }
 
   runApp(const LadderApp());

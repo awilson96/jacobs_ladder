@@ -6,19 +6,31 @@ class Page1 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: Center(child: Text('Page 1')),
-        ),
-        // Piano container
-        Center(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: const Piano(),
+    return Scaffold(
+      body: Stack(
+        children: [
+          const Align(
+            alignment: Alignment.topCenter,
+            child: Padding(
+              padding: EdgeInsets.only(top: 24),
+              child: Text('Page 1', style: TextStyle(fontSize: 20)),
+            ),
           ),
-        ),
-      ],
+
+          // Piano anchored to the bottom-center
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Center(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: const Piano(),
+              ),
+            )
+          ),
+        ],
+      ),
     );
   }
 }
