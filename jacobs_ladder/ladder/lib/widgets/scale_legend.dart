@@ -17,12 +17,20 @@ class ScaleLegend extends StatelessWidget {
         return 0;
       });
 
+    // Approximate width for 25 characters at fontSize 14
+    const double charWidth = 8; // adjust if needed
+    const double textWidth = 25 * charWidth;
+
+    // Offset to visually center the legend despite padding spaces
+    const double leftOffset = 12 * charWidth;
+
     return Align(
-      alignment: Alignment.topCenter,
+      alignment: Alignment.topCenter, // center the column horizontally
       child: Padding(
-        padding: const EdgeInsets.only(top: 16.0),
+        padding: const EdgeInsets.only(top: 16.0, left: leftOffset),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start, // left-align items in the column
           children: orderedEntries.map((entry) {
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -39,12 +47,15 @@ class ScaleLegend extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  // Header text
-                  Text(
-                    entry.key,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
+                  // Fixed-width text
+                  SizedBox(
+                    width: textWidth,
+                    child: Text(
+                      entry.key.padRight(25), // ensure 25 characters
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],

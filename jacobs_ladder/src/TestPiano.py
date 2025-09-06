@@ -31,8 +31,17 @@ message = bytearray()
 # Block 1: Live keys
 message += make_header("Live keys")
 message += all_Cs_mask
-# Block 2: C_MAJOR suggestion
-message += make_header("C_MAJOR")
+# Block 2: C Major suggestion
+message += make_header("C Major")
+message += all_Cs_mask
+# Block 3: A Major suggestion
+message += make_header("A Major")
+message += all_Cs_mask
+# Block 4: B Major suggestion
+message += make_header("B Major")
+message += all_Cs_mask
+# Block 5: D Major suggestion
+message += make_header("D Major")
 message += all_Cs_mask
 
 # Send via UDP
