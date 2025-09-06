@@ -1,8 +1,5 @@
-import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
-
-import '../models/key_mapping.dart';
+import '../controllers/piano_udp_controller.dart';
 
 class Piano extends StatefulWidget {
   const Piano({super.key});
@@ -15,9 +12,7 @@ class _PianoState extends State<Piano> {
   final Map<int, bool> whiteKeyPressed = {};
   final Map<int, bool> blackKeyPressed = {};
 
-  // UDP variables
-  RawDatagramSocket? _socket;
-  List<int> _lastMessage = List.filled(11, 0); // Previous 11-byte state
+  late PianoUdpController _udpController;
 
   // Ratios for black keys relative to white keys
   static const double blackKeyHeightRatio = 0.65;
@@ -41,60 +36,24 @@ class _PianoState extends State<Piano> {
   @override
   void initState() {
     super.initState();
-    _startUdpListener();
+    _udpController = PianoUdpController(
+      onKeyUpdate: (isWhite, keyIndex, pressed) {
+        setState(() {
+          if (isWhite) {
+            whiteKeyPressed[keyIndex] = pressed;
+          } else {
+            blackKeyPressed[keyIndex] = pressed;
+          }
+        });
+      },
+    );
+    _udpController.start();
   }
 
   @override
   void dispose() {
-    _socket?.close();
+    _udpController.dispose();
     super.dispose();
-  }
-
-  /// UDP listener setup on localhost
-  void _startUdpListener() async {
-    _socket = await RawDatagramSocket.bind(InternetAddress.loopbackIPv4, 50000);
-    _socket!.listen((event) {
-      if (event == RawSocketEvent.read) {
-        Datagram? datagram = _socket!.receive();
-        if (datagram != null && datagram.data.length == 11) {
-          _handleIncomingMessage(datagram.data);
-        }
-      }
-    });
-  }
-
-  /// Handle incoming 11-byte message using bitToKeyMap
-  void _handleIncomingMessage(Uint8List data) {
-    setState(() {
-      for (int byteIndex = 0; byteIndex < 11; byteIndex++) {
-        int newByte = data[byteIndex];
-        int oldByte = _lastMessage[byteIndex];
-
-        for (int bit = 0; bit < 8; bit++) {
-          int linearIndex = byteIndex * 8 + bit;
-
-          if (linearIndex >= bitToKeyMap.length) continue; // ignore out-of-range
-
-          bool oldOn = (oldByte & (1 << bit)) != 0;
-          bool newOn = (newByte & (1 << bit)) != 0;
-
-          if (oldOn != newOn) {
-            MapEntry<bool, int> mapping = bitToKeyMap[linearIndex];
-            bool isWhite = mapping.key;
-            int keyIndex = mapping.value;
-
-            if (isWhite) {
-              whiteKeyPressed[keyIndex] = newOn;
-            } else {
-              blackKeyPressed[keyIndex] = newOn;
-            }
-          }
-        }
-      }
-
-      // Save message for next comparison
-      _lastMessage = List<int>.from(data);
-    });
   }
 
   List<Widget> buildWhiteKeys(double whiteKeyWidth, double whiteKeyHeight) {
