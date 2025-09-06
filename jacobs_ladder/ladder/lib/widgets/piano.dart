@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'dart:typed_data';
+
 import '../controllers/piano_udp_controller.dart';
 
 class Piano extends StatefulWidget {
-  const Piano({super.key});
+  /// Callback to notify parent about updated suggestion headers
+  final void Function(Map<String, Uint8List>)? onSuggestionUpdate;
+
+  const Piano({super.key, this.onSuggestionUpdate});
 
   @override
   _PianoState createState() => _PianoState();
@@ -18,7 +23,6 @@ class _PianoState extends State<Piano> {
   static const double blackKeyHeightRatio = 0.65;
   static const double blackKeyWidthRatio = 0.6;
 
-  // Piano keys — **keep your original array exactly**
   final List<String> whiteKeys = [
     'A', 'B',
     'C', 'D', 'E', 'F', 'G', 'A', 'B',
@@ -45,6 +49,12 @@ class _PianoState extends State<Piano> {
             blackKeyPressed[keyIndex] = pressed;
           }
         });
+      },
+      onSuggestionUpdate: (suggestions) {
+        // Notify the parent widget (Page1) about updated suggestions
+        if (widget.onSuggestionUpdate != null) {
+          widget.onSuggestionUpdate!(suggestions);
+        }
       },
     );
     _udpController.start();

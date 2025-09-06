@@ -5,8 +5,15 @@ import '../models/key_mapping.dart';
 
 typedef KeyUpdateCallback = void Function(bool isWhite, int keyIndex, bool pressed);
 
+/// New callback to notify suggestion headers to the UI
+typedef SuggestionUpdateCallback = void Function(Map<String, Uint8List> suggestions);
+
 class PianoUdpController {
   final KeyUpdateCallback onKeyUpdate;
+
+  /// Optional callback for suggestion headers
+  final SuggestionUpdateCallback? onSuggestionUpdate;
+
   RawDatagramSocket? _socket;
 
   // Store the last mask for LIVE_KEYS (yellow)
@@ -15,7 +22,10 @@ class PianoUdpController {
   // Store all suggestion masks (header -> 11-byte mask)
   final Map<String, Uint8List> suggestionMasks = {};
 
-  PianoUdpController({required this.onKeyUpdate});
+  PianoUdpController({
+    required this.onKeyUpdate,
+    this.onSuggestionUpdate,
+  });
 
   /// Start listening for UDP messages
   Future<void> start() async {
@@ -57,6 +67,11 @@ class PianoUdpController {
       } else {
         // Store suggestion masks for later
         suggestionMasks[header] = mask;
+
+        // Notify the UI of updated suggestions
+        if (onSuggestionUpdate != null) {
+          onSuggestionUpdate!(Map<String, Uint8List>.from(suggestionMasks));
+        }
       }
     }
   }
