@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/app_theme.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -22,6 +23,24 @@ class _SettingsPageState extends State<SettingsPage> {
   void initState() {
     super.initState();
     _selectedTheme = widget.currentTheme;
+    _loadTheme();
+  }
+
+  Future<void> _loadTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedTheme = prefs.getString('app_theme');
+    if (savedTheme != null) {
+      setState(() {
+        _selectedTheme = AppTheme.values
+            .firstWhere((t) => t.toString() == savedTheme, orElse: () => widget.currentTheme);
+      });
+      widget.updateTheme(_selectedTheme);
+    }
+  }
+
+  Future<void> _saveTheme(AppTheme theme) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('app_theme', theme.toString());
   }
 
   @override
@@ -55,6 +74,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       _selectedTheme = value;
                     });
                     widget.updateTheme(value);
+                    _saveTheme(value); // persist selection
                   }
                 },
               ),

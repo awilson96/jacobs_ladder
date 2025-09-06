@@ -1,35 +1,33 @@
 import 'package:flutter/material.dart';
+import 'controllers/settings_controller.dart';
+import 'services/settings_service.dart';
 import 'models/app_theme.dart';
 import 'pages/home_page.dart';
 
-class LadderApp extends StatefulWidget {
-  const LadderApp({super.key});
+class LadderApp extends StatelessWidget {
+  const LadderApp({super.key, required this.settingsController});
 
-  @override
-  State<LadderApp> createState() => _LadderAppState();
-}
-
-class _LadderAppState extends State<LadderApp> {
-  AppTheme _currentTheme = AppTheme.dark;
-
-  void _updateTheme(AppTheme newTheme) {
-    setState(() {
-      _currentTheme = newTheme;
-    });
-  }
+  final SettingsController settingsController;
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Ladder',
-      theme: ThemeData.light(),
-      darkTheme: ThemeData.dark(),
-      themeMode: _currentTheme == AppTheme.dark ? ThemeMode.dark : ThemeMode.light,
-      home: HomePage(
-        title: 'Ladder',
-        currentTheme: _currentTheme,
-        updateTheme: _updateTheme,
-      ),
+    return AnimatedBuilder(
+      animation: settingsController,
+      builder: (context, _) {
+        return MaterialApp(
+          title: 'Ladder',
+          theme: ThemeData.light(),
+          darkTheme: ThemeData.dark(),
+          themeMode: settingsController.theme == AppTheme.dark
+              ? ThemeMode.dark
+              : ThemeMode.light,
+          home: HomePage(
+            title: 'Ladder',
+            currentTheme: settingsController.theme,
+            updateTheme: settingsController.updateTheme,
+          ),
+        );
+      },
     );
   }
 }
