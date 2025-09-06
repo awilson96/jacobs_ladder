@@ -9,54 +9,50 @@ class ScaleLegend extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Predefined fixed positions for each legend item
-    final positions = <Alignment>[
-      Alignment.topCenter,
-      Alignment.centerLeft,
-      Alignment.centerRight,
-      Alignment.bottomCenter,
-      Alignment.topLeft,
-      Alignment.topRight,
-      Alignment.bottomLeft,
-      Alignment.bottomRight,
-    ];
+    // Order headers to make sure Live keys is always first
+    final orderedEntries = headerColors.entries.toList()
+      ..sort((a, b) {
+        if (a.key == 'Live keys') return -1;
+        if (b.key == 'Live keys') return 1;
+        return 0;
+      });
 
-    int i = 0;
-    return Stack(
-      children: headerColors.entries.map((entry) {
-        final alignment = positions[i % positions.length];
-        final widget = Align(
-          alignment: alignment,
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Color box
-                Container(
-                  width: 16,
-                  height: 16,
-                  decoration: BoxDecoration(
-                    color: entry.value,
-                    border: Border.all(color: Colors.black),
+    return Align(
+      alignment: Alignment.topCenter,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: orderedEntries.map((entry) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Color box
+                  Container(
+                    width: 16,
+                    height: 16,
+                    decoration: BoxDecoration(
+                      color: entry.value,
+                      border: Border.all(color: Colors.black),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 4),
-                // Header text
-                Text(
-                  entry.key,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
+                  const SizedBox(width: 8),
+                  // Header text
+                  Text(
+                    entry.key,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-        );
-        i++;
-        return widget;
-      }).toList(),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
+      ),
     );
   }
 }

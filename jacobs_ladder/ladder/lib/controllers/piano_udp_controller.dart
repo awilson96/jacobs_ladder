@@ -5,7 +5,7 @@ import '../models/key_mapping.dart';
 
 typedef KeyUpdateCallback = void Function(bool isWhite, int keyIndex, bool pressed);
 
-/// New callback to notify suggestion headers to the UI
+/// Callback to notify suggestion headers to the UI
 typedef SuggestionUpdateCallback = void Function(Map<String, Uint8List> suggestions);
 
 class PianoUdpController {
@@ -16,7 +16,7 @@ class PianoUdpController {
 
   RawDatagramSocket? _socket;
 
-  // Store the last mask for LIVE_KEYS (yellow)
+  // Store the last mask for Live keys (yellow)
   List<int> _lastLiveMask = List.filled(11, 0);
 
   // Store all suggestion masks (header -> 11-byte mask)
@@ -50,6 +50,9 @@ class PianoUdpController {
     const int headerLength = 25;
     const int maskLength = 11;
 
+    // Temporary map for this message
+    final Map<String, Uint8List> newSuggestionMasks = {};
+
     while (offset + headerLength + maskLength <= data.length) {
       // Extract header
       String header = String.fromCharCodes(
@@ -61,22 +64,27 @@ class PianoUdpController {
       Uint8List mask = data.sublist(offset, offset + maskLength);
       offset += maskLength;
 
-      if (header == 'LIVE_KEYS') {
+      if (header == 'Live keys') {
         // Update yellow keys
         _updateLiveKeys(mask);
       } else {
-        // Store suggestion masks for later
-        suggestionMasks[header] = mask;
-
-        // Notify the UI of updated suggestions
-        if (onSuggestionUpdate != null) {
-          onSuggestionUpdate!(Map<String, Uint8List>.from(suggestionMasks));
-        }
+        // Collect suggestion headers from this message
+        newSuggestionMasks[header] = mask;
       }
+    }
+
+    // Replace old suggestion masks with new ones
+    suggestionMasks
+      ..clear()
+      ..addAll(newSuggestionMasks);
+
+    // Notify the UI once per message
+    if (onSuggestionUpdate != null) {
+      onSuggestionUpdate!(Map<String, Uint8List>.from(suggestionMasks));
     }
   }
 
-  /// Updates the yellow keys (LIVE_KEYS) based on incoming mask
+  /// Updates the yellow keys (Live keys) based on incoming mask
   void _updateLiveKeys(Uint8List mask) {
     for (int byteIndex = 0; byteIndex < 11; byteIndex++) {
       int newByte = mask[byteIndex];

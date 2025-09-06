@@ -2,60 +2,9 @@ import 'package:flutter/material.dart';
 import 'dart:typed_data';
 
 import '../widgets/piano.dart';
+import '../widgets/scale_legend.dart';
 
-/// A simple widget to display the legend of headers with their colors
-class PianoLegend extends StatelessWidget {
-  final Map<String, Color> headerColors;
-
-  const PianoLegend({super.key, required this.headerColors});
-
-  @override
-  Widget build(BuildContext context) {
-    // Fixed positions for up to 6 headers (can expand as needed)
-    final positions = [
-      Alignment.topCenter,
-      Alignment.topLeft,
-      Alignment.topRight,
-      Alignment.centerLeft,
-      Alignment.centerRight,
-      Alignment.bottomCenter,
-    ];
-
-    List<Widget> legendItems = [];
-    int index = 0;
-    headerColors.forEach((header, color) {
-      if (index >= positions.length) return; // ignore overflow for now
-      legendItems.add(
-        Align(
-          alignment: positions[index],
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: color,
-                    border: Border.all(color: Colors.black),
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Text(header, style: const TextStyle(fontSize: 16)),
-              ],
-            ),
-          ),
-        ),
-      );
-      index++;
-    });
-
-    return Stack(children: legendItems);
-  }
-}
-
-/// Page1 with Piano and legend
+/// Page1 with Piano and vertical stacked legend
 class Page1 extends StatefulWidget {
   const Page1({super.key});
 
@@ -64,18 +13,36 @@ class Page1 extends StatefulWidget {
 }
 
 class _Page1State extends State<Page1> {
-  // Map of header -> color (LIVE_KEYS always yellow)
-  final Map<String, Color> legendColors = {'LIVE_KEYS': Colors.yellow};
+  // Map of header -> Color (Live keys always yellow)
+  Map<String, Color> legendColors = {'Live keys': Colors.yellow};
 
-  /// Callback passed to Piano widget
+  // Default colors to cycle for new suggestions
+  final List<Color> suggestionColors = [
+    Colors.orange,
+    Colors.red,
+    Colors.green,
+    Colors.blue,
+    Colors.purple,
+    Colors.teal,
+  ];
+
+  /// Callback passed to Piano widget to update legend
   void updateLegend(Map<String, Uint8List> suggestions) {
     setState(() {
+      // Step 1: Re-initialize legend colors, keeping only Live keys
+      Map<String, Color> newLegendColors = {'Live keys': Colors.yellow};
+
+      // Step 2: Add all headers from the latest suggestions (except Live keys)
+      int colorIndex = 0;
       for (var header in suggestions.keys) {
-        // Assign a default color for new headers (orange here)
-        if (!legendColors.containsKey(header)) {
-          legendColors[header] = Colors.orange;
-        }
+        if (header == 'Live keys') continue;
+        newLegendColors[header] =
+            suggestionColors[colorIndex % suggestionColors.length];
+        colorIndex++;
       }
+
+      // Step 3: Replace old map with new map
+      legendColors = newLegendColors;
     });
   }
 
@@ -84,8 +51,8 @@ class _Page1State extends State<Page1> {
     return Scaffold(
       body: Stack(
         children: [
-          // Legend at fixed positions
-          PianoLegend(headerColors: legendColors),
+          // Use the updated ScaleLegend with vertical stacking
+          ScaleLegend(headerColors: legendColors),
 
           // Piano anchored to the bottom-center
           Positioned(

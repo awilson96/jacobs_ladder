@@ -28,9 +28,9 @@ all_off_mask = bytearray([0]*11)
 
 # Construct the UDP message
 message = bytearray()
-# Block 1: LIVE_KEYS
-message += make_header("LIVE_KEYS")
-message += all_off_mask
+# Block 1: Live keys
+message += make_header("Live keys")
+message += all_Cs_mask
 # Block 2: C_MAJOR suggestion
 message += make_header("C_MAJOR")
 message += all_Cs_mask
