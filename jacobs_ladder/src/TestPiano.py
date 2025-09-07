@@ -24,24 +24,59 @@ all_Cs_mask = bytearray([
     0b10000000   # byte 10
 ])
 
+Cmajor7_mask = bytearray([
+    0b00000000,  # byte 0
+    0b00000000,  # byte 1
+    0b00000000,  # byte 2
+    0b00000000,  # byte 3
+    0b00000000,  # byte 4
+    0b00000000,  # byte 5
+    0b10001000,  # byte 6
+    0b01000100,  # byte 7
+    0b00000000,  # byte 8
+    0b00000000,  # byte 9
+    0b00000000   # byte 10
+])
+
 all_off_mask = bytearray([0]*11)
 
 # Construct the UDP message
 message = bytearray()
 # Block 1: Live keys
 message += make_header("Live keys")
-message += all_Cs_mask
+message += Cmajor7_mask
 # Block 2: C Major suggestion
 message += make_header("C Major")
 message += all_Cs_mask
 # Block 3: A Major suggestion
-message += make_header("A Major")
+message += make_header("F Major")
 message += all_Cs_mask
 # Block 4: B Major suggestion
-message += make_header("B Major")
+message += make_header("G Major")
 message += all_Cs_mask
 # Block 5: D Major suggestion
 message += make_header("D Major")
+message += all_Cs_mask
+# Block 5: D Major suggestion
+message += make_header("E Major")
+message += all_Cs_mask
+# Block 5: D Major suggestion
+message += make_header("A Major")
+message += all_Cs_mask
+# Block 5: D Major suggestion
+message += make_header("Ab Major")
+message += all_Cs_mask
+# Block 5: D Major suggestion
+message += make_header("Bb Major")
+message += all_Cs_mask
+# Block 5: D Major suggestion
+message += make_header("Bb Harmonic Major")
+message += all_Cs_mask
+# Block 5: D Major suggestion
+message += make_header("Ab Harmonic Major")
+message += all_Cs_mask
+# Block 5: D Major suggestion
+message += make_header("Db Harmonic Major")
 message += all_Cs_mask
 
 # Send via UDP

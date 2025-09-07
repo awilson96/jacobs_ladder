@@ -77,7 +77,7 @@ class _PianoState extends State<Piano> {
           width: whiteKeyWidth,
           height: whiteKeyHeight,
           decoration: BoxDecoration(
-            color: isPressed ? Colors.yellow[200] : Colors.white,
+            color: isPressed ? Colors.red : Colors.white,
             border: Border.all(color: Colors.black),
           ),
         ),

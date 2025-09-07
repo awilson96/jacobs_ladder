@@ -7,9 +7,20 @@ class ScaleLegend extends StatelessWidget {
 
   const ScaleLegend({super.key, required this.headerColors});
 
+  /// Helper: split list into chunks of size [chunkSize]
+  List<List<MapEntry<String, Color>>> _chunkEntries(
+      List<MapEntry<String, Color>> entries, int chunkSize) {
+    List<List<MapEntry<String, Color>>> chunks = [];
+    for (var i = 0; i < entries.length; i += chunkSize) {
+      chunks.add(entries.sublist(
+          i, i + chunkSize > entries.length ? entries.length : i + chunkSize));
+    }
+    return chunks;
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Order headers to make sure Live keys is always first
+    // Always keep "Live keys" first
     final orderedEntries = headerColors.entries.toList()
       ..sort((a, b) {
         if (a.key == 'Live keys') return -1;
@@ -17,48 +28,57 @@ class ScaleLegend extends StatelessWidget {
         return 0;
       });
 
-    // Approximate width for 25 characters at fontSize 14
-    const double charWidth = 8; // adjust if needed
+    // Break into columns of 5
+    final chunks = _chunkEntries(orderedEntries, 5);
+
+    // Approximate width for 25 characters at fontSize 24
+    const double charWidth = 10;
     const double textWidth = 25 * charWidth;
 
-    // Offset to visually center the legend despite padding spaces
-    const double leftOffset = 12 * charWidth;
-
     return Align(
-      alignment: Alignment.topCenter, // center the column horizontally
-      child: Padding(
-        padding: const EdgeInsets.only(top: 16.0, left: leftOffset),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start, // left-align items in the column
-          children: orderedEntries.map((entry) {
+      alignment: Alignment.topCenter,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        padding: const EdgeInsets.only(top: 16.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: chunks.map((chunk) {
             return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4.0),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Color box
-                  Container(
-                    width: 16,
-                    height: 16,
-                    decoration: BoxDecoration(
-                      color: entry.value,
-                      border: Border.all(color: Colors.black),
+              padding: const EdgeInsets.only(right: 32.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: chunk.map((entry) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6.0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Color box
+                        Container(
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            color: entry.value,
+                            border: Border.all(color: Colors.black),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        // Fixed-width text
+                        SizedBox(
+                          width: textWidth,
+                          child: Text(
+                            entry.key.padRight(25),
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  // Fixed-width text
-                  SizedBox(
-                    width: textWidth,
-                    child: Text(
-                      entry.key.padRight(25), // ensure 25 characters
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
+                  );
+                }).toList(),
               ),
             );
           }).toList(),

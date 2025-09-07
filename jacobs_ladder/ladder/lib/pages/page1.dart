@@ -14,25 +14,24 @@ class Page1 extends StatefulWidget {
 
 class _Page1State extends State<Page1> {
   // Map of header -> Color (Live keys always yellow)
-  Map<String, Color> legendColors = {'Live keys': Colors.yellow};
+  Map<String, Color> legendColors = {'Live keys': Colors.red};
 
   // Default colors to cycle for new suggestions
   final List<Color> suggestionColors = [
     Colors.orange,
-    Colors.red,
+    Colors.yellow,
     Colors.green,
+    Colors.teal,
     Colors.blue,
     Colors.purple,
-    Colors.teal,
+    Colors.pink,
   ];
 
   /// Callback passed to Piano widget to update legend
   void updateLegend(Map<String, Uint8List> suggestions) {
     setState(() {
-      // Step 1: Re-initialize legend colors, keeping only Live keys
-      Map<String, Color> newLegendColors = {'Live keys': Colors.yellow};
+      Map<String, Color> newLegendColors = {'Live keys': Colors.red};
 
-      // Step 2: Add all headers from the latest suggestions (except Live keys)
       int colorIndex = 0;
       for (var header in suggestions.keys) {
         if (header == 'Live keys') continue;
@@ -41,7 +40,6 @@ class _Page1State extends State<Page1> {
         colorIndex++;
       }
 
-      // Step 3: Replace old map with new map
       legendColors = newLegendColors;
     });
   }
