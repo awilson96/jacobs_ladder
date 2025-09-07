@@ -2,7 +2,7 @@ import socket
 
 # UDP settings
 UDP_IP = "127.0.0.1"
-UDP_PORT = 50000
+UDP_PORT = 50005
 
 # Helper function to make header exactly 25 chars
 def make_header(name):

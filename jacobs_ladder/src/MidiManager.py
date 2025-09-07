@@ -18,7 +18,7 @@ from .TimeKeeper import TimeKeeper
 from .Udp import UDPSender
 
 from .Logging import setup_logging
-from .Utilities import determine_octave, parse_midi_controller_config
+from .Utilities import determine_octave, parse_midi_controller_config, pack_message
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
@@ -72,8 +72,10 @@ class MidiController:
 
         # Set up logging
         if self.input_port == "jacobs_ladder":
+            # TODO: Make this work
             self.logger = setup_logging("User")
         elif self.input_port == "jacob":
+            # TODO: Make this work
             self.logger = setup_logging("Jacob")
         else:
             self.logger = setup_logging(self.input_port)
@@ -112,18 +114,14 @@ class MidiController:
             self.logger.info("Tuning is disabled")
         self.just_intonation = JustIntonation(**kwargs.get("tuning_config", None))
             
-        sys.exit(0)
         # Transposition Management
         self.transpose = 0
         
         # Communication with Jacob
         if self.output_ports == [f"jacobs_ladder_{i}" for i in range(12)]:
-            self.udp_sender = UDPSender(host='127.0.0.1', port=50001)
+            self.udp_sender = UDPSender(host='127.0.0.1', port=50005)
             
-            # Time keeping FIXME: Get rid of this implimentation in favor of QPC stuff
-            time_keeper = TimeKeeper(sender=self.udp_sender, tempo=self.tempo, time_signature=self.time_signature)
-            
-            self.udp_receiver = JacobMonitor(timekeeper=time_keeper, host='127.0.0.1', port=50000, print_msgs=self.print_msgs, tuning_mode=self.tuning_mode)
+            self.udp_receiver = JacobMonitor(host='127.0.0.1', port=50000, print_msgs=self.print_msgs, tuning_mode=self.tuning_mode)
             self.udp_receiver.start_listener()
             
             self.logger.info("Initializing connection to Jacob...")
@@ -220,13 +218,15 @@ class MidiController:
             heapq.heappush(self.message_heap, [note + self.transpose, instance_index, status, velocity, None])
             
             chord = self.music_theory.determine_chord(self.message_heap)
-            candidate_scales = self.music_theory.get_candidate_scales(message_heap=self.message_heap, scale_includes=self.scale_includes)
+            candidate_scales, bitmasks = self.music_theory.get_candidate_scales(message_heap=self.message_heap, scale_includes=self.scale_includes)
             key = self.music_theory.find_key()
             if self.print_key and not self.print_avoid_notes_only:
                 print(f"key: {key}")
             if self.print_scales and not self.print_avoid_notes_only:
                 print(f"candidate_scales: {candidate_scales}")
-            self.udp_sender.send(candidate_scales)
+
+            data_bytes = pack_message(message_heap=self.message_heap, candidate_scales=candidate_scales, bitmasks=bitmasks)
+            self.udp_sender.send_bytes(data_bytes)
 
             if self.tuning_mode == "static" or self.tuning_mode == "dynamic":
                 tuning_index, pitch_bend_message, message_heap = self.just_intonation.get_tuning_info(message_heap=self.message_heap, current_msg=[note, instance_index, status, velocity, None], dt=dt, key=key)
@@ -240,7 +240,7 @@ class MidiController:
                 self.midi_out_ports[instance_index].send_message([224, 0, 64])
             
             self.midi_out_ports[instance_index].send_message([status, note, velocity])
-            self.udp_sender.send(self.message_heap)
+            # self.udp_sender.send(self.message_heap)
 
         elif status in range(128, 144):
             instance_index = self.in_use_indices[note]
@@ -259,8 +259,22 @@ class MidiController:
             else:
                 heapq.heappush(self.sustained_notes, [note, instance_index, status, velocity])
             
-            self.udp_sender.send(self.message_heap)
             chord = self.music_theory.determine_chord(self.message_heap)
+            candidate_scales, bitmasks = self.music_theory.get_candidate_scales(message_heap=self.message_heap, scale_includes=self.scale_includes)
+            key = self.music_theory.find_key()
+            if self.print_key and not self.print_avoid_notes_only:
+                print(f"key: {key}")
+            if self.print_scales and not self.print_avoid_notes_only:
+                print(f"candidate_scales: {candidate_scales}")
+
+            print(f"{self.message_heap=}")
+            data_bytes = pack_message(message_heap=self.message_heap, candidate_scales=candidate_scales, bitmasks=bitmasks)
+            if data_bytes:
+                self.udp_sender.send_bytes(data_bytes)
+            else:
+                all_off_mask = bytearray([0]*11)
+                self.udp_sender.send_bytes(b"Live keys" + all_off_mask)
+
 
         elif status in range(176, 192) and note == 64:
             if velocity == 127:

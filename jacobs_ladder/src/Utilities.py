@@ -182,6 +182,56 @@ def remove_harmonically_redundant_intervals(message_heap: list[list[int]]):
     
     return harmonically_unique_message_heap
 
+def sanitize_scale_name(name: str) -> str:
+    """Convert special characters to ASCII-safe equivalents."""
+    return (name
+            .replace("♭", "b")
+            .replace("♯", "#"))
+
+def build_live_keys_bitmask(message_heap: list[list[int]]) -> list[int]:
+    """Build a bitmask of currently sounding notes from message_heap."""
+    
+    bitmask_bytes = [0] * ((88 + 7) // 8)  # 88 bits → 11 bytes
+
+    notes = [note[0] for note in message_heap]
+
+    for i, midi_note in enumerate(range(21, 109)):
+        if midi_note in notes:
+            byte_index = i // 8
+            bit_index = i % 8
+            bitmask_bytes[byte_index] |= (1 << bit_index)
+    
+    return bitmask_bytes
+
+def pack_message(message_heap: list[list[int]], candidate_scales: list[str], bitmasks: list[list[int]]) -> bytes:
+    """Pack the scales messages for sending to the dart app
+
+    Args:
+        message_heap (list[list[int]]): MIDI messages (note is at index 0).
+        candidate_scales (list[str]): Candidate scales.
+        bitmasks (list[list[int]]): Bitmasks for each candidate scale.
+
+    Returns:
+        bytes: Packed datagram.
+    """
+    if message_heap == []:
+        return None
+    data_bytes = b""
+
+    # --- Add Live Keys entry first ---
+    live_keys = build_live_keys_bitmask(message_heap)
+    header = "Live keys".ljust(25)[:25].encode("ascii")
+    data_bytes += header + bytes(live_keys)
+
+    # --- Add candidate scales entries ---
+    for candidate_scale, bitmask in zip(candidate_scales, bitmasks):
+        safe_name = sanitize_scale_name(candidate_scale)
+        header = safe_name.ljust(25)[:25].encode("ascii")
+        data_bytes += header + bytes(bitmask)
+
+    return data_bytes
+
+
 if __name__ == "__main__":
     path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "configuration", "yaml", "default_config.yaml")
     config = parse_midi_controller_config(config_path=path)

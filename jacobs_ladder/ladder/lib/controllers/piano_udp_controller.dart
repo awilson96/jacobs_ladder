@@ -40,7 +40,7 @@ class PianoUdpController {
   });
 
   Future<void> start() async {
-    _socket = await RawDatagramSocket.bind(InternetAddress.loopbackIPv4, 50000);
+    _socket = await RawDatagramSocket.bind(InternetAddress.loopbackIPv4, 50005);
     _socket!.listen((event) {
       if (event == RawSocketEvent.read) {
         Datagram? datagram = _socket!.receive();

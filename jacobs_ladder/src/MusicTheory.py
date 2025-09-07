@@ -111,47 +111,58 @@ class MusicTheory:
         avoid_notes = set({'A', 'A♭', 'B', 'B♭', 'C', 'D', 'D♭', 'E', 'E♭', 'F', 'G', 'G♭'})
         
         candidate_keys = []
+        bitmasks = []
         if "Diminished" in scale_includes:
             for scale in self.diminished_scales:
                 if all(element in scale.notes for element in unique_notes):
                     candidate_keys.append(scale)
+                    bitmasks.append(self.get_bitmask(scale=scale))
         if "Ionian" in scale_includes:
             for scale in self.major_scales:
                 if all(element in scale.notes for element in unique_notes):
                     candidate_keys.append(scale)
+                    bitmasks.append(self.get_bitmask(scale=scale))
         if "Harmonic Minor" in scale_includes:
             for scale in self.harmonic_minor_scales:
                 if all(element in scale.notes for element in unique_notes):
                     candidate_keys.append(scale)
+                    bitmasks.append(self.get_bitmask(scale=scale))
         if "Harmonic Major" in scale_includes:
             for scale in self.harmonic_major_scales:
                 if all(element in scale.notes for element in unique_notes):
                     candidate_keys.append(scale)
+                    bitmasks.append(self.get_bitmask(scale=scale))
         if "Melodic Minor" in scale_includes:
             for scale in self.melodic_minor_scales:
                 if all(element in scale.notes for element in unique_notes):
                     candidate_keys.append(scale)
+                    bitmasks.append(self.get_bitmask(scale=scale))
         if "Diminished Blues" in scale_includes:
             for scale in self.diminished_blues_scales:
                 if all(element in scale.notes for element in unique_notes):
                     candidate_keys.append(scale)
+                    bitmasks.append(self.get_bitmask(scale=scale))
         if "Diminished Harmonic" in scale_includes:
             for scale in self.diminished_harmonic_scales:
                 if all(element in scale.notes for element in unique_notes):
                     candidate_keys.append(scale)
+                    bitmasks.append(self.get_bitmask(scale=scale))
         if "Whole Tone" in scale_includes:
             for scale in self.whole_tone_scales:
                 if all(element in scale.notes for element in unique_notes):
                     candidate_keys.append(scale)
+                    bitmasks.append(self.get_bitmask(scale=scale))
         if "Pentatonic" in scale_includes:
             for scale in self.pentatonic_scales:
                 if all(element in scale.notes for element in unique_notes):
                     candidate_keys.append(scale)
+                    bitmasks.append(self.get_bitmask(scale=scale))
         if "Avoid" in scale_includes:
             for candidate in candidate_keys:
                 for note in candidate.notes:
                     if note in avoid_notes:
                         avoid_notes.remove(note)
+                        bitmasks.append(self.get_bitmask(scale=scale))
             if self.print:
                 if avoid_notes:
                     print(f"\r{sorted(list(avoid_notes))}")
@@ -159,7 +170,22 @@ class MusicTheory:
         candidate_key_names = [candidate_key.name for candidate_key in candidate_keys]
 
         self.history.enqueue(candidate_key_names)
-        return candidate_key_names
+        return candidate_key_names, bitmasks
+    
+    def get_bitmask(self, scale: Scale) -> list[int]:
+        """Returns a tightly packed list of uint8_t (0-255) representing the 88-key bitmask.
+        Bit 0 of the first byte is MIDI note 21 (A0).
+        """
+        bitmask_bytes = [0] * ((88 + 7) // 8)  # 88 bits → 11 bytes
+        
+        for i, midi in enumerate(range(21, 109)):
+            note = self.int_note[midi]
+            if note in scale.notes:
+                byte_index = i // 8
+                bit_index = i % 8
+                bitmask_bytes[byte_index] |= (1 << bit_index)
+        
+        return bitmask_bytes
     
     def find_key(self):
         """First check to see if the original key still is compatible with the currently held down notes.  If so return this. 

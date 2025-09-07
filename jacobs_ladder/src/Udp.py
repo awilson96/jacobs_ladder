@@ -25,6 +25,20 @@ class UDPSender:
         except Exception as e:
             if self.print_msgs: print(f"Error sending data: {e}")
 
+    def send_bytes(self, data_bytes: bytes):
+        """Send raw bytes to the Dart app
+
+        Args:
+            data_bytes (bytes): header bitmask pair for dart app
+        """
+        try:
+            self.sock.sendto(data_bytes, self.send_address)
+            if self.print_msgs:
+                print(f"Sent bytes: {data_bytes}")
+        except Exception as e:
+            if self.print_msgs:
+                print(f"Error sending data: {e}")
+
     def stop(self):
         self.sock.close()
 
