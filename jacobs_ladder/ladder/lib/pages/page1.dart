@@ -105,7 +105,7 @@ class _Page1State extends State<Page1> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Page 1"),
+        title: null,
         actions: [
           Builder(
             builder: (context) => IconButton(
@@ -180,7 +180,7 @@ class _Page1State extends State<Page1> {
       body: Stack(
         children: [
           // ScaleLegend with vertical stacking
-          ScaleLegend(headerColors: legendColors),
+          ScaleLegend(headerColors: legendColors, horizontalNudge: 100,),
 
           // Piano anchored to the bottom-center
           Positioned(
