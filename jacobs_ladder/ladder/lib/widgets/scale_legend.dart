@@ -45,7 +45,7 @@ class ScaleLegend extends StatelessWidget {
 
         // If too wide, reduce font size and allow more rows
         while (estimatedColumns * columnWidth > constraints.maxWidth && fontSize > 12) {
-          fontSize -= 2; // shrink text
+          fontSize -= 1; // shrink text
           rowsPerColumn += 1; // allow more rows
           estimatedColumns = (totalEntries / rowsPerColumn).ceil();
 
@@ -63,7 +63,7 @@ class ScaleLegend extends StatelessWidget {
             scrollDirection: Axis.vertical,
             padding: const EdgeInsets.only(top: 16.0),
             child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal, // 👈 allow sideways scrolling
+              scrollDirection: Axis.horizontal,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
