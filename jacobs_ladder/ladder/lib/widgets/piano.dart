@@ -16,6 +16,7 @@ class Piano extends StatefulWidget {
 class _PianoState extends State<Piano> {
   final Map<int, bool> whiteKeyPressed = {};
   final Map<int, bool> blackKeyPressed = {};
+  final Map<int, Color> keyColors = {}; // <-- new map for suggestion/live colors
 
   late PianoUdpController _udpController;
 
@@ -51,10 +52,15 @@ class _PianoState extends State<Piano> {
         });
       },
       onSuggestionUpdate: (suggestions) {
-        // Notify the parent widget (Page1) about updated suggestions
         if (widget.onSuggestionUpdate != null) {
           widget.onSuggestionUpdate!(suggestions);
         }
+      },
+      onKeyColorUpdate: (colors) {
+        setState(() {
+          keyColors.clear();
+          keyColors.addAll(colors);
+        });
       },
     );
     _udpController.start();
@@ -66,9 +72,24 @@ class _PianoState extends State<Piano> {
     super.dispose();
   }
 
+  Color _getKeyColor(int index, bool isWhite) {
+    // Encode key to match controller
+    int key = isWhite ? index : index + 100;
+
+    // Use suggestion/live override first
+    if (keyColors.containsKey(key)) return keyColors[key]!;
+
+    // Live press override
+    if (isWhite && (whiteKeyPressed[index] ?? false)) return Colors.red;
+    if (!isWhite && (blackKeyPressed[index] ?? false)) return Colors.red;
+
+    // Default colors
+    return isWhite ? Colors.white : Colors.black;
+  }
+
   List<Widget> buildWhiteKeys(double whiteKeyWidth, double whiteKeyHeight) {
     return List.generate(whiteKeys.length, (index) {
-      final isPressed = whiteKeyPressed[index] ?? false;
+      final color = _getKeyColor(index, true);
       return GestureDetector(
         onTapDown: (_) => setState(() => whiteKeyPressed[index] = true),
         onTapUp: (_) => setState(() => whiteKeyPressed[index] = false),
@@ -77,7 +98,7 @@ class _PianoState extends State<Piano> {
           width: whiteKeyWidth,
           height: whiteKeyHeight,
           decoration: BoxDecoration(
-            color: isPressed ? Colors.red : Colors.white,
+            color: color,
             border: Border.all(color: Colors.black),
           ),
         ),
@@ -89,7 +110,7 @@ class _PianoState extends State<Piano> {
     List<Widget> keys = [];
     for (int i = 0; i < whiteKeys.length - 1; i++) {
       if (blackKeyPattern.containsKey(whiteKeys[i])) {
-        final isPressed = blackKeyPressed[i] ?? false;
+        final color = _getKeyColor(i, false);
         double left = (i + 1) * whiteKeyWidth - blackKeyWidth / 2;
         keys.add(Positioned(
           left: left,
@@ -102,7 +123,7 @@ class _PianoState extends State<Piano> {
               width: blackKeyWidth,
               height: blackKeyHeight,
               decoration: BoxDecoration(
-                color: isPressed ? Colors.yellow[200] : Colors.black,
+                color: color,
                 border: Border.all(color: Colors.black, width: 1),
                 borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(4),
@@ -146,7 +167,7 @@ class _PianoState extends State<Piano> {
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            // Wooden panel background
+            // Background
             Positioned(
               left: 0,
               top: 0,
@@ -162,7 +183,7 @@ class _PianoState extends State<Piano> {
                 ),
               ),
             ),
-            // Piano keys
+            // Keys
             Positioned(
               left: bottomExtensionWidth,
               top: topExtensionHeight,
