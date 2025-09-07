@@ -3,8 +3,9 @@ import 'dart:typed_data';
 
 import '../widgets/piano.dart';
 import '../widgets/scale_legend.dart';
+import '../services/settings_service.dart';
 
-/// Page1 with Piano and vertical stacked legend
+/// Page1 with Piano, vertical stacked legend, and persistent settings
 class Page1 extends StatefulWidget {
   const Page1({super.key});
 
@@ -13,7 +14,7 @@ class Page1 extends StatefulWidget {
 }
 
 class _Page1State extends State<Page1> {
-  // Map of header -> Color (Live keys always yellow)
+  // Map of header -> Color (Live keys always red)
   Map<String, Color> legendColors = {'Live keys': Colors.red};
 
   // Default colors to cycle for new suggestions
@@ -35,6 +36,29 @@ class _Page1State extends State<Page1> {
 
   // Keep latest suggestions so we can re-filter instantly
   Map<String, Uint8List> latestSuggestions = {};
+
+  final SettingsService _settingsService = SettingsService();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFilters();
+  }
+
+  Future<void> _loadFilters() async {
+    final major = await _settingsService.getShowMajor();
+    final harmonicMinor = await _settingsService.getShowHarmonicMinor();
+    final harmonicMajor = await _settingsService.getShowHarmonicMajor();
+    final melodicMinor = await _settingsService.getShowMelodicMinor();
+
+    setState(() {
+      showMajor = major;
+      showHarmonicMinor = harmonicMinor;
+      showHarmonicMajor = harmonicMajor;
+      showMelodicMinor = melodicMinor;
+      _applyFilters();
+    });
+  }
 
   /// Helper to determine if a header should be filtered
   bool _shouldIncludeHeader(String header) {
@@ -105,19 +129,23 @@ class _Page1State extends State<Page1> {
             CheckboxListTile(
               title: const Text("Major Scales"),
               value: showMajor,
-              onChanged: (val) {
+              onChanged: (val) async {
+                final value = val ?? true;
+                await _settingsService.setShowMajor(value);
                 setState(() {
-                  showMajor = val ?? true;
-                  _applyFilters(); // reapply immediately
+                  showMajor = value;
+                  _applyFilters();
                 });
               },
             ),
             CheckboxListTile(
               title: const Text("Harmonic Minor Scales"),
               value: showHarmonicMinor,
-              onChanged: (val) {
+              onChanged: (val) async {
+                final value = val ?? true;
+                await _settingsService.setShowHarmonicMinor(value);
                 setState(() {
-                  showHarmonicMinor = val ?? true;
+                  showHarmonicMinor = value;
                   _applyFilters();
                 });
               },
@@ -125,9 +153,11 @@ class _Page1State extends State<Page1> {
             CheckboxListTile(
               title: const Text("Harmonic Major Scales"),
               value: showHarmonicMajor,
-              onChanged: (val) {
+              onChanged: (val) async {
+                final value = val ?? true;
+                await _settingsService.setShowHarmonicMajor(value);
                 setState(() {
-                  showHarmonicMajor = val ?? true;
+                  showHarmonicMajor = value;
                   _applyFilters();
                 });
               },
@@ -135,9 +165,11 @@ class _Page1State extends State<Page1> {
             CheckboxListTile(
               title: const Text("Melodic Minor Scales"),
               value: showMelodicMinor,
-              onChanged: (val) {
+              onChanged: (val) async {
+                final value = val ?? true;
+                await _settingsService.setShowMelodicMinor(value);
                 setState(() {
-                  showMelodicMinor = val ?? true;
+                  showMelodicMinor = value;
                   _applyFilters();
                 });
               },
