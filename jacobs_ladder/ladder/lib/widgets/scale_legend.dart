@@ -28,62 +28,89 @@ class ScaleLegend extends StatelessWidget {
         return 0;
       });
 
-    // Break into columns of 5
-    final chunks = _chunkEntries(orderedEntries, 5);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Default font size and rows
+        double fontSize = 24;
+        int rowsPerColumn = 5;
 
-    // Approximate width for 25 characters at fontSize 24
-    const double charWidth = 10;
-    const double textWidth = 25 * charWidth;
+        // Estimate how many columns we’d need
+        int totalEntries = orderedEntries.length;
+        int estimatedColumns = (totalEntries / rowsPerColumn).ceil();
 
-    return Align(
-      alignment: Alignment.topCenter,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        padding: const EdgeInsets.only(top: 16.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: chunks.map((chunk) {
-            return Padding(
-              padding: const EdgeInsets.only(right: 32.0),
-              child: Column(
+        // Rough width per column
+        double charWidth = fontSize * 0.6;
+        double textWidth = 25 * charWidth;
+        double columnWidth = textWidth + 24 + 12 + 32; // text + box + padding
+
+        // If too wide, reduce font size and allow more rows
+        while (estimatedColumns * columnWidth > constraints.maxWidth && fontSize > 12) {
+          fontSize -= 2; // shrink text
+          rowsPerColumn += 1; // allow more rows
+          estimatedColumns = (totalEntries / rowsPerColumn).ceil();
+
+          charWidth = fontSize * 0.6;
+          textWidth = 25 * charWidth;
+          columnWidth = textWidth + 24 + 12 + 32;
+        }
+
+        // Break into chunks with adjusted rowsPerColumn
+        final chunks = _chunkEntries(orderedEntries, rowsPerColumn);
+
+        return Align(
+          alignment: Alignment.topCenter,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            padding: const EdgeInsets.only(top: 16.0),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal, // 👈 allow sideways scrolling
+              child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: chunk.map((entry) {
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: chunks.map((chunk) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6.0),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Color box
-                        Container(
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            color: entry.value,
-                            border: Border.all(color: Colors.black),
+                    padding: const EdgeInsets.only(right: 32.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: chunk.map((entry) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 6.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Color box
+                              Container(
+                                width: 24,
+                                height: 24,
+                                decoration: BoxDecoration(
+                                  color: entry.value,
+                                  border: Border.all(color: Colors.black),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              // Fixed-width text
+                              SizedBox(
+                                width: textWidth,
+                                child: Text(
+                                  entry.key.padRight(25),
+                                  style: TextStyle(
+                                    fontSize: fontSize,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        // Fixed-width text
-                        SizedBox(
-                          width: textWidth,
-                          child: Text(
-                            entry.key.padRight(25),
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
+                        );
+                      }).toList(),
                     ),
                   );
                 }).toList(),
               ),
-            );
-          }).toList(),
-        ),
-      ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
