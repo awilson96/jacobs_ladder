@@ -58,13 +58,13 @@ all_off_mask = bytearray([0]*11)
 message = bytearray()
 # Block 1: Live keys
 message += make_header("Live keys")
-message += all_Cs_mask
-# Block 2: C Major suggestion
-message += make_header("C Major")
-message += mask1
-# Block 3: A Major suggestion
-message += make_header("F Major")
-message += mask2
+message += all_off_mask
+# # Block 2: C Major suggestion
+# message += make_header("C Major")
+# message += mask1
+# # Block 3: A Major suggestion
+# message += make_header("F Major")
+# message += mask2
 # # Block 4: B Major suggestion
 # message += make_header("G Major")
 # message += all_Cs_mask

@@ -267,13 +267,11 @@ class MidiController:
             if self.print_scales and not self.print_avoid_notes_only:
                 print(f"candidate_scales: {candidate_scales}")
 
-            print(f"{self.message_heap=}")
             data_bytes = pack_message(message_heap=self.message_heap, candidate_scales=candidate_scales, bitmasks=bitmasks)
             if data_bytes:
                 self.udp_sender.send_bytes(data_bytes)
             else:
-                all_off_mask = bytearray([0]*11)
-                self.udp_sender.send_bytes(b"Live keys" + all_off_mask)
+                self.udp_sender.send_bytes("Live keys"[:25].ljust(25).encode('ascii') + bytearray([0]*11))
 
 
         elif status in range(176, 192) and note == 64:
