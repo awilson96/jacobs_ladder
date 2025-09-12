@@ -1,4 +1,3 @@
-// piano_udp_controller.dart
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
@@ -33,11 +32,66 @@ class PianoUdpController {
     Colors.pink,
   ];
 
+  // Filter flags for different scale types
+  bool showMajor = true;
+  bool showHarmonicMinor = true;
+  bool showHarmonicMajor = true;
+  bool showMelodicMinor = true;
+
   PianoUdpController({
     required this.onKeyUpdate,
     this.onSuggestionUpdate,
     this.onKeyColorUpdate,
+    this.showMajor = true,
+    this.showHarmonicMinor = true,
+    this.showHarmonicMajor = true,
+    this.showMelodicMinor = true,
   });
+
+  /// Static function for header filtering
+  static bool shouldIncludeHeader(
+    String header, {
+    required bool showMajor,
+    required bool showHarmonicMinor,
+    required bool showHarmonicMajor,
+    required bool showMelodicMinor,
+  }) {
+    if (header == 'Live keys') return true;
+    if (header.contains('Harmonic Minor')) return showHarmonicMinor;
+    if (header.contains('Harmonic Major')) return showHarmonicMajor;
+    if (header.contains('Melodic Minor')) return showMelodicMinor;
+
+    final majorPattern = RegExp(r'^[A-G][b#]?\sMajor');
+    if (majorPattern.hasMatch(header)) return showMajor;
+
+    return true;
+  }
+
+  /// Update filter flags dynamically
+  void updateFilters({
+    bool? major,
+    bool? harmonicMinor,
+    bool? harmonicMajor,
+    bool? melodicMinor,
+  }) {
+    if (major != null) showMajor = major;
+    if (harmonicMinor != null) showHarmonicMinor = harmonicMinor;
+    if (harmonicMajor != null) showHarmonicMajor = harmonicMajor;
+    if (melodicMinor != null) showMelodicMinor = melodicMinor;
+  }
+
+  /// Set suggestion masks from external source (e.g., Page1) and update colors
+  void setSuggestionMasks(Map<String, Uint8List> masks) {
+    suggestionMasks
+      ..clear()
+      ..addAll(masks);
+
+    if (onSuggestionUpdate != null) {
+      onSuggestionUpdate!(Map<String, Uint8List>.from(suggestionMasks));
+    }
+
+    _updateSuggestionColors();
+  }
 
   Future<void> start() async {
     _socket = await RawDatagramSocket.bind(InternetAddress.loopbackIPv4, 50005);
@@ -73,7 +127,13 @@ class PianoUdpController {
 
       if (header == 'Live keys') {
         _updateLiveKeys(mask);
-      } else {
+      } else if (shouldIncludeHeader(
+        header,
+        showMajor: showMajor,
+        showHarmonicMinor: showHarmonicMinor,
+        showHarmonicMajor: showHarmonicMajor,
+        showMelodicMinor: showMelodicMinor,
+      )) {
         newSuggestionMasks[header] = mask;
       }
     }
@@ -114,13 +174,12 @@ class PianoUdpController {
     if (onKeyColorUpdate == null) return;
 
     Map<int, Color> finalColorMask = {};
-    Set<int> skipKeys = {};  // Live keys or overlapping notes
+    Set<int> skipKeys = {};
     Set<int> visitedKeys = {};
 
-    // Helper to encode key index with isWhite
     int encodeKey(bool isWhite, int keyIndex) => isWhite ? keyIndex : keyIndex + 100;
 
-    // First, mark live keys red
+    // Mark live keys red
     for (int byteIndex = 0; byteIndex < 11; byteIndex++) {
       int byte = _lastLiveMask[byteIndex];
       for (int bit = 0; bit < 8; bit++) {
@@ -135,7 +194,7 @@ class PianoUdpController {
       }
     }
 
-    // Now process all suggestion masks
+    // Process suggestion masks
     int colorIndex = 0;
     for (var mask in suggestionMasks.values) {
       Color color = suggestionColors[colorIndex % suggestionColors.length];
@@ -166,5 +225,4 @@ class PianoUdpController {
 
     onKeyColorUpdate!(finalColorMask);
   }
-
 }

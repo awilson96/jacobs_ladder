@@ -96,7 +96,7 @@ class _Page2State extends State<Page2> {
         ),
         floatingActionButton: Builder(
           builder: (context) {
-            final tabIndex = DefaultTabController.of(context)!.index;
+            final tabIndex = DefaultTabController.of(context).index;
             return FloatingActionButton(
               onPressed: () => showAddLickDialog(
                 context,

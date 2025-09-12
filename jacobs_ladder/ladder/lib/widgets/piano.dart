@@ -7,7 +7,14 @@ class Piano extends StatefulWidget {
   /// Callback to notify parent about updated suggestion headers
   final void Function(Map<String, Uint8List>)? onSuggestionUpdate;
 
-  const Piano({super.key, this.onSuggestionUpdate});
+  /// Filtered suggestion masks from Page1
+  final Map<String, Uint8List> suggestionMasks;
+
+  const Piano({
+    super.key,
+    this.onSuggestionUpdate,
+    required this.suggestionMasks,
+  });
 
   @override
   _PianoState createState() => _PianoState();
@@ -16,17 +23,15 @@ class Piano extends StatefulWidget {
 class _PianoState extends State<Piano> {
   final Map<int, bool> whiteKeyPressed = {};
   final Map<int, bool> blackKeyPressed = {};
-  final Map<int, Color> keyColors = {}; // <-- new map for suggestion/live colors
+  final Map<int, Color> keyColors = {}; // For suggestion/live colors
 
   late PianoUdpController _udpController;
 
-  // Ratios for black keys relative to white keys
   static const double blackKeyHeightRatio = 0.65;
   static const double blackKeyWidthRatio = 0.6;
 
   final List<String> whiteKeys = [
-    'A', 'B',
-    'C', 'D', 'E', 'F', 'G', 'A', 'B',
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'A', 'B',
     'C', 'D', 'E', 'F', 'G', 'A', 'B',
     'C', 'D', 'E', 'F', 'G', 'A', 'B',
     'C', 'D', 'E', 'F', 'G', 'A', 'B',
@@ -63,7 +68,21 @@ class _PianoState extends State<Piano> {
         });
       },
     );
+
     _udpController.start();
+
+    // Pass initial suggestion masks to controller
+    _udpController.setSuggestionMasks(widget.suggestionMasks);
+  }
+
+  @override
+  void didUpdateWidget(covariant Piano oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Update suggestion masks whenever they change
+    if (oldWidget.suggestionMasks != widget.suggestionMasks) {
+      _udpController.setSuggestionMasks(widget.suggestionMasks);
+    }
   }
 
   @override
@@ -76,14 +95,11 @@ class _PianoState extends State<Piano> {
     // Encode key to match controller
     int key = isWhite ? index : index + 100;
 
-    // Use suggestion/live override first
     if (keyColors.containsKey(key)) return keyColors[key]!;
 
-    // Live press override
     if (isWhite && (whiteKeyPressed[index] ?? false)) return Colors.red;
     if (!isWhite && (blackKeyPressed[index] ?? false)) return Colors.red;
 
-    // Default colors
     return isWhite ? Colors.white : Colors.black;
   }
 
@@ -167,7 +183,6 @@ class _PianoState extends State<Piano> {
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            // Background
             Positioned(
               left: 0,
               top: 0,
@@ -183,7 +198,6 @@ class _PianoState extends State<Piano> {
                 ),
               ),
             ),
-            // Keys
             Positioned(
               left: bottomExtensionWidth,
               top: topExtensionHeight,

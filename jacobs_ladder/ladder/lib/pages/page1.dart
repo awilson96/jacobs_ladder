@@ -51,12 +51,16 @@ class _Page1State extends State<Page1> {
     final harmonicMajor = await _settingsService.getShowHarmonicMajor();
     final melodicMinor = await _settingsService.getShowMelodicMinor();
 
-    setState(() {
-      showMajor = major;
-      showHarmonicMinor = harmonicMinor;
-      showHarmonicMajor = harmonicMajor;
-      showMelodicMinor = melodicMinor;
-      _applyFilters();
+    // Defer the setState to avoid calling during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() {
+        showMajor = major;
+        showHarmonicMinor = harmonicMinor;
+        showHarmonicMajor = harmonicMajor;
+        showMelodicMinor = melodicMinor;
+        _applyFilters();
+      });
     });
   }
 
@@ -68,7 +72,6 @@ class _Page1State extends State<Page1> {
     if (header.contains('Harmonic Major')) return showHarmonicMajor;
     if (header.contains('Melodic Minor')) return showMelodicMinor;
 
-    // Detect "X Major" (e.g., "C Major") – first character + space + Major
     final majorPattern = RegExp(r'^[A-G][b#]?\sMajor');
     if (majorPattern.hasMatch(header)) return showMajor;
 
@@ -79,26 +82,41 @@ class _Page1State extends State<Page1> {
   void updateLegend(Map<String, Uint8List> suggestions) {
     latestSuggestions = suggestions; // cache for instant filter updates
 
-    _applyFilters();
+    // Defer setState to avoid calling during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _applyFilters();
+    });
   }
 
   /// Apply current filter settings to the cached suggestions
   void _applyFilters() {
-    setState(() {
-      Map<String, Color> newLegendColors = {'Live keys': Colors.red};
-      int colorIndex = 0;
+    // This function can be called safely here because we deferred via addPostFrameCallback
+    Map<String, Color> newLegendColors = {'Live keys': Colors.red};
+    int colorIndex = 0;
 
-      for (var header in latestSuggestions.keys) {
-        if (!_shouldIncludeHeader(header)) continue;
-        if (header == 'Live keys') continue;
+    for (var header in latestSuggestions.keys) {
+      if (!_shouldIncludeHeader(header)) continue;
+      if (header == 'Live keys') continue;
 
-        newLegendColors[header] =
-            suggestionColors[colorIndex % suggestionColors.length];
-        colorIndex++;
+      newLegendColors[header] =
+          suggestionColors[colorIndex % suggestionColors.length];
+      colorIndex++;
+    }
+
+    legendColors = newLegendColors;
+    setState(() {}); // rebuild with updated legend colors
+  }
+
+  /// Return only the filtered suggestion masks
+  Map<String, Uint8List> get filteredSuggestionMasks {
+    final Map<String, Uint8List> filtered = {};
+    latestSuggestions.forEach((header, mask) {
+      if (_shouldIncludeHeader(header)) {
+        filtered[header] = mask;
       }
-
-      legendColors = newLegendColors;
     });
+    return filtered;
   }
 
   @override
@@ -132,9 +150,12 @@ class _Page1State extends State<Page1> {
               onChanged: (val) async {
                 final value = val ?? true;
                 await _settingsService.setShowMajor(value);
-                setState(() {
-                  showMajor = value;
-                  _applyFilters();
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (!mounted) return;
+                  setState(() {
+                    showMajor = value;
+                    _applyFilters();
+                  });
                 });
               },
             ),
@@ -144,9 +165,12 @@ class _Page1State extends State<Page1> {
               onChanged: (val) async {
                 final value = val ?? true;
                 await _settingsService.setShowHarmonicMinor(value);
-                setState(() {
-                  showHarmonicMinor = value;
-                  _applyFilters();
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (!mounted) return;
+                  setState(() {
+                    showHarmonicMinor = value;
+                    _applyFilters();
+                  });
                 });
               },
             ),
@@ -156,9 +180,12 @@ class _Page1State extends State<Page1> {
               onChanged: (val) async {
                 final value = val ?? true;
                 await _settingsService.setShowHarmonicMajor(value);
-                setState(() {
-                  showHarmonicMajor = value;
-                  _applyFilters();
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (!mounted) return;
+                  setState(() {
+                    showHarmonicMajor = value;
+                    _applyFilters();
+                  });
                 });
               },
             ),
@@ -168,9 +195,12 @@ class _Page1State extends State<Page1> {
               onChanged: (val) async {
                 final value = val ?? true;
                 await _settingsService.setShowMelodicMinor(value);
-                setState(() {
-                  showMelodicMinor = value;
-                  _applyFilters();
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (!mounted) return;
+                  setState(() {
+                    showMelodicMinor = value;
+                    _applyFilters();
+                  });
                 });
               },
             ),
@@ -180,7 +210,7 @@ class _Page1State extends State<Page1> {
       body: Stack(
         children: [
           // ScaleLegend with vertical stacking
-          ScaleLegend(headerColors: legendColors, horizontalNudge: 100,),
+          ScaleLegend(headerColors: legendColors, horizontalNudge: 100),
 
           // Piano anchored to the bottom-center
           Positioned(
@@ -192,6 +222,7 @@ class _Page1State extends State<Page1> {
                 scrollDirection: Axis.horizontal,
                 child: Piano(
                   onSuggestionUpdate: updateLegend,
+                  suggestionMasks: filteredSuggestionMasks,
                 ),
               ),
             ),
