@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
+import '../models/color_mapping.dart';
 import '../models/key_mapping.dart';
 
 typedef KeyUpdateCallback = void Function(bool isWhite, int keyIndex, bool pressed);
@@ -189,20 +190,7 @@ class PianoUdpController {
       String header = entry.key;
       Uint8List mask = entry.value;
 
-      Color color;
-      if (header.startsWith('A ')) color = Colors.red;
-      else if (header.startsWith('Ab')) color = Colors.pink;
-      else if (header.startsWith('Bb')) color = Colors.deepOrange;
-      else if (header.startsWith('B ')) color = Colors.orange;
-      else if (header.startsWith('C')) color = Colors.yellow;
-      else if (header.startsWith('Db')) color = Colors.lightGreen;
-      else if (header.startsWith('D ')) color = Colors.green.shade800;
-      else if (header.startsWith('Eb')) color = Colors.teal;
-      else if (header.startsWith('E ')) color = Colors.lightBlue;
-      else if (header.startsWith('F')) color = Colors.indigo;
-      else if (header.startsWith('Gb')) color = Colors.purple.shade200;
-      else if (header.startsWith('G ')) color = Colors.purple.shade900;
-      else color = Colors.grey; // default fallback
+      Color color = colorForHeader(header);
 
       for (int byteIndex = 0; byteIndex < 11; byteIndex++) {
         int byte = mask[byteIndex];

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:typed_data';
 
+import '../models/color_mapping.dart';
 import '../widgets/piano.dart';
 import '../widgets/scale_legend.dart';
 import '../services/settings_service.dart';
@@ -85,30 +86,12 @@ class _Page1State extends State<Page1> {
       if (!_shouldIncludeHeader(header)) continue;
       if (header == 'Live keys') continue;
 
-      newLegendColors[header] = _colorForHeader(header);
+      newLegendColors[header] = colorForHeader(header);
     }
 
     legendColors = newLegendColors;
 
     setState(() {});
-  }
-
-  /// Determine color based on first letter(s) of header
-  Color _colorForHeader(String header) {
-    if (header.startsWith('A')) return Colors.red;
-    if (header.startsWith('Bb')) return Colors.deepOrange;
-    if (header.startsWith('B')) return Colors.orange;
-    if (header.startsWith('C')) return Colors.yellow;
-    if (header.startsWith('Db')) return Colors.lightGreen;
-    if (header.startsWith('D')) return Colors.green[800]!;
-    if (header.startsWith('Eb')) return Colors.teal;
-    if (header.startsWith('E')) return Colors.lightBlue;
-    if (header.startsWith('F')) return Colors.indigo[900]!;
-    if (header.startsWith('Gb')) return Colors.purple[200]!;
-    if (header.startsWith('G')) return Colors.purple[800]!;
-    if (header.startsWith('Ab')) return Colors.pink;
-    // Fallback
-    return Colors.grey;
   }
 
   /// Return only the filtered suggestion masks
