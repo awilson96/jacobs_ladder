@@ -14,19 +14,8 @@ class Page1 extends StatefulWidget {
 }
 
 class _Page1State extends State<Page1> {
-  // Map of header -> Color (Live keys always red)
-  Map<String, Color> legendColors = {'Live keys': Colors.red};
-
-  // Default colors to cycle for new suggestions
-  final List<Color> suggestionColors = [
-    Colors.orange,
-    Colors.yellow,
-    Colors.green,
-    Colors.teal,
-    Colors.blue,
-    Colors.purple,
-    Colors.pink,
-  ];
+  // Map of header -> Color (Live keys always green now)
+  Map<String, Color> legendColors = {'Live keys': Colors.green};
 
   // Settings state
   bool showMajor = true;
@@ -51,7 +40,6 @@ class _Page1State extends State<Page1> {
     final harmonicMajor = await _settingsService.getShowHarmonicMajor();
     final melodicMinor = await _settingsService.getShowMelodicMinor();
 
-    // Defer the setState to avoid calling during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       setState(() {
@@ -80,9 +68,8 @@ class _Page1State extends State<Page1> {
 
   /// Updates the legend with filtered suggestions
   void updateLegend(Map<String, Uint8List> suggestions) {
-    latestSuggestions = suggestions; // cache for instant filter updates
+    latestSuggestions = suggestions;
 
-    // Defer setState to avoid calling during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _applyFilters();
@@ -91,21 +78,37 @@ class _Page1State extends State<Page1> {
 
   /// Apply current filter settings to the cached suggestions
   void _applyFilters() {
-    // This function can be called safely here because we deferred via addPostFrameCallback
-    Map<String, Color> newLegendColors = {'Live keys': Colors.red};
-    int colorIndex = 0;
+    // Safe color assignment
+    Map<String, Color> newLegendColors = {'Live keys': Colors.green};
 
     for (var header in latestSuggestions.keys) {
       if (!_shouldIncludeHeader(header)) continue;
       if (header == 'Live keys') continue;
 
-      newLegendColors[header] =
-          suggestionColors[colorIndex % suggestionColors.length];
-      colorIndex++;
+      newLegendColors[header] = _colorForHeader(header);
     }
 
     legendColors = newLegendColors;
-    setState(() {}); // rebuild with updated legend colors
+
+    setState(() {});
+  }
+
+  /// Determine color based on first letter(s) of header
+  Color _colorForHeader(String header) {
+    if (header.startsWith('A')) return Colors.red;
+    if (header.startsWith('Bb')) return Colors.deepOrange;
+    if (header.startsWith('B')) return Colors.orange;
+    if (header.startsWith('C')) return Colors.yellow;
+    if (header.startsWith('Db')) return Colors.lightGreen;
+    if (header.startsWith('D')) return Colors.green[800]!;
+    if (header.startsWith('Eb')) return Colors.teal;
+    if (header.startsWith('E')) return Colors.lightBlue;
+    if (header.startsWith('F')) return Colors.indigo[900]!;
+    if (header.startsWith('Gb')) return Colors.purple[200]!;
+    if (header.startsWith('G')) return Colors.purple[800]!;
+    if (header.startsWith('Ab')) return Colors.pink;
+    // Fallback
+    return Colors.grey;
   }
 
   /// Return only the filtered suggestion masks
@@ -209,10 +212,7 @@ class _Page1State extends State<Page1> {
       ),
       body: Stack(
         children: [
-          // ScaleLegend with vertical stacking
           ScaleLegend(headerColors: legendColors, horizontalNudge: 100),
-
-          // Piano anchored to the bottom-center
           Positioned(
             left: 0,
             right: 0,

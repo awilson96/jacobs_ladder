@@ -1,3 +1,4 @@
+// piano_udp_controller.dart
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
@@ -20,17 +21,6 @@ class PianoUdpController {
 
   // All suggestion masks
   final Map<String, Uint8List> suggestionMasks = {};
-
-  // Colors for suggestions
-  final List<Color> suggestionColors = [
-    Colors.orange,
-    Colors.yellow,
-    Colors.green,
-    Colors.teal,
-    Colors.blue,
-    Colors.purple,
-    Colors.pink,
-  ];
 
   // Filter flags for different scale types
   bool showMajor = true;
@@ -179,7 +169,7 @@ class PianoUdpController {
 
     int encodeKey(bool isWhite, int keyIndex) => isWhite ? keyIndex : keyIndex + 100;
 
-    // Mark live keys red
+    // --- Live keys are now green ---
     for (int byteIndex = 0; byteIndex < 11; byteIndex++) {
       int byte = _lastLiveMask[byteIndex];
       for (int bit = 0; bit < 8; bit++) {
@@ -188,17 +178,31 @@ class PianoUdpController {
         if ((byte & (1 << bit)) != 0) {
           final mapping = bitToKeyMap[linearIndex];
           int key = encodeKey(mapping.key, mapping.value);
-          finalColorMask[key] = Colors.red;
+          finalColorMask[key] = Colors.green;
           skipKeys.add(key);
         }
       }
     }
 
-    // Process suggestion masks
-    int colorIndex = 0;
-    for (var mask in suggestionMasks.values) {
-      Color color = suggestionColors[colorIndex % suggestionColors.length];
-      colorIndex++;
+    // --- Suggestion masks colored by header first letter ---
+    for (var entry in suggestionMasks.entries) {
+      String header = entry.key;
+      Uint8List mask = entry.value;
+
+      Color color;
+      if (header.startsWith('A ')) color = Colors.red;
+      else if (header.startsWith('Ab')) color = Colors.pink;
+      else if (header.startsWith('Bb')) color = Colors.deepOrange;
+      else if (header.startsWith('B ')) color = Colors.orange;
+      else if (header.startsWith('C')) color = Colors.yellow;
+      else if (header.startsWith('Db')) color = Colors.lightGreen;
+      else if (header.startsWith('D ')) color = Colors.green.shade800;
+      else if (header.startsWith('Eb')) color = Colors.teal;
+      else if (header.startsWith('E ')) color = Colors.lightBlue;
+      else if (header.startsWith('F')) color = Colors.indigo;
+      else if (header.startsWith('Gb')) color = Colors.purple.shade200;
+      else if (header.startsWith('G ')) color = Colors.purple.shade900;
+      else color = Colors.grey; // default fallback
 
       for (int byteIndex = 0; byteIndex < 11; byteIndex++) {
         int byte = mask[byteIndex];
