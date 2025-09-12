@@ -16,21 +16,21 @@ output_ports:
 
 # --- Print behavior ---
 print:
-  print_msgs: true
+  print_msgs: false
   print_key: false
-  print_scales: true
-  print_avoid_notes_only: true
+  print_scales: false
+  print_avoid_notes_only: false
   scale_includes:
-    - "Avoid"                         # Who knows
-    - "Diminished"                    # Octatonic
+    # - "Avoid"                         # Who knows
+    # - "Diminished"                    # Octatonic
     - "Ionian"                        # Septatonic
     - "Harmonic Minor"                # Septatonic
     - "Harmonic Major"                # Septatonic
-    - "Melodic Minor"                 # Septatonic
-    - "Diminished Blues"              # Septatonic
-    - "Diminished Harmonic"           # Septatonic
-    - "Whole Tone"                    # Hexatonic
-    - "Pentatonic"                    # Pentatonic
+    # - "Melodic Minor"                 # Septatonic
+    # - "Diminished Blues"              # Septatonic
+    # - "Diminished Harmonic"           # Septatonic
+    # - "Whole Tone"                    # Hexatonic
+    # - "Pentatonic"                    # Pentatonic
 
 # --- Timing ---
 tempo: 120
