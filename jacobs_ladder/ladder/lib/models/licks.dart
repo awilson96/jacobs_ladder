@@ -1,13 +1,11 @@
 class Lick {
-  final int id;
-  final String? name;
-  final String type;
-  final double length;
-  final String? midiPath;
+  final String name;      // required unique identifier
+  final String type;      // required
+  final double length;    // derived from MIDI
+  final String? midiPath; // optional
 
   Lick({
-    required this.id,
-    this.name,
+    required this.name,
     required this.type,
     required this.length,
     this.midiPath,
