@@ -27,6 +27,9 @@ class _Page1State extends State<Page1> {
   // Keep latest suggestions so we can re-filter instantly
   Map<String, Uint8List> latestSuggestions = {};
 
+  // Currently selected scale for filtering (null = no filter)
+  String? selectedHeader;
+
   final SettingsService _settingsService = SettingsService();
 
   @override
@@ -79,7 +82,6 @@ class _Page1State extends State<Page1> {
 
   /// Apply current filter settings to the cached suggestions
   void _applyFilters() {
-    // Safe color assignment
     Map<String, Color> newLegendColors = {'Live keys': Colors.green};
 
     for (var header in latestSuggestions.keys) {
@@ -94,8 +96,20 @@ class _Page1State extends State<Page1> {
     setState(() {});
   }
 
-  /// Return only the filtered suggestion masks
-  Map<String, Uint8List> get filteredSuggestionMasks {
+  /// Return the suggestion masks based on selected header or normal filtering
+  Map<String, Uint8List> get activeSuggestionMasks {
+    if (selectedHeader != null && latestSuggestions.containsKey(selectedHeader!)) {
+      final Map<String, Uint8List> filtered = {};
+      // Always include Live keys
+      if (latestSuggestions.containsKey('Live keys')) {
+        filtered['Live keys'] = latestSuggestions['Live keys']!;
+      }
+      // Include only the selected header
+      filtered[selectedHeader!] = latestSuggestions[selectedHeader!]!;
+      return filtered;
+    }
+
+    // Normal filtered view
     final Map<String, Uint8List> filtered = {};
     latestSuggestions.forEach((header, mask) {
       if (_shouldIncludeHeader(header)) {
@@ -195,7 +209,16 @@ class _Page1State extends State<Page1> {
       ),
       body: Stack(
         children: [
-          ScaleLegend(headerColors: legendColors, horizontalNudge: 100),
+          // Legend with clickable filtering
+          ScaleLegend(
+            headerColors: legendColors,
+            horizontalNudge: 100,
+            onHeaderSelected: (header) {
+              setState(() {
+                selectedHeader = header;
+              });
+            },
+          ),
           Positioned(
             left: 0,
             right: 0,
@@ -205,7 +228,7 @@ class _Page1State extends State<Page1> {
                 scrollDirection: Axis.horizontal,
                 child: Piano(
                   onSuggestionUpdate: updateLegend,
-                  suggestionMasks: filteredSuggestionMasks,
+                  suggestionMasks: activeSuggestionMasks,
                 ),
               ),
             ),
