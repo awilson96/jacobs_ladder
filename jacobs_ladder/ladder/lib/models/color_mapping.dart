@@ -19,3 +19,9 @@ Color colorForHeader(String header) {
   // fallback if header doesn’t match
   return Colors.grey;
 }
+
+enum PianoColorMode {
+  suggestionColoring, // default
+  liveOnly,
+  overlapHeatmap,
+}

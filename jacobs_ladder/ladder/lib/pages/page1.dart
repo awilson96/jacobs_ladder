@@ -229,7 +229,9 @@ class _Page1State extends State<Page1> {
                 child: Piano(
                   onSuggestionUpdate: updateLegend,
                   suggestionMasks: activeSuggestionMasks,
-                  colorizeSuggestions: false,
+                  colorMode: PianoColorMode.suggestionColoring,
+                  lowThreshold: 0.33,
+                  highThreshold: 0.66,
                 ),
               ),
             ),

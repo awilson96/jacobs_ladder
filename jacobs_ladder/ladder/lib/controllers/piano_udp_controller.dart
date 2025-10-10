@@ -22,7 +22,9 @@ class PianoUdpController {
 
   // All suggestion masks
   final Map<String, Uint8List> suggestionMasks = {};
-  final bool colorizeSuggestions;
+  final PianoColorMode colorMode;
+  final double lowThreshold;
+  final double highThreshold;
 
   // Filter flags for different scale types
   bool showMajor = true;
@@ -38,7 +40,9 @@ class PianoUdpController {
     this.showHarmonicMinor = true,
     this.showHarmonicMajor = true,
     this.showMelodicMinor = true,
-    this.colorizeSuggestions = true,
+    this.colorMode = PianoColorMode.overlapHeatmap,
+    this.lowThreshold = 0.33,
+    this.highThreshold = 0.66,
   });
 
   /// Static function for header filtering
@@ -164,6 +168,42 @@ class PianoUdpController {
   }
 
   void _updateSuggestionColors() {
+
+    switch (colorMode) {
+      case PianoColorMode.liveOnly:
+        _updateLiveOnlyColors();
+        break;
+      case PianoColorMode.overlapHeatmap:
+        _updateHeatmapColors();
+        break;
+      case PianoColorMode.suggestionColoring:
+        _updatePerScaleColors();
+        break;
+    }
+  }
+
+  void _updateLiveOnlyColors() {
+    Map<int, Color> colorMask = {};
+
+    int encodeKey(bool isWhite, int keyIndex) => isWhite ? keyIndex : keyIndex + 100;
+
+    for (int byteIndex = 0; byteIndex < 11; byteIndex++) {
+      int byte = _lastLiveMask[byteIndex];
+      for (int bit = 0; bit < 8; bit++) {
+        int linearIndex = byteIndex * 8 + bit;
+        if (linearIndex >= bitToKeyMap.length) continue;
+        if ((byte & (1 << bit)) != 0) {
+          final mapping = bitToKeyMap[linearIndex];
+          int key = encodeKey(mapping.key, mapping.value);
+          colorMask[key] = Colors.green; // or sky blue, depending on mode
+        }
+      }
+    }
+
+    onKeyColorUpdate!(colorMask);
+  }
+
+  void _updatePerScaleColors() {
     if (onKeyColorUpdate == null) return;
 
     Map<int, Color> finalColorMask = {};
@@ -185,11 +225,6 @@ class PianoUdpController {
           skipKeys.add(key);
         }
       }
-    }
-
-    if (!colorizeSuggestions) {
-      onKeyColorUpdate!(finalColorMask);
-      return;
     }
 
     // --- Suggestion masks colored by header first letter ---
@@ -223,5 +258,69 @@ class PianoUdpController {
     }
 
     onKeyColorUpdate!(finalColorMask);
+  }
+
+  void _updateHeatmapColors() {
+    Map<int, int> overlapCount = {};
+    Map<int, Color> finalColors = {};
+
+    int encodeKey(bool isWhite, int keyIndex) => isWhite ? keyIndex : keyIndex + 100;
+
+    // Count how many suggestion masks have each key on
+    for (var entry in suggestionMasks.entries) {
+      String header = entry.key;
+      if (header == 'Live keys') continue;
+      Uint8List mask = entry.value;
+
+      for (int byteIndex = 0; byteIndex < 11; byteIndex++) {
+        int byte = mask[byteIndex];
+        for (int bit = 0; bit < 8; bit++) {
+          int linearIndex = byteIndex * 8 + bit;
+          if (linearIndex >= bitToKeyMap.length) continue;
+          if ((byte & (1 << bit)) != 0) {
+            final mapping = bitToKeyMap[linearIndex];
+            int key = encodeKey(mapping.key, mapping.value);
+            overlapCount[key] = (overlapCount[key] ?? 0) + 1;
+          }
+        }
+      }
+    }
+
+    // Compute thresholds
+    if (overlapCount.isEmpty) {
+      onKeyColorUpdate!({});
+      return;
+    }
+
+    int maxOverlap = overlapCount.values.fold(0, (a, b) => a > b ? a : b);
+
+    // Color keys by relative overlap
+    overlapCount.forEach((key, count) {
+      double ratio = count / maxOverlap;
+
+      if (ratio >= highThreshold) {
+        finalColors[key] = Colors.green;
+      } else if (ratio >= lowThreshold) {
+        finalColors[key] = Colors.yellow;
+      } else if (ratio > 0) {
+        finalColors[key] = Colors.red;
+      }
+    });
+
+    // Add live keys (always sky blue)
+    for (int byteIndex = 0; byteIndex < 11; byteIndex++) {
+      int byte = _lastLiveMask[byteIndex];
+      for (int bit = 0; bit < 8; bit++) {
+        int linearIndex = byteIndex * 8 + bit;
+        if (linearIndex >= bitToKeyMap.length) continue;
+        if ((byte & (1 << bit)) != 0) {
+          final mapping = bitToKeyMap[linearIndex];
+          int key = encodeKey(mapping.key, mapping.value);
+          finalColors[key] = Colors.lightBlue;
+        }
+      }
+    }
+
+    onKeyColorUpdate!(finalColors);
   }
 }

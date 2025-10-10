@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:ladder/models/color_mapping.dart';
 import 'dart:typed_data';
 
 import '../controllers/piano_udp_controller.dart';
 
 class Piano extends StatefulWidget {
-  final colorizeSuggestions;
+  final PianoColorMode colorMode;
+  final double lowThreshold;
+  final double highThreshold;
   /// Callback to notify parent about updated suggestion headers
   final void Function(Map<String, Uint8List>)? onSuggestionUpdate;
 
@@ -15,7 +18,9 @@ class Piano extends StatefulWidget {
     super.key,
     this.onSuggestionUpdate,
     required this.suggestionMasks,
-    this.colorizeSuggestions = true,
+    this.colorMode = PianoColorMode.overlapHeatmap,
+    this.lowThreshold = 0.33,
+    this.highThreshold = 0.66,
   });
 
   @override
@@ -69,7 +74,9 @@ class _PianoState extends State<Piano> {
           keyColors.addAll(colors);
         });
       },
-      colorizeSuggestions: widget.colorizeSuggestions
+      colorMode: widget.colorMode,
+      lowThreshold: widget.lowThreshold,
+      highThreshold: widget.highThreshold,
     );
 
     _udpController.start();
