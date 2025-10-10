@@ -22,6 +22,7 @@ class PianoUdpController {
 
   // All suggestion masks
   final Map<String, Uint8List> suggestionMasks = {};
+  final bool colorizeSuggestions;
 
   // Filter flags for different scale types
   bool showMajor = true;
@@ -37,6 +38,7 @@ class PianoUdpController {
     this.showHarmonicMinor = true,
     this.showHarmonicMajor = true,
     this.showMelodicMinor = true,
+    this.colorizeSuggestions = true,
   });
 
   /// Static function for header filtering
@@ -185,11 +187,16 @@ class PianoUdpController {
       }
     }
 
+    if (!colorizeSuggestions) {
+      onKeyColorUpdate!(finalColorMask);
+      return;
+    }
+
     // --- Suggestion masks colored by header first letter ---
     for (var entry in suggestionMasks.entries) {
       String header = entry.key;
       Uint8List mask = entry.value;
-
+      if (header == 'Live keys') continue;
       Color color = colorForHeader(header);
 
       for (int byteIndex = 0; byteIndex < 11; byteIndex++) {

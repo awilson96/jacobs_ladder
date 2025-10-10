@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import '../controllers/piano_udp_controller.dart';
 
 class Piano extends StatefulWidget {
+  final colorizeSuggestions;
   /// Callback to notify parent about updated suggestion headers
   final void Function(Map<String, Uint8List>)? onSuggestionUpdate;
 
@@ -14,6 +15,7 @@ class Piano extends StatefulWidget {
     super.key,
     this.onSuggestionUpdate,
     required this.suggestionMasks,
+    this.colorizeSuggestions = true,
   });
 
   @override
@@ -67,6 +69,7 @@ class _PianoState extends State<Piano> {
           keyColors.addAll(colors);
         });
       },
+      colorizeSuggestions: widget.colorizeSuggestions
     );
 
     _udpController.start();
