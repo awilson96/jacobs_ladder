@@ -51,32 +51,32 @@ class UDPReceiver(ABC):
         self.running = True
 
     def listen(self):
-        """Listen for Udp messages sent to the receive address"""
+        """Listen for UDP messages sent to the receive address."""
         while self.running:
             try:
-                # Set a timeout to avoid blocking indefinitely while waiting for data
+                # Set a timeout so the loop can exit cleanly
                 self.sock.settimeout(1)
                 try:
-                    # Wait for incoming data
+                    # Wait for incoming data (up to 4 KB)
                     data, _ = self.sock.recvfrom(4096)
 
-                    # Deserialize the data from JSON format
-                    data = json.loads(data.decode())
-                    if self.print_msgs: 
-                        print(f"Received: {data}")
-                        
+                    # Directly pass raw bytes (no JSON decoding)
+                    if self.print_msgs:
+                        print(f"Received raw UDP data: {data.hex()}")
+
                     self.dispatch_message(data=data)
 
                 except socket.timeout:
-                    # If no data is received within the timeout, just loop again
+                    # If no data within timeout, loop again
                     continue
-            except json.JSONDecodeError:
-                if self.print_msgs: print("Error: Received invalid JSON data.")
+
             except socket.error as e:
-                if self.print_msgs: print(f"Socket error: {e}")
+                if self.print_msgs:
+                    print(f"Socket error: {e}")
                 self.running = False
             except Exception as e:
-                if self.print_msgs: print(f"Unexpected error receiving data: {e}")
+                if self.print_msgs:
+                    print(f"Unexpected error receiving data: {e}")
                 self.running = False
 
     def start_listener(self):

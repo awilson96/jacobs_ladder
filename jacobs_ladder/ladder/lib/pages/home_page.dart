@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/app_theme.dart';
 import 'page1.dart';
 import 'page2.dart';
+import 'page3.dart';
 import 'settings_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -26,6 +27,7 @@ class _HomePageState extends State<HomePage> {
   final List<Widget> _pages = [
     const Page1(),
     const Page2(),
+    const Page3(),
   ];
 
   void _selectPage(int index) {
@@ -67,6 +69,12 @@ class _HomePageState extends State<HomePage> {
               title: const Text('Page 2'),
               selected: _selectedIndex == 1,
               onTap: () => _selectPage(1),
+            ),
+            ListTile(
+              leading: const Icon(Icons.mic),
+              title: const Text('Record'),
+              selected: _selectedIndex == 2,
+              onTap: () => _selectPage(2),
             ),
             const Spacer(),
             const Divider(),

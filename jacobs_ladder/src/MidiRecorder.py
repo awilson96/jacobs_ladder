@@ -12,8 +12,9 @@ class MidiRecorder:
         self.last_ticks = None
         self.messages = []
         self._saving_thread = None
+        self.tempo = 120
 
-    def start(self):
+    def start(self, tempo: int):
         """Begin recording MIDI messages."""
         if self.is_recording:
             print("Warning: Recorder is already running.")
@@ -22,6 +23,7 @@ class MidiRecorder:
             print("Cannot start recording: previous recording is still saving.")
             return
 
+        self.tempo = tempo
         self.is_recording = True
         self.start_ticks = self.qpc.qpcGetTicks()
         self.last_ticks = self.start_ticks
@@ -59,11 +61,12 @@ class MidiRecorder:
         """Threaded save operation, clears messages after saving."""
         try:
             freq = self.qpc.qpcGetFrequency()
-            mid = mido.MidiFile()
+            mid = mido.MidiFile(ticks_per_beat=960)
             track = mido.MidiTrack()
             mid.tracks.append(track)
 
             last_ticks = start_ticks
+            tempo = mido.bpm2tempo(self.tempo)
 
             for msg_data, ticks in self.messages:
                 delta_s = (ticks - last_ticks) / freq
@@ -77,10 +80,13 @@ class MidiRecorder:
                 elif 128 <= status < 144:
                     msg_type = 'note_off'
                 elif 176 <= status < 192:
-                    msg_type = 'control_change'
+                    msg_type = 'note_off'
+
+                print(msg_type, note, velocity, delta_s)
 
                 if msg_type:
-                    msg = mido.Message(msg_type, note=note, velocity=velocity, time=delta_s)
+                    delta_ticks = mido.second2tick(delta_s, mid.ticks_per_beat, tempo)
+                    msg = mido.Message(msg_type, note=note, velocity=velocity, time=int(delta_ticks))
                     track.append(msg)
                 else:
                     print(f"Skipped unknown status byte: {status}")

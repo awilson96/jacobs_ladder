@@ -121,12 +121,12 @@ class MidiController:
         if self.output_ports == [f"jacobs_ladder_{i}" for i in range(12)]:
             self.udp_sender = UDPSender(host='127.0.0.1', port=50005)
             
-            self.udp_receiver = JacobMonitor(host='127.0.0.1', port=50000, print_msgs=self.print_msgs, tuning_mode=self.tuning_mode)
+            self.udp_receiver = JacobMonitor(manager=self, host='127.0.0.1', port=50000, print_msgs=self.print_msgs)
             self.udp_receiver.start_listener()
             
             self.logger.info("Initializing connection to Jacob...")
         else:
-            self.udp_receiver = JacobMonitor(host='127.0.0.1', port=50002, print_msgs=self.print_msgs, tuning_mode=self.tuning_mode)
+            self.udp_receiver = JacobMonitor(manager=self, host='127.0.0.1', port=50002, print_msgs=self.print_msgs)
             self.udp_receiver.start_listener()
             self.udp_sender = MockSender(host='127.0.0.1', port=50003)
             self.logger.info("Initializing connection to User...")
@@ -188,11 +188,6 @@ class MidiController:
         for midi_out_port in self.midi_out_ports:
             if midi_out_port.is_port_open():
                 midi_out_port.close_port()
-                
-        # Close UDP Receivers and the Timekeeper
-        if self.udp_receiver.timekeeper:
-            self.udp_receiver.timekeeper.stop()
-        self.udp_receiver.stop()
 
     def delete_suspended_note(self, sus_note: list):
         """Delete notes which have been sustained when the associated NOTE_OFF message has already been played
@@ -344,16 +339,16 @@ class MidiController:
         elif status == 169:
             self.turn_off_all_notes()
 
-    def change_recording_mode(self, recording_mode: str) -> None:
+    def change_recording_mode(self, recording_mode: int, tempo: int) -> None:
         """Change the recording mode (start/stop)
 
         Args:
             recording_mode (str): start/stop
         """
-        if recording_mode == "start":
+        if recording_mode == 1:
             self.should_record = True
-            self.recorder.start()
-        elif recording_mode == "stop":
+            self.recorder.start(tempo=tempo)
+        elif recording_mode == 0:
             self.should_record = False
             self.recorder.stop()
         else:
