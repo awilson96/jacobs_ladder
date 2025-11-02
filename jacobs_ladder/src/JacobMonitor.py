@@ -11,20 +11,5 @@ class JacobMonitor(UDPReceiver):
         if self.timekeeper:
             self.timekeeper.start_timekeeper()
     
-    def dispact_message(self, data):
-        """Receiver Jacobian message types
-
-        Args:
-            data (dict): data can come in the following form: {tuning_mode: <"static", "dynamic", None>}
-        """
-        if isinstance(data, dict):
-            if data.get("event") == "tempo_update":
-                print("Updating tempo and time signature...")
-                if self.timekeeper:
-                    self.timekeeper.set_timing(tempo=data.get("tempo"), time_signature=data.get("time_signature"))
-            elif data.get("event") == "tuning_mode":
-                tuning_mode = data.get("tuning_mode")
-                if tuning_mode == "none":
-                    self.tuning_mode = None
-                else:
-                    self.tuning_mode = tuning_mode
+    def dispatch_message(self, data):
+        pass

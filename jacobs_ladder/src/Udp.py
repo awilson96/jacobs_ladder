@@ -65,7 +65,7 @@ class UDPReceiver(ABC):
                     if self.print_msgs: 
                         print(f"Received: {data}")
                         
-                    self.dispact_message(data=data)
+                    self.dispatch_message(data=data)
 
                 except socket.timeout:
                     # If no data is received within the timeout, just loop again
@@ -91,7 +91,7 @@ class UDPReceiver(ABC):
         self.sock.close()
     
     @abstractmethod
-    def dispact_message(self, data):
+    def dispatch_message(self, data):
         """This is a method which parses messages across a user specified UDP interface
 
         Args:
@@ -104,7 +104,7 @@ class UDPReceiver(ABC):
 if __name__ == "__main__":
     # Example of starting a receiver
     class CustomUDPReceiver(UDPReceiver):
-        def dispact_message(self, data):
+        def dispatch_message(self, data):
             """Process list of lists message types
 
             Args:

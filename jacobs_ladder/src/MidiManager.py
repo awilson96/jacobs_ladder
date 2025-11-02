@@ -12,13 +12,13 @@ from copy import deepcopy
 
 from .JacobMonitor import JacobMonitor
 from .JustIntonation import JustIntonation
+from .MidiRecorder import MidiRecorder
 from .MockSender import MockSender
 from .MusicTheory import MusicTheory
-from .TimeKeeper import TimeKeeper
 from .Udp import UDPSender
 
 from .Logging import setup_logging
-from .Utilities import determine_octave, parse_midi_controller_config, pack_message
+from .Utilities import build_udp_message, determine_octave, parse_midi_controller_config, pack_message
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
@@ -130,6 +130,10 @@ class MidiController:
             self.udp_receiver.start_listener()
             self.udp_sender = MockSender(host='127.0.0.1', port=50003)
             self.logger.info("Initializing connection to User...")
+
+        # Recorder
+        self.should_record = False
+        self.recorder = MidiRecorder()
         
         self.logger.info("Listening for Midi messages...")
         self.set_midi_callback()
@@ -190,6 +194,17 @@ class MidiController:
             self.udp_receiver.timekeeper.stop()
         self.udp_receiver.stop()
 
+    def delete_suspended_note(self, sus_note: list):
+        """Delete notes which have been sustained when the associated NOTE_OFF message has already been played
+
+        Args:
+            sus_note (list): a list of suspended (or sustained) notes to be deleted
+        """
+        for index, sublist in enumerate(self.message_heap):
+            if sublist[0] == sus_note[0]:
+                del self.message_heap[index]
+                return
+
     def filter(self, message: tuple, timestamp: float):
         """Filter used to set the MIDI callback.
         The MIDI callback filters out only the messages you want to process within the callback.
@@ -203,6 +218,9 @@ class MidiController:
         """
         payload, dt  = message
         status, note, velocity = payload
+
+        if self.should_record():
+            self.recorder.record_event(status, note, velocity)
 
         self.just_intonation.tuning_mode = self.tuning_mode = self.udp_receiver.tuning_mode
 
@@ -226,7 +244,8 @@ class MidiController:
                 print(f"candidate_scales: {candidate_scales}")
 
             data_bytes = pack_message(message_heap=self.message_heap, candidate_scales=candidate_scales, bitmasks=bitmasks)
-            self.udp_sender.send_bytes(data_bytes)
+            datagram = build_udp_message(message_type=1, payload_bytes=data_bytes)
+            self.udp_sender.send_bytes(datagram)
 
             if self.tuning_mode == "static" or self.tuning_mode == "dynamic":
                 tuning_index, pitch_bend_message, message_heap = self.just_intonation.get_tuning_info(message_heap=self.message_heap, current_msg=[note, instance_index, status, velocity, None], dt=dt, key=key)
@@ -240,7 +259,6 @@ class MidiController:
                 self.midi_out_ports[instance_index].send_message([224, 0, 64])
             
             self.midi_out_ports[instance_index].send_message([status, note, velocity])
-            # self.udp_sender.send(self.message_heap)
 
         elif status in range(128, 144):
             instance_index = self.in_use_indices[note]
@@ -269,10 +287,12 @@ class MidiController:
 
             data_bytes = pack_message(message_heap=self.message_heap, candidate_scales=candidate_scales, bitmasks=bitmasks)
             if data_bytes:
-                self.udp_sender.send_bytes(data_bytes)
+                datagram = build_udp_message(message_type=1, payload_bytes=data_bytes)
+                self.udp_sender.send_bytes(datagram)
             else:
-                self.udp_sender.send_bytes("Live keys"[:25].ljust(25).encode('ascii') + bytearray([0]*11))
-
+                live_keys_payload = "Live keys"[:25].ljust(25).encode("ascii") + bytearray([0]*11)
+                datagram = build_udp_message(message_type=1, payload_bytes=live_keys_payload)
+                self.udp_sender.send_bytes(datagram)
 
         elif status in range(176, 192) and note == 64:
             if velocity == 127:
@@ -323,36 +343,21 @@ class MidiController:
 
         elif status == 169:
             self.turn_off_all_notes()
-            
-    def set_tuning_mode(self, tuning_mode: str = None) -> None:
-        """Change the tuning mode while running the MidiManager. Tuning options are static for static Just Intonation,
-        dynamic for dynamic Just Intonation, or None for Equal temperment (default).
+
+    def change_recording_mode(self, recording_mode: str) -> None:
+        """Change the recording mode (start/stop)
 
         Args:
-            tuning_mode (str, optional): static, dynamic, or None. Defaults to None.
+            recording_mode (str): start/stop
         """
-        previous_tuning_mode = self.just_intonation.tuning_mode.copy()
-        if tuning_mode:
-            if tuning_mode in ["static", "dynamic"]:
-                self.just_intonation.tuning_mode = tuning_mode
-                self.logger.info(f"Tuning mode state change: {previous_tuning_mode}->{tuning_mode}")
-            else:
-                self.logger.info("Tuning mode state change unsuccessful."
-                                 "Acceptable state change keys are static, dynamic, or None")
+        if recording_mode == "start":
+            self.should_record = True
+            self.recorder.start()
+        elif recording_mode == "stop":
+            self.should_record = False
+            self.recorder.stop()
         else:
-            self.just_intonation.tuning_mode = tuning_mode
-            self.logger.info(f"Tuning mode state change: {previous_tuning_mode}->Equal Temperment")
-    
-    def delete_suspended_note(self, sus_note: list):
-        """Delete notes which have been sustained when the associated NOTE_OFF message has already been played
-
-        Args:
-            sus_note (list): a list of suspended (or sustained) notes to be deleted
-        """
-        for index, sublist in enumerate(self.message_heap):
-            if sublist[0] == sus_note[0]:
-                del self.message_heap[index]
-                return
+            print("Error: Incorrect recording mode")
     
     def transpose_by(self, amount: int) -> None:
         """Transpose by a given integer number of notes away from the root up or down

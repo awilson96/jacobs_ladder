@@ -1,6 +1,6 @@
 import json
-import math
 import os
+import struct
 import sys
 import yaml
 
@@ -230,6 +230,19 @@ def pack_message(message_heap: list[list[int]], candidate_scales: list[str], bit
         data_bytes += header + bytes(bitmask)
 
     return data_bytes
+
+def build_udp_message(message_type: int, payload_bytes: bytes) -> bytes:
+    """Prepend a 32-bit message type to a byte payload.
+
+    Args:
+        message_type (int): 32-bit message type
+        payload_bytes (bytes): The payload
+
+    Returns:
+        bytes: Combined datagram
+    """
+    type_bytes = struct.pack(">I", message_type)  # big-endian
+    return type_bytes + payload_bytes
 
 
 if __name__ == "__main__":

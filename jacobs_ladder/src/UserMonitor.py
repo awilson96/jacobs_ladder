@@ -8,7 +8,7 @@ class UserMonitor(UDPReceiver):
         self.beat = None
         self.measure = None
         
-    def dispact_message(self, data):
+    def dispatch_message(self, data):
         """Handle user message types candidate_keys and general messages from the message heap
 
         Args:
