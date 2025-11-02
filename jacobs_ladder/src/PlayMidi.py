@@ -55,10 +55,6 @@ if __name__ == "__main__":
 
     print(f"Opening file: {file_path}")
 
-    import os
-    print(os.path.getsize("C:/Users/awils/OneDrive/Documents/Repos/jacobs_ladder/recording.mid"))
-
-
     if file_path:
         play_midi_file(file_path)
     else:

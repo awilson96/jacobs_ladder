@@ -38,9 +38,6 @@ class _Page3State extends State<Page3> {
     builder.add(_int32ToBytes(_tempoBpm));       // 4 bytes - tempo BPM
 
     _socket!.send(builder.toBytes(), InternetAddress(_host), _port);
-    debugPrint(
-      "Sent recording message: ${start ? 'start' : 'stop'}, tempo: $_tempoBpm BPM",
-    );
   }
 
   Uint8List _int32ToBytes(int value) {

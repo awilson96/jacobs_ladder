@@ -72,7 +72,7 @@ class MidiRecorder:
                 delta_s = (ticks - last_ticks) / freq
                 last_ticks = ticks
 
-                status, note, velocity = msg_data
+                status, note_or_control, velocity_or_value = msg_data
                 msg_type = None
 
                 if 144 <= status < 160:
@@ -80,13 +80,13 @@ class MidiRecorder:
                 elif 128 <= status < 144:
                     msg_type = 'note_off'
                 elif 176 <= status < 192:
-                    msg_type = 'note_off'
+                    msg_type = 'control_change'
 
-                print(msg_type, note, velocity, delta_s)
+                print(msg_type, note_or_control, velocity_or_value, delta_s)
 
                 if msg_type:
-                    delta_ticks = mido.second2tick(delta_s, mid.ticks_per_beat, tempo)
-                    msg = mido.Message(msg_type, note=note, velocity=velocity, time=int(delta_ticks))
+                    delta_ticks = int(mido.second2tick(delta_s, mid.ticks_per_beat, tempo))
+                    msg = mido.Message(msg_type, note_or_control, velocity_or_value, delta_ticks)
                     track.append(msg)
                 else:
                     print(f"Skipped unknown status byte: {status}")
@@ -101,6 +101,7 @@ class MidiRecorder:
             # Clear messages and reset flags
             self.messages = []
             self.is_saving = False
+
 
     def record_event(self, status: int, note: int, velocity: int):
         """Record an incoming MIDI message with high-resolution timestamp."""
