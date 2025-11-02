@@ -1,4 +1,8 @@
+# About
+JacobsLadder is an opens source Music AI project which conveys music theory insights to piano players in real time. The eventual goal of this product is to create music AI tools for musicians to more deeply explore music in all of its permutations and possibilities. The current capabilities include a python based MIDI parser, a C++ based real-time note scheduler, and a Dart/Flutter based UI. The parser establishes the necessary hardware abstraction layer for turning MIDI signals coming from the users keyboard into virtual midi ports. The data is read off the virtual midi ports and transformed into music descriptor words (MDWs). These MDWs are transmitted to the front end UI to provide color visualization superimposed on the keyboard. The UI also displays the full list of compatible scales with the currently selected (or held down notes) on the keyboard. This gives the user the knowledge of what scales are *compatible* which the current chord changes and provides insight into their musical options for every possible harmonic context. There are several toggleable filters available including Major Scales, Harmonic Minor Scales, Harmonic Major Scales, and Melodic Minor Scales. This enables to user to focus on a subsection of scales at a time so see how these options fit within their chord changes. Several research tools have also been created. In the file ScaleTree.py, the user can list all of the possible scales in the ether which match the constraints. These configurable constraints are that scales must end on the note they start on, they must not exceed steps of major thirds, they must not have consecutive half steps. The max step size and the max number of consecutive half steps are configurable. The ScaleTree program creates a CSV file containing all of the scales generated for each scale length from 3 note scales (triads) to 8 note scales (optotonic). This is because nine note scales all violate the rule that scales must end on the note where the begin. This program gives way to several novel and interesting scales which have not been studied by the broader music theory community. The python backend also supports real time just intonation. This works by splitting the data by note letter name on the incoming MIDI port into twelve separate MIDI ports acting as individual octave channels. These channels can then be tuned using the pitch wheel inidvidually without affecting the other octave channels. This gives the program single note manipulation abilities. The user can specify the intervals they prefer to use by selecting a pitch config when running the program. Examples can be found in <project_root>/configurations/json/pitch/. The repo also has a file called PolyRhythms.py where users can create PolyRhythm melodies by scheduling alternating melodies at different rhythmic cadences.  This gives the user the ability to experiment around with how perfectly played alternating melodies played simultaneously sound.
+
 # Setup
+**TODO: update setup to use setup script instead of manual instructions**
 To setup the software, a few programs are required:
 1. MIDI-OX
 2. loopMIDI
@@ -39,10 +43,14 @@ options:
 `cd ~/jacobs_ladder/`
 `python -m bindings.compile build_ext --inplace`
 
-# Pybind build
-Clean and Rebuild
+# Pybind/C++ build
+To clean and rebuild:
 `Remove-Item -Path .\build\ -Recurse -Force; mkdir build; cd build; $PYBIND_DIR = python -c "import pybind11; print(pybind11.get_cmake_dir())"; cmake .. -Dpybind11_DIR="$PYBIND_DIR"; cmake --build .; cd ..`
- 
+
+# Dart/Flutter build
+`cd <project_root>/jacobs_ladder/ladder/`
+`flutter run`
+select an option (browser based, OS based). Note that dart/flutter is cross platform so the app should work for Windows/Mac/Linux so long as the necessary libs installed (only tested on Windows and Linux).
 
 # Future Work
 1. Multiple instances of Jacob with different instrument configurations
@@ -91,6 +99,3 @@ Clean and Rebuild
 
 ## Textbooks
 Music similarity and retreival: an introduction to audio and web based strategies
-
-## Youtube
-https://www.youtube.com/watch?v=SRrQ_v-OOSg&list=PL-wATfeyAMNqIee7cH3q1bh4QJFAaeNv0&index=7
