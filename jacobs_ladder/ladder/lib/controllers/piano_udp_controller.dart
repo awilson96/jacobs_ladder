@@ -111,39 +111,53 @@ class PianoUdpController {
     const int headerLength = 25;
     const int maskLength = 11;
 
+    if (data.length < 4) {
+      return;
+    }
+
+    // Read the 32-bit message type (big-endian), but ignore it for now
+    int messageType = (data[offset] << 24) |
+        (data[offset + 1] << 16) |
+        (data[offset + 2] << 8) |
+        (data[offset + 3]);
+    offset += 4;
+
     final Map<String, Uint8List> newSuggestionMasks = {};
 
-    while (offset + headerLength + maskLength <= data.length) {
-      String header = String.fromCharCodes(
-        data.sublist(offset, offset + headerLength),
-      ).trim();
-      offset += headerLength;
+    // If the message type is keys and bitmasks for updating the piano widget
+    if (messageType == 1) {
+      while (offset + headerLength + maskLength <= data.length) {
+        String header = String.fromCharCodes(
+          data.sublist(offset, offset + headerLength),
+        ).trim();
+        offset += headerLength;
 
-      Uint8List mask = data.sublist(offset, offset + maskLength);
-      offset += maskLength;
+        Uint8List mask = data.sublist(offset, offset + maskLength);
+        offset += maskLength;
 
-      if (header == 'Live keys') {
-        _updateLiveKeys(mask);
-      } else if (shouldIncludeHeader(
-        header,
-        showMajor: showMajor,
-        showHarmonicMinor: showHarmonicMinor,
-        showHarmonicMajor: showHarmonicMajor,
-        showMelodicMinor: showMelodicMinor,
-      )) {
-        newSuggestionMasks[header] = mask;
+        if (header == 'Live keys') {
+          _updateLiveKeys(mask);
+        } else if (shouldIncludeHeader(
+          header,
+          showMajor: showMajor,
+          showHarmonicMinor: showHarmonicMinor,
+          showHarmonicMajor: showHarmonicMajor,
+          showMelodicMinor: showMelodicMinor,
+        )) {
+          newSuggestionMasks[header] = mask;
+        }
       }
+
+      suggestionMasks
+        ..clear()
+        ..addAll(newSuggestionMasks);
+
+      if (onSuggestionUpdate != null) {
+        onSuggestionUpdate!(Map<String, Uint8List>.from(suggestionMasks));
+      }
+
+      _updateSuggestionColors();
     }
-
-    suggestionMasks
-      ..clear()
-      ..addAll(newSuggestionMasks);
-
-    if (onSuggestionUpdate != null) {
-      onSuggestionUpdate!(Map<String, Uint8List>.from(suggestionMasks));
-    }
-
-    _updateSuggestionColors();
   }
 
   void _updateLiveKeys(Uint8List mask) {

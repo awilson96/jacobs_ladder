@@ -219,10 +219,10 @@ class MidiController:
         payload, dt  = message
         status, note, velocity = payload
 
-        if self.should_record():
+        if self.should_record:
             self.recorder.record_event(status, note, velocity)
 
-        self.just_intonation.tuning_mode = self.tuning_mode = self.udp_receiver.tuning_mode
+        self.just_intonation.tuning_mode = self.tuning_mode
 
         if status in range(144, 160):
             instance_index = determine_octave(message_heap=self.message_heap, note=note)
