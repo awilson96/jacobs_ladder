@@ -13,22 +13,38 @@ import csv
 # -----------------------
 # Config / Templates
 # -----------------------
-INPUT_CSV = Path("possible_scales/degree_4_interval_4_nco_0.csv")
+INPUT_CSV = Path("possible_scales/degree_4_interval_7_nco_0.csv")
 OUTPUT_CSV = INPUT_CSV.with_name(INPUT_CSV.stem + "_root_rotated.csv")
 
 NOTE_NAMES = ["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"]
 
 # canonical intervals in root position
 CHORD_TEMPLATES = {
-    "Major7":                      [4,3,4,1],
-    "Dominant7":                   [4,3,3,2],
-    "Half-diminished (m7b5)":      [3,3,4,2],
-    "MinorMajor7 (mMaj7)":         [3,4,4,1],
-    "Augmented Major7":            [4,4,3,1],
-    "Augmented (add 2)":           [2,2,4,4],
-    "Minor7":                      [3,4,3,2],
-    "Dominant7 b5":                [4,2,4,2],
-    "Fully diminished":            [3,3,3,3]
+    "Major7":                        [4,3,4,1],
+    "Major7(no5)(add2)":             [2,2,7,1],
+    "Major7(no3) #4":                [6,1,4,1],
+    "Major7 b5":                     [4,2,5,1],
+    "(add 4)":                       [4,1,2,5],
+    "sus4 Maj7":                     [5,2,4,1],
+    "Dominant7":                     [4,3,3,2],
+    "Half-diminished (m7b5)":        [3,3,4,2],
+    "MinorMajor7 (mMaj7)":           [3,4,4,1],
+    "MinorMajor7(no5)(add4)":        [3,2,6,1],
+    "MinorMajor7 #5":                [3,5,3,1],
+    "MinorMajor7 b5":                [3,3,5,1],
+    "Augmented Major7":              [4,4,3,1],
+    "Augmented(add 2)":              [2,2,4,4],
+    "Minor7":                        [3,4,3,2],
+    "Minor(add 2)":                  [2,1,4,5], 
+    "Minor b2":                      [1,2,4,5],
+    "Minor7(no5) b2":                [1,2,7,2],
+    "Dominant7 b5":                  [4,2,4,2],
+    "Dominant7(no5) b2":             [1,3,6,2],
+    "Fully diminished":              [3,3,3,3],
+    "Diminished b2":                 [1,2,3,6],
+    "Diminished(no5) b2":            [1,2,6,3],
+    "Stacked chromatic major 3rds":  [1,3,1,7],
+    "Crunch":                        [1,5,1,5],
 }
 
 # -----------------------
