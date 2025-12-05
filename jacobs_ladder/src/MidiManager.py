@@ -2,11 +2,7 @@ import argparse
 import heapq
 import logging
 import rtmidi
-import sys
-import threading
-import time
 import warnings
-import yaml
 
 from copy import deepcopy
 
@@ -50,8 +46,8 @@ class MidiController:
         allowed_keys = {
             'input_port', 'output_ports', 'print_msgs',
             'print_key', 'print_avoid_notes_only', 'print_scales', 'scale_includes',
-            'tempo', 'time_signature', 'player', 'tuning', 'tuning_mode', 'tuning_config',
-            'tuning_pref', 'tuning_configuration'
+            'tempo', 'time_signature', 'player', 'tuning', 'tuning_mode', 'tuning_ratios_all',
+            'tuning_ratios_pref', 'tuning_configuration'
         }
 
         for key in kwargs:
@@ -68,8 +64,9 @@ class MidiController:
         tuning_cfg = kwargs.get('tuning_configuration', {})
         self.tuning = tuning_cfg.get('tuning', None)
         self.tuning_mode = tuning_cfg.get('tuning_mode', None)
-        self.tuning_config = tuning_cfg.get('tuning_config', '5-limit-ratios')
-        self.tuning_pref = tuning_cfg.get('tuning_pref', '5-limit-pref')
+        self.tuning_ratios_all = tuning_cfg.get('tuning_ratios_all', '5-limit-ratios')
+        self.tuning_ratios_pref = tuning_cfg.get('tuning_ratios_pref', '5-limit-pref')
+
         self.tempo = kwargs.get('tempo', 120)
         self.time_signature = kwargs.get('time_signature', "4/4")
 
@@ -235,7 +232,8 @@ class MidiController:
             self.in_use_indices[note] = instance_index
             heapq.heappush(self.message_heap, [note + self.transpose, instance_index, status, velocity, None])
 
-            print(self.message_heap)
+            if self.print_msgs:
+                print(self.message_heap)
             
             chord = self.music_theory.determine_chord(self.message_heap)
             candidate_scales, bitmasks = self.music_theory.get_candidate_scales(message_heap=self.message_heap, scale_includes=self.scale_includes)

@@ -112,8 +112,8 @@ def parse_midi_controller_config(config_path: str, print_config=False) -> dict:
     tuning_configuration = config.get('tuning_configuration', {})
     player = tuning_configuration.get('player', 'User')
     tuning_mode = tuning_configuration.get('tuning_mode', 'none')
-    tuning_config = tuning_configuration.get('tuning_config', '5-limit-ratios')
-    tuning_pref = tuning_configuration.get('tuning_pref', '5-limit-pref')
+    tuning_ratios_all = tuning_configuration.get('tuning_ratios_all', '5-limit-ratios')
+    tuning_ratios_pref = tuning_configuration.get('tuning_ratios_pref', '5-limit-pref')
     tuning = tuning_configuration.get('tuning', None)
 
     valid_modes = ('static', 'dynamic', 'just-intonation', 'none', None)
@@ -130,8 +130,8 @@ def parse_midi_controller_config(config_path: str, print_config=False) -> dict:
             'player': player,
             'tuning': tuning,
             'tuning_mode': tuning_mode,
-            'tuning_config': tuning_config,
-            'tuning_pref': tuning_pref
+            'tuning_ratios_all': tuning_ratios_all,
+            'tuning_ratios_pref': tuning_ratios_pref
         }
     }
 
