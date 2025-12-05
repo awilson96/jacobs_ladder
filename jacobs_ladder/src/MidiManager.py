@@ -51,7 +51,7 @@ class MidiController:
             'input_port', 'output_ports', 'print_msgs',
             'print_key', 'print_avoid_notes_only', 'print_scales', 'scale_includes',
             'tempo', 'time_signature', 'player', 'tuning', 'tuning_mode', 'tuning_config',
-            'tuning_pref'
+            'tuning_pref', 'tuning_configuration'
         }
 
         for key in kwargs:
@@ -65,8 +65,11 @@ class MidiController:
         self.print_avoid_notes_only = kwargs.get('print_avoid_notes_only', False)
         self.print_scales = kwargs.get('print_scales', False)
         self.scale_includes = kwargs.get('scale_includes', [])
-        self.tuning = kwargs.get('tuning', None)
-        self.tuning_mode = kwargs.get('tuning_mode', None)
+        tuning_cfg = kwargs.get('tuning_configuration', {})
+        self.tuning = tuning_cfg.get('tuning', None)
+        self.tuning_mode = tuning_cfg.get('tuning_mode', None)
+        self.tuning_config = tuning_cfg.get('tuning_config', '5-limit-ratios')
+        self.tuning_pref = tuning_cfg.get('tuning_pref', '5-limit-pref')
         self.tempo = kwargs.get('tempo', 120)
         self.time_signature = kwargs.get('time_signature', "4/4")
 
@@ -112,7 +115,7 @@ class MidiController:
             self.logger.info(f"Mode is set to \"{self.tuning_mode}\" tuning")
         else:
             self.logger.info("Tuning is disabled")
-        self.just_intonation = JustIntonation(**kwargs.get("tuning_config", None))
+        self.just_intonation = JustIntonation(**kwargs.get("tuning_configuration", None))
             
         # Transposition Management
         self.transpose = 0
@@ -214,6 +217,8 @@ class MidiController:
         payload, dt  = message
         status, note, velocity = payload
 
+        
+
         if self.should_record:
             self.recorder.record_event(status, note, velocity)
 
@@ -229,6 +234,8 @@ class MidiController:
                         
             self.in_use_indices[note] = instance_index
             heapq.heappush(self.message_heap, [note + self.transpose, instance_index, status, velocity, None])
+
+            print(self.message_heap)
             
             chord = self.music_theory.determine_chord(self.message_heap)
             candidate_scales, bitmasks = self.music_theory.get_candidate_scales(message_heap=self.message_heap, scale_includes=self.scale_includes)

@@ -126,7 +126,7 @@ def parse_midi_controller_config(config_path: str, print_config=False) -> dict:
         sys.exit(1)
 
     formatted_tuning_config = {
-        'tuning_config': {
+        'tuning_configuration': {
             'player': player,
             'tuning': tuning,
             'tuning_mode': tuning_mode,
