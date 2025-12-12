@@ -22,11 +22,11 @@ print:
   print_avoid_notes_only: false
   scale_includes:
     # - "Avoid"                         # Who knows
-    # - "Diminished"                    # Octatonic
+    - "Diminished"                    # Octatonic
     - "Ionian"                        # Septatonic
     - "Harmonic Minor"                # Septatonic
     - "Harmonic Major"                # Septatonic
-    # - "Melodic Minor"                 # Septatonic
+    - "Melodic Minor"                 # Septatonic
     # - "Diminished Blues"              # Septatonic
     # - "Diminished Harmonic"           # Septatonic
     # - "Whole Tone"                    # Hexatonic

@@ -1,0 +1,27 @@
+intervals,notes,identification
+"1,2,1,2,1,5","C,Db,Eb,E,Gb,G","Diminished Scale(no7,no8)"
+"2,1,2,2,4,1","C,D,Eb,F,G,B",Harmonic Minor(no6)
+"2,1,2,3,3,1","C,D,Eb,F,Ab,B",Harmonic Minor(no5)
+"2,1,2,4,2,1","C,D,Eb,F,A,B",Melodic Minor(no5)
+"4,1,2,1,3,1","C,E,F,G,Ab,B",Harmonic Major(no2)
+"1,2,1,3,2,3","C,Db,Eb,E,G,A","Diminished Scale(no5,no8)"
+"2,1,2,1,3,3","C,D,Eb,F,Gb,A",-2Harmonic Major(rootless)
+"2,1,4,1,3,1","C,D,Eb,G,Ab,B",Harmonic Minor(no4)
+"2,1,4,2,2,1","C,D,Eb,G,A,B",Melodic Minor(no4)
+"2,2,1,2,4,1","C,D,E,F,G,B",Major Scale(no6)
+"2,2,1,3,3,1","C,D,E,F,Ab,B",Harmonic Major(no5)
+"2,2,1,4,2,1","C,D,E,F,A,B",Major Scale(no5)
+"4,1,2,2,2,1","C,E,F,G,A,B",Major Scale(no2)
+"1,2,2,2,2,3","C,Db,Eb,F,G,A",-2Melodic Minor(rootless)
+"2,1,2,2,2,3","C,D,Eb,F,G,A",Melodic Minor(no7)
+"2,2,3,1,3,1","C,D,E,G,Ab,B",Harmonic Major(no4)
+"2,2,1,2,2,3","C,D,E,F,G,A",Major Scale(no7)
+"1,2,3,1,2,3","C,Db,Eb,Gb,G,A","Diminished Scale(no4,no8)"
+"1,2,3,1,3,2","C,Db,Eb,Gb,G,Bb","Diminished Scale(no4,no7)"
+"2,3,2,1,3,1","C,D,F,G,Ab,B",Harmonic Major(no3)
+"2,3,2,2,2,1","C,D,F,G,A,B",Major Scale(no3)
+"1,3,1,3,1,3","C,Db,E,F,Ab,A",Augmented scale
+"3,2,2,1,3,1","C,Eb,F,G,Ab,B",Harmonic Minor(no2)
+"1,3,2,1,3,2","C,Db,E,Gb,G,Bb","Diminished Scale(no3,no7)"
+"3,2,2,2,2,1","C,Eb,F,G,A,B",Melodic Minor(no2)
+"2,2,2,2,2,2","C,D,E,Gb,Ab,Bb",Whole Tone Scale

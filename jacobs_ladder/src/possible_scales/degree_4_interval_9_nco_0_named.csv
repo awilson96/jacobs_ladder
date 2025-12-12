@@ -1,0 +1,36 @@
+intervals,notes,identification
+"1,2,1,8","C,Db,Eb,E",Half-Whole
+"2,2,7,1","C,D,E,B",Major7(no5)(add2)
+"1,2,3,6","C,Db,Eb,Gb",Diminished b2
+"1,2,4,5","C,Db,Eb,G",Minor b2
+"4,1,2,5","C,E,F,G",Major(add 4)
+"1,2,6,3","C,Db,Eb,A",Diminished(no5) b2
+"1,2,7,2","C,Db,Eb,Bb",Minor7(no5) b2
+"1,3,1,7","C,Db,E,F",Major(no5)(add 4) b2
+"3,2,6,1","C,Eb,F,B",MinorMajor7(no5)(add4)
+"3,3,5,1","C,Eb,Gb,B",MinorMajor7 b5
+"3,4,4,1","C,Eb,G,B",MinorMajor7(mMaj7)
+"3,5,3,1","C,Eb,Ab,B",MinorMajor7 #5
+"1,3,6,2","C,Db,E,Bb",7(no5) b2
+"6,1,4,1","C,Gb,G,B",Major7(no3) #4
+"4,2,5,1","C,E,Gb,B",Major7 b5
+"4,3,4,1","C,E,G,B",Major7
+"4,4,3,1","C,E,Ab,B",Augmented Major7
+"2,1,4,5","C,D,Eb,G",Minor(add 2)
+"1,5,1,5","C,Db,Gb,G",Crunch
+"5,2,4,1","C,F,G,B",sus4 Maj7
+"3,3,1,5","C,Eb,Gb,G",Minor #4
+"4,2,1,5","C,E,Gb,G",Major #4
+"3,1,6,2","C,Eb,E,Bb",7(no5) #2
+"2,1,6,3","C,D,Eb,A",Minor(no5)(add 2)(add 6)
+"7,2,2,1","C,G,A,B",Major7(no5)(add 6)
+"2,2,6,2","C,D,E,Bb",7(add 2)
+"2,2,3,5","C,D,E,G",Major(add 2)
+"2,2,4,4","C,D,E,Ab",Augmented(add 2)
+"3,2,2,5","C,Eb,F,G",Minor(add 4)
+"5,2,3,2","C,F,G,Bb",7sus4
+"3,3,4,2","C,Eb,Gb,Bb",Half-diminished(m7b5)
+"3,4,3,2","C,Eb,G,Bb",Minor7
+"4,2,4,2","C,E,Gb,Bb",7 b5
+"4,3,3,2","C,E,G,Bb",7
+"3,3,3,3","C,Eb,Gb,A",Fully diminished

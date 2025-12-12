@@ -69,7 +69,7 @@ CHORD_TEMPLATES_4 = {
     "7(add 2)":                      [2,2,6,2],
     "Minor(add 4)":                  [3,2,2,5],
     "Major(add 2)":                  [2,2,3,5],
-    "7(sus4)":                       [5,2,3,2]
+    "7sus4":                         [5,2,3,2]
 }
 
 CHORD_TEMPLATES_5 = {
@@ -89,33 +89,69 @@ CHORD_TEMPLATES_5 = {
     "Major7(add6) b5":               [4,2,3,2,1],
     "Major7 #4":                     [4,2,1,4,1],
     "Major #4 b2":                   [1,3,2,1,5],
-    "Major7(sus 4) b6":              [5,2,1,3,1],
+    "Major7sus4 b6":                 [5,2,1,3,1],
     "Major7 b6":                     [4,3,1,3,1],
     "Major7 #2":                     [3,1,3,4,1],
-    "Major7(sus 2)(add 6)":          [2,5,2,2,1],
+    "Major7sus2(add 6)":             [2,5,2,2,1],
     "Major7 b5 #2":                  [3,1,2,5,1],
     "Minor7 #2":                     [1,2,4,3,2],
     "Minor6 #2":                     [1,2,4,2,3],
     "Major7(add 4)":                 [4,1,2,4,1],
     "Minor7 b5 #2":                  [1,2,3,4,2],
     "Fully diminished b2":           [1,2,3,3,3],
-    "Major7(sus 2)(sus 4)":          [2,3,2,4,1],
+    "Major7sus2sus4":                [2,3,2,4,1],
     "Minor #4 b2":                   [1,2,3,1,5],
-    "7(sus 2)(add 6)":               [2,5,2,1,2],
+    "7sus2(add 6)":                  [2,5,2,1,2],
     "7 b6":                          [4,3,1,2,2],
     "Minor7 b6":                     [3,4,1,2,2],
     "Major7(add 2) b5":              [2,2,2,5,1],
     "Diminshed(add 4) b2":           [1,2,2,1,6],
-    "Diminished(add 2)(add 4)":      [2,1,2,1,6],
+    "Diminished(add 2,4)":           [2,1,2,1,6],
     "MinorMajor7(add 2) #5":         [2,1,5,3,1],
     "Augmented7(add6)":              [4,4,1,2,1],
-    "Major(add b2)(add #2)":         [1,2,1,3,5],
-    "Diminished(add b2)(add #2)":    [1,2,1,2,6]
+    "Major(add b2,#2)":              [1,2,1,3,5],
+    "Diminished(add b2,#2)":         [1,2,1,2,6]
 }
 
-CHORD_TEMPLATES_6 = {}
-CHORD_TEMPLATES_7 = {}
-CHORD_TEMPLATES_8 = {}
+CHORD_TEMPLATES_6 = {
+    "Diminished Scale(no7,no8)":     [1,2,1,2,1,5],
+    "Harmonic Minor(no6)":           [2,1,2,2,4,1],
+    "Harmonic Minor(no5)":           [2,1,2,3,3,1],
+    "Melodic Minor(no5)":            [2,1,2,4,2,1],
+    "Harmonic Major(no2)":           [4,1,2,1,3,1],
+    "Diminished Scale(no5,no8)":     [1,2,1,3,2,3],
+    "-2Harmonic Major(rootless)":    [2,1,2,1,3,3],
+    "Harmonic Minor(no4)":           [2,1,4,1,3,1],
+    "Melodic Minor(no4)":            [2,1,4,2,2,1],
+    "Major Scale(no6)":              [2,2,1,2,4,1],
+    "Harmonic Major(no5)":           [2,2,1,3,3,1],
+    "Major Scale(no5)":              [2,2,1,4,2,1],
+    "Major Scale(no2)":              [4,1,2,2,2,1],
+    "-2Melodic Minor(rootless)":     [1,2,2,2,2,3],
+    "Melodic Minor(no7)":            [2,1,2,2,2,3],
+    "Harmonic Major(no4)":           [2,2,3,1,3,1],
+    "Major Scale(no7)":              [2,2,1,2,2,3],
+    "Diminished Scale(no4,no8)":     [1,2,3,1,2,3],
+    "Diminished Scale(no4,no7)":     [1,2,3,1,3,2],
+    "Harmonic Major(no3)":           [2,3,2,1,3,1],
+    "Major Scale(no3)":              [2,3,2,2,2,1],
+    "Augmented scale":               [1,3,1,3,1,3],
+    "Harmonic Minor(no2)":           [3,2,2,1,3,1],
+    "Diminished Scale(no3,no7)":     [1,3,2,1,3,2],
+    "Melodic Minor(no2)":            [3,2,2,2,2,1],
+    "Whole Tone Scale":              [2,2,2,2,2,2]
+}
+CHORD_TEMPLATES_7 = {
+    "Diminished Scale(no8)":         [1,2,1,2,1,2,3],
+    "Diminished Scale(no7)":         [1,2,1,2,1,3,2],
+    "Harmonic Minor":                [2,1,2,2,1,3,1],
+    "Melodic Minor":                 [2,1,2,2,2,2,1],
+    "Harmonic Major":                [2,2,1,2,1,3,1],
+    "Major Scale":                   [2,2,1,2,2,2,1]
+}
+CHORD_TEMPLATES_8 = {
+    "Diminished Scale":              [1,2,1,2,1,2,1,2]
+}
 
 TEMPLATES_BY_DEGREE = {
     4: CHORD_TEMPLATES_4,
@@ -210,4 +246,10 @@ if __name__ == "__main__":
     input = Path("possible_scales/degree_4_interval_9_nco_0.csv")
     classify_csv(input)
     input = Path("possible_scales/degree_5_interval_9_nco_0.csv")
+    classify_csv(input)
+    input = Path("possible_scales/degree_6_interval_9_nco_0.csv")
+    classify_csv(input)
+    input = Path("possible_scales/degree_7_interval_9_nco_0.csv")
+    classify_csv(input)
+    input = Path("possible_scales/degree_8_interval_9_nco_0.csv")
     classify_csv(input)
