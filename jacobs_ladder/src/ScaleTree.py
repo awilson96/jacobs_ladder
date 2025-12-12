@@ -180,5 +180,5 @@ class ScaleTree:
 
 if __name__ == "__main__":
     st = ScaleTree(scale_length=12, convert_intervals=True)
-    st.generate_scales(max_degree=8, max_interval=7, num_consecutive_ones=0, disp=True)
+    st.generate_scales(max_degree=8, max_interval=9, num_consecutive_ones=0, disp=True)
     # st.convert_intervals_to_notes()

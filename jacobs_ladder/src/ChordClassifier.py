@@ -13,7 +13,7 @@ import csv
 # -----------------------
 # Config / Templates
 # -----------------------
-INPUT_CSV = Path("possible_scales/degree_4_interval_7_nco_0.csv")
+INPUT_CSV = Path("possible_scales/degree_4_interval_9_nco_0.csv")
 OUTPUT_CSV = INPUT_CSV.with_name(INPUT_CSV.stem + "_root_rotated.csv")
 
 NOTE_NAMES = ["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"]
@@ -24,11 +24,11 @@ CHORD_TEMPLATES = {
     "Major7(no5)(add2)":             [2,2,7,1],
     "Major7(no3) #4":                [6,1,4,1],
     "Major7 b5":                     [4,2,5,1],
-    "(add 4)":                       [4,1,2,5],
+    "Major(add 4)":                  [4,1,2,5],
     "sus4 Maj7":                     [5,2,4,1],
     "Dominant7":                     [4,3,3,2],
-    "Half-diminished (m7b5)":        [3,3,4,2],
-    "MinorMajor7 (mMaj7)":           [3,4,4,1],
+    "Half-diminished(m7b5)":         [3,3,4,2],
+    "MinorMajor7(mMaj7)":            [3,4,4,1],
     "MinorMajor7(no5)(add4)":        [3,2,6,1],
     "MinorMajor7 #5":                [3,5,3,1],
     "MinorMajor7 b5":                [3,3,5,1],
@@ -45,11 +45,18 @@ CHORD_TEMPLATES = {
     "Diminished(no5) b2":            [1,2,6,3],
     "Stacked chromatic major 3rds":  [1,3,1,7],
     "Crunch":                        [1,5,1,5],
+    "Minor #4":                      [3,3,1,5],
+    "Major #4":                      [4,2,1,5],
+    "Half-Whole":                    [1,2,1,8],
+    "Dominant7(no5) #2":             [3,1,6,2],
+    "Minor(no5)(add 2)(add 6)":      [2,1,6,3],
+    "Major7(no5)(add 6)":            [7,2,2,1],
+    "Dominant7(add 2)":              [2,2,6,2],
+    "Minor(add 4)":                  [3,2,2,5],
+    "Major(add 2)":                  [2,2,3,5],
+    "Dominant7(sus4)":               [5,2,3,2]
 }
 
-# -----------------------
-# Helpers
-# -----------------------
 def rotate(lst, n):
     """Rotate list lst by n steps to the left"""
     return lst[n:] + lst[:n]
@@ -74,9 +81,6 @@ def find_root_position_match(intervals):
                 return rotated, chord_name
     return None, None
 
-# -----------------------
-# Main
-# -----------------------
 def main():
     if not INPUT_CSV.exists():
         raise SystemExit(f"Input file not found: {INPUT_CSV}")
