@@ -1,32 +1,47 @@
 """
-identify_chords_rotations.py
+GeneralChordClassifier.py
 
-For each interval sequence:
-1. Rotate intervals to see if it matches a canonical root-position chord template.
-2. If found, set intervals to root-position sequence, compute notes from C.
-3. If not found, intervals unchanged, identification Unknown, notes empty.
+Matches degree-N interval CSVs against corresponding canonical templates:
+ - CHORD_TEMPLATES_4
+ - CHORD_TEMPLATES_5
+ - CHORD_TEMPLATES_6
+ - CHORD_TEMPLATES_7
+ - CHORD_TEMPLATES_8
+You manually fill in these dictionaries.
+
+Behavior:
+ - Reads the CSV.
+ - Determines degree (number of interval columns).
+ - Looks up the matching dictionary for that degree.
+ - Performs rotation matching exactly like the degree-4 script.
+ - Outputs a file with "_named" suffix.
+
+Output columns:
+   intervals        : canonical (rotated) ordering
+   notes            : note names computed from C for matched chords
+   identification   : chord name or "Unknown"
 """
 
 from pathlib import Path
 import csv
 
-# -----------------------
-# Config / Templates
-# -----------------------
-INPUT_CSV = Path("possible_scales/degree_4_interval_9_nco_0.csv")
-OUTPUT_CSV = INPUT_CSV.with_name(INPUT_CSV.stem + "_root_rotated.csv")
-
+# -----------------------------
+# Note names
+# -----------------------------
 NOTE_NAMES = ["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"]
 
-# canonical intervals in root position
-CHORD_TEMPLATES = {
+# -----------------------------
+# Canonical templates by degree
+# You fill these in manually
+# -----------------------------
+CHORD_TEMPLATES_4 = {
     "Major7":                        [4,3,4,1],
     "Major7(no5)(add2)":             [2,2,7,1],
     "Major7(no3) #4":                [6,1,4,1],
     "Major7 b5":                     [4,2,5,1],
     "Major(add 4)":                  [4,1,2,5],
     "sus4 Maj7":                     [5,2,4,1],
-    "Dominant7":                     [4,3,3,2],
+    "7":                             [4,3,3,2],
     "Half-diminished(m7b5)":         [3,3,4,2],
     "MinorMajor7(mMaj7)":            [3,4,4,1],
     "MinorMajor7(no5)(add4)":        [3,2,6,1],
@@ -38,32 +53,86 @@ CHORD_TEMPLATES = {
     "Minor(add 2)":                  [2,1,4,5], 
     "Minor b2":                      [1,2,4,5],
     "Minor7(no5) b2":                [1,2,7,2],
-    "Dominant7 b5":                  [4,2,4,2],
-    "Dominant7(no5) b2":             [1,3,6,2],
+    "7 b5":                          [4,2,4,2],
+    "7(no5) b2":                     [1,3,6,2],
     "Fully diminished":              [3,3,3,3],
     "Diminished b2":                 [1,2,3,6],
     "Diminished(no5) b2":            [1,2,6,3],
-    "Stacked chromatic major 3rds":  [1,3,1,7],
+    "Major(no5)(add 4) b2":          [1,3,1,7],
     "Crunch":                        [1,5,1,5],
     "Minor #4":                      [3,3,1,5],
     "Major #4":                      [4,2,1,5],
     "Half-Whole":                    [1,2,1,8],
-    "Dominant7(no5) #2":             [3,1,6,2],
+    "7(no5) #2":                     [3,1,6,2],
     "Minor(no5)(add 2)(add 6)":      [2,1,6,3],
     "Major7(no5)(add 6)":            [7,2,2,1],
-    "Dominant7(add 2)":              [2,2,6,2],
+    "7(add 2)":                      [2,2,6,2],
     "Minor(add 4)":                  [3,2,2,5],
     "Major(add 2)":                  [2,2,3,5],
-    "Dominant7(sus4)":               [5,2,3,2]
+    "7(sus4)":                       [5,2,3,2]
 }
 
+CHORD_TEMPLATES_5 = {
+    "Major(add 2)(add 6)":           [2,2,3,2,3],
+    "Major(add 2) b6":               [2,2,3,1,4],
+    "Augmented(add 2) #4":           [2,2,2,2,4],
+    "MinorMajor7(add 6)":            [3,4,2,2,1],
+    "7 b2":                          [1,3,3,3,2],
+    "Major b2 b6":                   [1,3,3,1,4],
+    "Major6 b2":                     [1,3,3,2,3],
+    "7 #4":                          [4,2,1,3,2],
+    "Minor7 #4":                     [3,3,1,3,2],
+    "MinorMajor7(add 4)":            [3,2,2,4,1],
+    "7(add 2)":                      [2,2,2,3,3],
+    "Major(add 2) #4":               [2,2,2,1,5],
+    "Major7(add 6)":                 [4,3,2,2,1],
+    "Major7(add6) b5":               [4,2,3,2,1],
+    "Major7 #4":                     [4,2,1,4,1],
+    "Major #4 b2":                   [1,3,2,1,5],
+    "Major7(sus 4) b6":              [5,2,1,3,1],
+    "Major7 b6":                     [4,3,1,3,1],
+    "Major7 #2":                     [3,1,3,4,1],
+    "Major7(sus 2)(add 6)":          [2,5,2,2,1],
+    "Major7 b5 #2":                  [3,1,2,5,1],
+    "Minor7 #2":                     [1,2,4,3,2],
+    "Minor6 #2":                     [1,2,4,2,3],
+    "Major7(add 4)":                 [4,1,2,4,1],
+    "Minor7 b5 #2":                  [1,2,3,4,2],
+    "Fully diminished b2":           [1,2,3,3,3],
+    "Major7(sus 2)(sus 4)":          [2,3,2,4,1],
+    "Minor #4 b2":                   [1,2,3,1,5],
+    "7(sus 2)(add 6)":               [2,5,2,1,2],
+    "7 b6":                          [4,3,1,2,2],
+    "Minor7 b6":                     [3,4,1,2,2],
+    "Major7(add 2) b5":              [2,2,2,5,1],
+    "Diminshed(add 4) b2":           [1,2,2,1,6],
+    "Diminished(add 2)(add 4)":      [2,1,2,1,6],
+    "MinorMajor7(add 2) #5":         [2,1,5,3,1],
+    "Augmented7(add6)":              [4,4,1,2,1],
+    "Major(add b2)(add #2)":         [1,2,1,3,5],
+    "Diminished(add b2)(add #2)":    [1,2,1,2,6]
+}
+
+CHORD_TEMPLATES_6 = {}
+CHORD_TEMPLATES_7 = {}
+CHORD_TEMPLATES_8 = {}
+
+TEMPLATES_BY_DEGREE = {
+    4: CHORD_TEMPLATES_4,
+    5: CHORD_TEMPLATES_5,
+    6: CHORD_TEMPLATES_6,
+    7: CHORD_TEMPLATES_7,
+    8: CHORD_TEMPLATES_8,
+}
+
+
 def rotate(lst, n):
-    """Rotate list lst by n steps to the left"""
     return lst[n:] + lst[:n]
 
+def all_rotations(lst):
+    return [rotate(lst, i) for i in range(len(lst))]
+
 def intervals_to_notes(intervals, root_pc=0):
-    """Given a root PC (default C=0) and intervals in root position,
-    compute notes (ignore last interval, which just closes the octave)"""
     notes = [root_pc]
     s = root_pc
     for iv in intervals[:-1]:
@@ -71,53 +140,74 @@ def intervals_to_notes(intervals, root_pc=0):
         notes.append(s)
     return [NOTE_NAMES[n] for n in notes]
 
-def find_root_position_match(intervals):
-    """Try all rotations to see if it matches a canonical root-position chord"""
-    n = len(intervals)
-    for i in range(n):
-        rotated = rotate(intervals, i)
-        for chord_name, canon_intervals in CHORD_TEMPLATES.items():
-            if rotated == canon_intervals:
-                return rotated, chord_name
+
+def find_rotation_match(intervals, template_dict):
+    """
+    Try rotations of 'intervals' and check if any match a canonical template.
+    Returns (rotated_intervals, template_name) or (None, None).
+    """
+    for rot in all_rotations(intervals):
+        for name, canon in template_dict.items():
+            if rot == canon:
+                return rot, name
     return None, None
 
-def main():
-    if not INPUT_CSV.exists():
-        raise SystemExit(f"Input file not found: {INPUT_CSV}")
+
+def classify_csv(path: Path):
+    if not path.exists():
+        raise SystemExit(f"File not found: {path}")
+
+    # read CSV
+    with path.open(newline="") as f:
+        reader = csv.DictReader(f)
+        rows = list(reader)
+
+    if not rows:
+        print("Empty CSV")
+        return
+
+    # detect degree from column count
+    degree = len(reader.fieldnames)
+
+    if degree not in TEMPLATES_BY_DEGREE:
+        raise ValueError(f"No template dictionary defined for degree {degree}")
+
+    template_dict = TEMPLATES_BY_DEGREE[degree]
+
+    # output file
+    out_path = path.with_name(path.stem + "_named.csv")
 
     rows_out = []
-    with INPUT_CSV.open(newline='') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            intervals_input = [int(row[col]) for col in reader.fieldnames]
+    for row in rows:
+        intervals = [int(row[c]) for c in reader.fieldnames]
 
-            # find root-position rotation
-            intervals_root, chord_name = find_root_position_match(intervals_input)
+        rot, name = find_rotation_match(intervals, template_dict)
 
-            if chord_name:
-                # compute notes from C
-                notes = intervals_to_notes(intervals_root, root_pc=0)
-                identification = chord_name
-            else:
-                intervals_root = intervals_input
-                notes = [""] * len(intervals_input)
-                identification = "Unknown"
-
+        if name:
+            notes = intervals_to_notes(rot, 0)
             rows_out.append({
-                "intervals": ",".join(str(i) for i in intervals_root),
+                "intervals": ",".join(str(x) for x in rot),
                 "notes": ",".join(notes),
-                "identification": identification
+                "identification": name
+            })
+        else:
+            rows_out.append({
+                "intervals": ",".join(str(x) for x in intervals),
+                "notes": "",
+                "identification": "Unknown"
             })
 
     # write output CSV
-    with OUTPUT_CSV.open("w", newline='') as out_f:
-        fieldnames = ["intervals", "notes", "identification"]
-        writer = csv.DictWriter(out_f, fieldnames=fieldnames)
+    with out_path.open("w", newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=["intervals", "notes", "identification"])
         writer.writeheader()
         for r in rows_out:
             writer.writerow(r)
 
-    print(f"Wrote results to: {OUTPUT_CSV}")
+    print(f"Wrote {out_path}")
 
 if __name__ == "__main__":
-    main()
+    input = Path("possible_scales/degree_4_interval_9_nco_0.csv")
+    classify_csv(input)
+    input = Path("possible_scales/degree_5_interval_9_nco_0.csv")
+    classify_csv(input)
