@@ -16,7 +16,7 @@ output_ports:
 
 # --- Print behavior ---
 print:
-  print_msgs: false
+  print_msgs: true
   print_key: false
   print_scales: false
   print_avoid_notes_only: false
@@ -63,6 +63,6 @@ tuning_configuration:
     "minor_seventh_down": 7471    # 5/9   = -17.596  c
     "major_seventh_down": 8673    # 15/16 = -11.731  c
     "octave": 8192                # 2/1 | 1/2
-  tuning_mode: just-intonation # dynamic, static, just-intonation, or none
-  tuning_config: 5-limit-ratios
-  tuning_pref: 5-limit-pref
+  tuning_mode: none # dynamic, static, just-intonation, or none
+  tuning_ratios_all: 5-limit-ratios
+  tuning_ratios_pref: 5-limit-pref

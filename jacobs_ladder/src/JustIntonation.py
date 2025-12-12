@@ -222,6 +222,9 @@ class JustIntonation:
             else:
                 sorted_message_heap = remove_harmonically_redundant_intervals(message_heap)
                 keys = [k.split(" ")[0] for k in key]
+            
+        else:
+            return None
         
     def get_diad_pitch(self, interval: int):
         """Given an interval between two notes, return the analog pitch value expressed as a range from 0-16383 

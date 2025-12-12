@@ -86,7 +86,17 @@ class MidiRecorder:
 
                 if msg_type:
                     delta_ticks = int(mido.second2tick(delta_s, mid.ticks_per_beat, tempo))
-                    msg = mido.Message(msg_type, note_or_control, velocity_or_value, delta_ticks)
+
+                    if msg_type in ['note_on', 'note_off']:
+                        msg = mido.Message(msg_type,
+                                        note=note_or_control,
+                                        velocity=velocity_or_value,
+                                        time=delta_ticks)
+                    elif msg_type == 'control_change':
+                        msg = mido.Message(msg_type,
+                                        control=note_or_control,
+                                        value=velocity_or_value,
+                                        time=delta_ticks)
                     track.append(msg)
                 else:
                     print(f"Skipped unknown status byte: {status}")

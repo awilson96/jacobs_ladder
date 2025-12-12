@@ -9,3 +9,4 @@ html/*
 *.whl
 *cpp_build/
 *.vscode
+*.mid

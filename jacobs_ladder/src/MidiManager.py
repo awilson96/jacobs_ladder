@@ -1,4 +1,5 @@
 import argparse
+import datetime
 import heapq
 import logging
 import rtmidi
@@ -216,7 +217,7 @@ class MidiController:
 
         
 
-        if self.should_record:
+        if self.should_record and self.tuning_mode in ("none", None):
             self.recorder.record_event(status, note, velocity)
 
         self.just_intonation.tuning_mode = self.tuning_mode
