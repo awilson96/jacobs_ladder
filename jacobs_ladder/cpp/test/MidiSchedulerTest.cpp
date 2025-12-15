@@ -1,3 +1,5 @@
+#ifdef _WIN32
+
 /**
  * @file MidiSchedulerTest.cpp
  * @brief Unit tests for the MidiScheduler class.
@@ -710,3 +712,5 @@ TEST_CASE("Test Pruning", "[MidiScheduler][pruneExpiredBeatsIncrementally(long l
     auto newBeatSchedule = midiScheduler.getBeatSchedule();
     REQUIRE(oldBeatSchedule.at(0).first != newBeatSchedule.at(0).first);
 }
+
+#endif // _WIN32

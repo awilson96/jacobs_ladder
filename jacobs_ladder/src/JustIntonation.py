@@ -643,8 +643,8 @@ if __name__ == "__main__":
         "player": "User", 
         "tuning": None, 
         "tuning_mode": "just-intonation", 
-        "tuning_config": "7-limit-ratios", 
-        "tuning_pref": "7-limit-pref"
+        "tuning_ratios_all": "7-limit-ratios", 
+        "tuning_ratios_pref": "7-limit-pref"
     }
     JI = JustIntonation(**kwargs)
     tuning_ratio = JI.select_tuning_ratio(relationship=(1, 1, 10), method="singular")

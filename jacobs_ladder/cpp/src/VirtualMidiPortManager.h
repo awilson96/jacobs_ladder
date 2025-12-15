@@ -1,6 +1,8 @@
 #ifndef VirtualMIDIPortManager_H
 #define VirtualMIDIPortManager_H
 
+#ifdef _WIN32
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -39,4 +41,5 @@ public:
     void close();
 };
 
+#endif // _WIN32
 #endif // VirtualMIDIPortManager_H

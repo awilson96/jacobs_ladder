@@ -1,3 +1,5 @@
+#ifdef _WIN32
+
 #include "QpcUtils.h"
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -19,3 +21,5 @@ PYBIND11_MODULE(qpc_utils, m) {
         .def("qpcDisplayStatistics", &QpcUtils::qpcDisplayStatistics)
         .def("qpcCalculatePercentError", &QpcUtils::qpcCalculatePercentError);
 }
+
+#endif // _WIN32

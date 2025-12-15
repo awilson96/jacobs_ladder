@@ -10,3 +10,9 @@ html/*
 *cpp_build/
 *.vscode
 *.mid
+*.so
+*.o
+*.xcconfig
+*.pbxproj
+*.xcworkspacedata
+*Podfile

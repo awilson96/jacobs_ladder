@@ -1,6 +1,8 @@
 #ifndef PATTERN_UTILS_H
 #define PATTERN_UTILS_H
 
+#include "MidiDefinitions.h"
+
 enum PatternDirection {
     ASC,                    // Pattern is ascending toward higher pitch register
     DESC,                   // Pattern is descending toward lower pitch register

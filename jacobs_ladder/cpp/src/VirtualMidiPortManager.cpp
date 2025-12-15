@@ -1,3 +1,5 @@
+#ifdef _WIN32
+
 #include "VirtualMIDIPortManager.h"
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -79,3 +81,4 @@ void VirtualMIDIPortManager::close() {
         std::cout << "All virtual MIDI ports closed." << std::endl;
 }
 
+#endif // _WIN32

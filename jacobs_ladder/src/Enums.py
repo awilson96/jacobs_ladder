@@ -97,7 +97,3 @@ class NoteDivisions(Enum):
 class MidiStatus(Enum):
     NOTE_ON = 144
     NOTE_OFF = 128
-
-class NoteState(Enum):
-    ON = True
-    OFF = False

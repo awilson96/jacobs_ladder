@@ -1,3 +1,5 @@
+#ifdef _WIN32
+
 #include <iostream>
 #include <cstdint>
 #include <vector>
@@ -79,3 +81,5 @@ int main() {
     
     return 0;
 }
+
+#endif // _WIN32

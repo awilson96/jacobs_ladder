@@ -1,6 +1,8 @@
 #ifndef MIDI_SCHEDULER_H
 #define MIDI_SCHEDULER_H
 
+#ifdef _WIN32
+
 // Project Includes
 #include "Constants.h"
 #include "MidiDefinitions.h"
@@ -322,5 +324,5 @@ private:
 
 };
 
-
+#endif // _WIN32
 #endif // MIDI_SCHEDULER_H

@@ -1,3 +1,5 @@
+#ifdef _WIN32
+
 // Project includes
 #include "QpcUtils.h"
 #include "MathUtils.h"
@@ -259,3 +261,5 @@ double QpcUtils::qpcCalculatePercentError(double expectedTime, double meanTime) 
     std::cout << "Percent Error: " << percentError << "%\n";
     return percentError;
 }
+
+#endif // _WIN32

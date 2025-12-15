@@ -1,3 +1,5 @@
+#ifdef _WIN32
+
 #include "MidiScheduler.h"
 #include "MidiDefinitions.h"
 #include "QpcUtils.h"
@@ -63,3 +65,5 @@ int main(int argc, const char *argv[]) {
     // timer.qpcSleepMs(2000);
 
 }
+
+#endif // _WIN32

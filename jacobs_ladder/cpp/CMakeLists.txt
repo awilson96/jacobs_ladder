@@ -41,11 +41,30 @@ elseif(UNIX)
     list(APPEND DEFAULT_LIBS pthread)  # Pthreads for POSIX systems
 endif()
 
-# Search for precompiled libraries in /lib and /external/lib
-file(GLOB LIB_FILES CONFIGURE_DEPENDS lib/*.lib lib/*.a external/lib/*.lib external/lib/*.a)
+# Search for all libraries in /lib and /external/lib
+file(GLOB ALL_LIB_FILES CONFIGURE_DEPENDS lib/* external/lib/*)
 
-if(LIB_FILES)
-    message(STATUS "Found precompiled libraries: ${LIB_FILES} ")
+# Start empty
+set(LIB_FILES_TO_LINK)
+
+# Filter libraries based on platform
+foreach(libfile ${ALL_LIB_FILES})
+    get_filename_component(libname ${libfile} NAME)  # just the filename
+    if(WIN32)
+        # On Windows, include everything
+        list(APPEND LIB_FILES_TO_LINK ${libfile})
+    elseif(UNIX)
+        # On macOS/Linux, skip Windows-only .lib files
+        if(NOT libname MATCHES ".*\\.lib$")
+            list(APPEND LIB_FILES_TO_LINK ${libfile})
+        else()
+            message(STATUS "Skipping Windows-only library on macOS/Linux: ${libname}")
+        endif()
+    endif()
+endforeach()
+
+if(LIB_FILES_TO_LINK)
+    message(STATUS "Libraries to link: ${LIB_FILES_TO_LINK}")
 endif()
 
 # Add external/ and src/ directories to include paths for all targets
@@ -54,8 +73,8 @@ include_directories(${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/external ${CMAKE
 # Create a static library from src/ and external/
 add_library(MyLib STATIC ${SRC_FILES} ${EXT_FILES})
 
-# Link all detected libraries to MyLib
-target_link_libraries(MyLib PRIVATE ${LIB_FILES} ${DEFAULT_LIBS})
+# Link filtered libraries + default libraries
+target_link_libraries(MyLib PRIVATE ${LIB_FILES_TO_LINK} ${DEFAULT_LIBS})
 
 # Add the src/ directory to include paths for all targets
 include_directories(${CMAKE_SOURCE_DIR}/src)

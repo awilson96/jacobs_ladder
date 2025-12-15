@@ -1,3 +1,5 @@
+#ifdef _WIN32
+
 // Project includes
 #include "MidiScheduler.h"
 #include "MidiUtils.h"
@@ -574,3 +576,4 @@ void MidiScheduler::smartSleep(long long qpcTime) {
     } while (now.QuadPart < qpcTime - mBudgetTicks);
 }
 
+#endif // _WIN32

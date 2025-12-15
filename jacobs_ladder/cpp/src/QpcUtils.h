@@ -1,6 +1,8 @@
 #ifndef QPC_UTILS_H
 #define QPC_UTILS_H
 
+#ifdef _WIN32
+
 // system includes
 #include <windows.h>
 #include <chrono>
@@ -37,4 +39,5 @@ private:
     long long qpcPrintTimeDiff(int option, long long start, long long end) const;
 };
 
+#endif // _WIN32
 #endif // QPC_UTILS_H

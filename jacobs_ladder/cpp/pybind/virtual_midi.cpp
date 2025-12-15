@@ -1,3 +1,5 @@
+#ifdef _WIN32
+
 // Project includes
 #include "VirtualMidiPortManager.h"
 
@@ -14,3 +16,5 @@ PYBIND11_MODULE(virtual_midi, m) {
         .def("start", &VirtualMIDIPortManager::start, py::arg("name_count_pairs"))
         .def("close", &VirtualMIDIPortManager::close);
 }
+
+#endif // _WIN32

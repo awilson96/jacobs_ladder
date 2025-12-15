@@ -6,17 +6,17 @@ from .Scales import get_major_scales, get_harmonic_minor_scales, get_harmonic_ma
 
 class Compatibility:
     def __init__(self):
-        degree8_file_path = os.path.join(os.path.dirname(__file__), 'possible_scales', 'degree_8_interval_4_nco_0.csv')
+        degree8_file_path = os.path.join(os.path.dirname(__file__), 'possible_scales', 'degree_8_interval_9_nco_1.csv')
         self.degree8_data = pd.read_csv(degree8_file_path)
-        degree7_file_path = os.path.join(os.path.dirname(__file__), 'possible_scales', 'degree_7_interval_4_nco_0.csv')
+        degree7_file_path = os.path.join(os.path.dirname(__file__), 'possible_scales', 'degree_7_interval_9_nco_1.csv')
         self.degree7_data = pd.read_csv(degree7_file_path)
-        degree6_file_path = os.path.join(os.path.dirname(__file__), 'possible_scales', 'degree_6_interval_4_nco_0.csv')
+        degree6_file_path = os.path.join(os.path.dirname(__file__), 'possible_scales', 'degree_6_interval_9_nco_1.csv')
         self.degree6_data = pd.read_csv(degree6_file_path)
-        degree5_file_path = os.path.join(os.path.dirname(__file__), 'possible_scales', 'degree_5_interval_4_nco_0.csv')
+        degree5_file_path = os.path.join(os.path.dirname(__file__), 'possible_scales', 'degree_5_interval_9_nco_1.csv')
         self.degree5_data = pd.read_csv(degree5_file_path)
-        degree4_file_path = os.path.join(os.path.dirname(__file__), 'possible_scales', 'degree_4_interval_4_nco_0.csv')
+        degree4_file_path = os.path.join(os.path.dirname(__file__), 'possible_scales', 'degree_4_interval_9_nco_1.csv')
         self.degree4_data = pd.read_csv(degree4_file_path)
-        degree3_file_path = os.path.join(os.path.dirname(__file__), 'possible_scales', 'degree_3_interval_4_nco_0.csv')
+        degree3_file_path = os.path.join(os.path.dirname(__file__), 'possible_scales', 'degree_3_interval_9_nco_1.csv')
         self.degree3_data = pd.read_csv(degree3_file_path)
         self.int_note = get_midi_notes()
 
@@ -34,8 +34,7 @@ class Compatibility:
         self.triads_named = None
 
     def create_scale(self, starting_note: int, data: pd.DataFrame) -> None:
-        """
-        Create scales from the intervals in the data given a starting note and assign to appropriate class variables.
+        """Create scales from the intervals in the data given a starting note and assign to appropriate class variables.
 
         Args:
             starting_note (int): the starting note of the scale
@@ -138,8 +137,7 @@ class Compatibility:
             # print(f"Triads Named:\n{self.triads_named}")
 
     def remove_rotated_duplicates(self, dfs):
-        """
-        Removes rows from dataframes that are rearranged versions of rows in other dataframes.
+        """Removes rows from dataframes that are rearranged versions of rows in other dataframes.
         
         Parameters:
             dfs (list of pd.DataFrame): List of dataframes to process. Each dataframe must
@@ -174,8 +172,7 @@ class Compatibility:
 
 
     def determine_compatibility(self, scales_df, higher_degree_dfs, include_weak=False):
-        """
-        Determine compatible scales for a given scale in the provided DataFrame.
+        """Determine compatible scales for a given scale in the provided DataFrame.
         Compatibility is based on whether all notes in the lower degree scale
         are contained within a higher degree scale from any of the DataFrames
         in the higher_degree_dfs list.

@@ -1,7 +1,20 @@
 # About
 JacobsLadder is an opens source Music AI project which conveys music theory insights to piano players in real time. The eventual goal of this product is to create music AI tools for musicians to more deeply explore music in all of its permutations and possibilities. The current capabilities include a python based MIDI parser, a C++ based real-time note scheduler, and a Dart/Flutter based UI. The parser establishes the necessary hardware abstraction layer for turning MIDI signals coming from the users keyboard into virtual midi ports. The data is read off the virtual midi ports and transformed into music descriptor words (MDWs). These MDWs are transmitted to the front end UI to provide color visualization superimposed on the keyboard. The UI also displays the full list of compatible scales with the currently selected (or held down notes) on the keyboard. This gives the user the knowledge of what scales are *compatible* which the current chord changes and provides insight into their musical options for every possible harmonic context. There are several toggleable filters available including Major Scales, Harmonic Minor Scales, Harmonic Major Scales, and Melodic Minor Scales. This enables to user to focus on a subsection of scales at a time so see how these options fit within their chord changes. Several research tools have also been created. In the file ScaleTree.py, the user can list all of the possible scales in the ether which match the constraints. These configurable constraints are that scales must end on the note they start on, they must not exceed steps of major thirds, they must not have consecutive half steps. The max step size and the max number of consecutive half steps are configurable. The ScaleTree program creates a CSV file containing all of the scales generated for each scale length from 3 note scales (triads) to 8 note scales (optotonic). This is because nine note scales all violate the rule that scales must end on the note where the begin. This program gives way to several novel and interesting scales which have not been studied by the broader music theory community. The python backend also supports real time just intonation. This works by splitting the data by note letter name on the incoming MIDI port into twelve separate MIDI ports acting as individual octave channels. These channels can then be tuned using the pitch wheel inidvidually without affecting the other octave channels. This gives the program single note manipulation abilities. The user can specify the intervals they prefer to use by selecting a pitch config when running the program. Examples can be found in <project_root>/configurations/json/pitch/. The repo also has a file called PolyRhythms.py where users can create PolyRhythm melodies by scheduling alternating melodies at different rhythmic cadences.  This gives the user the ability to experiment around with how perfectly played alternating melodies played simultaneously sound.
 
+# Missing Dependencies
+1. pyyaml
+2. cython
+3. pybind11
+4. cmake (for MacOS be sure to install the compiler toolchain via `xcode-select --install` or compilations will fail at later steps)
+5. dart/flutter (for MacOS you will need to install xcode from the app store and accept the licensing agreement.)
+
+
 # Setup
+
+## MacOS
+
+
+## Windows
 **TODO: update setup to use setup script instead of manual instructions**
 To setup the software, a few programs are required:
 1. MIDI-OX
@@ -40,17 +53,63 @@ options:
 ```
 
 # Cython compilation
-`cd ~/jacobs_ladder/`
-`python -m bindings.compile build_ext --inplace`
+
+## MacOS
+1. Change directories to `cd jacobs_ladder/jacobs_ladder/` and run the following command: `python -m bindings.compile build_ext --inplace`
+2. This will produce a file called `tuning_utils.cpython-312-darwin.so`. Copy this file to `jacobs_ladder/jacobs_ladder/`.
+
+## Windows
+1. Change directories to `cd jacobs_ladder/jacobs_ladder/` and run the following command: `python -m bindings.compile build_ext --inplace`
+2. This will produce a file called <TODO: Name this file>.pyd. Copy this file to `jacobs_ladder/jacobs_ladder/`.
+
 
 # Pybind/C++ build
-To clean and rebuild:
-`Remove-Item -Path .\build\ -Recurse -Force; mkdir build; cd build; $PYBIND_DIR = python -c "import pybind11; print(pybind11.get_cmake_dir())"; cmake .. -Dpybind11_DIR="$PYBIND_DIR"; cmake --build .; cd ..`
+
+## MacOS
+Change directories to `jacobs_ladder/jacobs_ladder/cpp/` and run the following command:
+```bash
+rm -rf build \
+&& mkdir build \
+&& cd build \
+&& PYBIND_DIR=$(python -c "import pybind11; print(pybind11.get_cmake_dir())") \
+&& cmake .. -Dpybind11_DIR="$PYBIND_DIR" \
+&& cmake --build . \
+&& cd ..
+```
+Note that currently (as of 12/15/25) the only binary which is supported is `RhythmPatternTest` as the `MidiScheduler` relies on `QpcUtils` currently which is a Windows specific timing driver. Also the `VirtualMidiPortScript` is unnecessary for MacOS and Linux since these operating systems can create virtual Midi ports directly in Rtmidi where this API is not supported in Windows due to hardware incompatibility.  
+
+## Windows
+Change directories to `jacobs_ladder/jacobs_ladder/cpp` and run the following command: 
+```Powershell
+Remove-Item -Path .\build\ -Recurse -Force; mkdir build; cd build; $PYBIND_DIR = python -c "import pybind11; print(pybind11.get_cmake_dir())"; cmake .. -Dpybind11_DIR="$PYBIND_DIR"; cmake --build .; cd ..
+```
+
+The following binaries are supported for the following tasks:
+1. MidiSchedulerExample: Schedules a simple C–E–G chord sequence, repeats the sequence 3 times with proper timing, then waits a few seconds so the notes can play. (see cpp/test/MidiSchedulerExample.cpp for implementation details)
+2. MidiSchedulerTest: A more comprehensive suite of MidiScheduler test cases which excerise the various functionalities of the MidiScheduler. (see cpp/test/MidiSchedulerTest.cpp for test case details)
+3. QpcUtilsTest: A simple timing test of the various capabilities of the query performance counter based timer. This test excersises the primary functionalities of the QpcUtils class.
+4. RhythmPatternTest: Simple test to ensure that RhythmPatterns can be repeatable.
+5. VirtualMidiPortScript: Parses a JSON file specifying virtual MIDI port names and counts (see jacobs_ladder/configuration/json/port_configuration/default.json for details). It then creates virtual MIDI ports using the teVirtualMIDI driver and registers a callback to handle incoming MIDI messages for all ports. Then it waits for the user to press Enter while the ports remain active. On close, all virtual ports cleanly before exiting.
+
+Note that the VirtualMidiPortScript **IS REQUIRED** for the MidiManager to work correctly on Windows.
 
 # Dart/Flutter build
-`cd <project_root>/jacobs_ladder/ladder/`
-`flutter run`
-select an option (browser based, OS based). Note that dart/flutter is cross platform so the app should work for Windows/Mac/Linux so long as the necessary libs installed (only tested on Windows and Linux).
+
+## MacOS
+1. Install the dart sdk, flutter, ruby, and CocoaPods
+```bash
+brew install dart-sdk
+brew install flutter
+brew install ruby
+gem install cocoapods
+```
+2. Change directories to `cd jacobs_ladder/jacobs_ladder/ladder` and run `flutter run`
+
+## Windows
+1. Install the flutter sdk from `https://docs.flutter.dev/get-started` and extract it to `C:\flutter\`
+2. Add the `C:\flutter\bin\` to the path environmental variable to make the `flutter`/`dart` command globally accessible.
+3. Change directories to `cd jacobs_ladder/jacobs_ladder/ladder/` and run `flutter run`
+4. Select the desktop 
 
 # Future Work
 1. Multiple instances of Jacob with different instrument configurations
