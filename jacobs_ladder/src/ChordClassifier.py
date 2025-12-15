@@ -139,7 +139,39 @@ CHORD_TEMPLATES_6 = {
     "Harmonic Minor(no2)":                      [3,2,2,1,3,1],
     "Diminished Scale(no3,no7)":                [1,3,2,1,3,2],
     "Melodic Minor(no2)":                       [3,2,2,2,2,1],
-    "Whole Tone Scale":                         [2,2,2,2,2,2]
+    "Whole Tone Scale":                         [2,2,2,2,2,2],
+    "Major Scale(no6,no7)(add b2) Bebop":       [1,1,2,1,2,5],
+    "Harmonic Major(no5,no7)(add b2) Bebop":    [1,1,2,1,3,4],
+    "Major Scale(no5,no7)(add b2) Bebop":       [1,1,2,1,4,3],
+    "Major(add b6) Bebop(no2,no3)":             [5,2,1,1,2,1],
+    "Major(no5) #6 Bebop":                      [2,2,1,5,1,1],
+    "-3Major Scale(rootless) #2 Bebop":         [1,1,2,2,2,4],
+    "Major Scale(no7) #2 Bebop":                [3,1,1,2,2,3],
+    "Harmonic Major(no4,no5)(add b7) Bebop":    [2,2,4,2,1,1],
+    "Harmonic Major(no4,no7)(add b2) Bebop":    [1,1,2,3,1,4],
+    "Pentatonic(add b2) Bebop":                 [1,1,2,3,2,3],
+    "7(add b2)(add 2) Bebop":                   [1,1,2,3,3,2],
+    "Major Scale(no6) #2 Bebop":                [3,1,1,2,4,1],
+    "Harmonic Major(no7) b5 Bebop":             [2,2,1,1,2,4],
+    "Harmonic Major(no2,no3)(add b7) Bebop":    [2,5,1,2,1,1],
+    "Harmonic Major(no3) #4 Bebop":             [2,4,1,1,3,1],
+    "Harmonic Minor(no2) #4 Bebop":             [3,3,1,1,3,1],
+    "Harmonic Major(no4,no7)(add #2) Bebop":    [2,1,1,3,1,4],
+    "Melodic Minor(no4,no7)(add b6) Bebop":     [2,1,4,1,1,3],
+    "Pentatonic(add b6) Bebop":                 [2,2,3,1,1,3],
+    "Pentatonic(add #2) Bebop":                 [2,1,1,3,2,3],
+    "Harmonic Major(no5) #2 Bebop":             [3,1,1,3,3,1],
+    "7(add 2)(add #2) Bebop":                   [2,1,1,3,3,2],
+    "Major7(add 2)(add #2) Bebop":              [2,1,1,3,4,1],
+    "Major7sus2sus4 Bebop":                     [2,3,1,1,4,1],
+    "Melodic Minor(no2,no6)(add b5) Bebop":     [1,1,4,1,3,2],
+    "Harmonic Minor(no7) #4 Bebop":             [2,1,3,1,1,4],
+    "Major Scale(no3) b2 Bebop":                [1,4,2,2,2,1],
+    "Harmonic Major(no4,no5)(add #2) Bebop":    [2,1,1,4,3,1],
+    "Major Scale(no6) b5 Bebop":                [2,2,1,1,5,1],
+    "Major Scale(no4,no6)(add #2) Bebop":       [2,1,1,5,2,1],
+    # "": [],
+    # "": [],
 }
 CHORD_TEMPLATES_7 = {
     "Diminished Scale(no8)":                    [1,2,1,2,1,2,3],
@@ -157,7 +189,7 @@ CHORD_TEMPLATES_7 = {
     "Major(add #6) Bebop":                      [2,2,1,2,3,1,1],
     "Melodic Minor(add #4) Bebop(no2)":         [3,2,1,1,2,2,1],
     "Melodic Minor Scale #2 Bebop":             [3,1,1,2,2,2,1],
-    "Whole Tone(add b2) Bebop":                [1,1,2,2,2,2,2],
+    "Whole Tone(add b2) Bebop":                 [1,1,2,2,2,2,2],
     "-2Melodic Minor(rootless)(add b5) Bebop":  [1,2,1,1,2,2,3],
     "-2Melodic Minor(rootless)(add #5) Bebop":  [1,2,2,1,1,2,3],
     "Melodic Minor(no7)(add b5) Bebop":         [2,1,2,1,1,2,3],
@@ -165,14 +197,14 @@ CHORD_TEMPLATES_7 = {
     "Major Scale b2 Bebop":                     [1,3,1,2,2,2,1],
     "Harmonic Major(no4)(add #2) Bebop":        [2,1,1,3,1,3,1],
     "Melodic Minor(add b6) Bebop(no7)":         [2,1,2,2,1,1,3],
-    "Major(add b6) Bebop(no7)":                [2,2,1,2,1,1,3],
+    "Major(add b6) Bebop(no7)":                 [2,2,1,2,1,1,3],
     "Harmonic Minor(no6)(add b5) Bebop":        [2,1,2,1,1,4,1],
 }
 CHORD_TEMPLATES_8 = {
     "Diminished Scale":                         [1,2,1,2,1,2,1,2],
-    "Melodic Minor(add #4) Bebop Scale":       [2,1,2,1,1,2,2,1],
-    "Major(add b6) Bebop Scale":               [2,2,1,2,1,1,2,1],
-    "Melodic Minor(add b6) Bebop Scale":       [2,1,2,2,1,1,2,1]
+    "Melodic Minor(add #4) Bebop Scale":        [2,1,2,1,1,2,2,1],
+    "Major(add b6) Bebop Scale":                [2,2,1,2,1,1,2,1],
+    "Melodic Minor(add b6) Bebop Scale":        [2,1,2,2,1,1,2,1]
 }
 
 TEMPLATES_BY_DEGREE = {

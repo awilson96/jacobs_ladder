@@ -1,34 +1,34 @@
 intervals,notes,identification
-"1,1,2,1,2,5",,Unknown
-"1,1,2,1,3,4",,Unknown
-"1,1,2,1,4,3",,Unknown
-"1,1,2,1,5,2",,Unknown
-"1,1,2,2,1,5",,Unknown
-"1,1,2,2,2,4",,Unknown
-"1,1,2,2,3,3",,Unknown
-"1,1,2,2,4,2",,Unknown
-"1,1,2,3,1,4",,Unknown
-"1,1,2,3,2,3",,Unknown
-"1,1,2,3,3,2",,Unknown
-"1,1,2,4,1,3",,Unknown
-"1,1,2,4,2,2",,Unknown
-"1,1,2,5,1,2",,Unknown
-"1,1,3,1,2,4",,Unknown
-"1,1,3,1,3,3",,Unknown
-"1,1,3,1,4,2",,Unknown
-"1,1,3,2,1,4",,Unknown
-"1,1,3,2,2,3",,Unknown
-"1,1,3,2,3,2",,Unknown
-"1,1,3,3,1,3",,Unknown
-"1,1,3,3,2,2",,Unknown
-"1,1,3,4,1,2",,Unknown
-"1,1,4,1,2,3",,Unknown
-"1,1,4,1,3,2",,Unknown
-"1,1,4,2,1,3",,Unknown
-"1,1,4,2,2,2",,Unknown
-"1,1,4,3,1,2",,Unknown
-"1,1,5,1,2,2",,Unknown
-"1,1,5,2,1,2",,Unknown
+"1,1,2,1,2,5","C,Db,D,E,F,G","Major Scale(no6,no7)(add b2) Bebop"
+"1,1,2,1,3,4","C,Db,D,E,F,Ab","Harmonic Major(no5,no7)(add b2) Bebop"
+"1,1,2,1,4,3","C,Db,D,E,F,A","Major Scale(no5,no7)(add b2) Bebop"
+"5,2,1,1,2,1","C,F,G,Ab,A,B","Major(add b6) Bebop(no2,no3)"
+"2,2,1,5,1,1","C,D,E,F,Bb,B",Major(no5) #6 Bebop
+"1,1,2,2,2,4","C,Db,D,E,Gb,Ab",-3Major Scale(rootless) #2 Bebop
+"3,1,1,2,2,3","C,Eb,E,F,G,A",Major Scale(no7) #2 Bebop
+"2,2,4,2,1,1","C,D,E,Ab,Bb,B","Harmonic Major(no4,no5)(add b7) Bebop"
+"1,1,2,3,1,4","C,Db,D,E,G,Ab","Harmonic Major(no4,no7)(add b2) Bebop"
+"1,1,2,3,2,3","C,Db,D,E,G,A",Pentatonic(add b2) Bebop
+"1,1,2,3,3,2","C,Db,D,E,G,Bb",7(add b2)(add 2) Bebop
+"3,1,1,2,4,1","C,Eb,E,F,G,B",Major Scale(no6) #2 Bebop
+"2,2,1,1,2,4","C,D,E,F,Gb,Ab",Harmonic Major(no7) b5 Bebop
+"2,5,1,2,1,1","C,D,G,Ab,Bb,B","Harmonic Major(no2,no3)(add b7) Bebop"
+"2,4,1,1,3,1","C,D,Gb,G,Ab,B",Harmonic Major(no3) #4 Bebop
+"3,3,1,1,3,1","C,Eb,Gb,G,Ab,B",Harmonic Minor(no2) #4 Bebop
+"2,1,1,3,1,4","C,D,Eb,E,G,Ab","Harmonic Major(no4,no7)(add #2) Bebop"
+"2,1,4,1,1,3","C,D,Eb,G,Ab,A","Melodic Minor(no4,no7)(add b6) Bebop"
+"2,2,3,1,1,3","C,D,E,G,Ab,A",Pentatonic(add b6) Bebop
+"2,1,1,3,2,3","C,D,Eb,E,G,A",Pentatonic(add #2) Bebop
+"3,1,1,3,3,1","C,Eb,E,F,Ab,B",Harmonic Major(no5) #2 Bebop
+"2,1,1,3,3,2","C,D,Eb,E,G,Bb",7(add 2)(add #2) Bebop
+"2,1,1,3,4,1","C,D,Eb,E,G,B",Major7(add 2)(add #2) Bebop
+"2,3,1,1,4,1","C,D,F,Gb,G,B",Major7sus2sus4 Bebop
+"1,1,4,1,3,2","C,Db,D,Gb,G,Bb","Melodic Minor(no2,no6)(add b5) Bebop"
+"2,1,3,1,1,4","C,D,Eb,Gb,G,Ab",Harmonic Minor(no7) #4 Bebop
+"1,4,2,2,2,1","C,Db,F,G,A,B",Major Scale(no3) b2 Bebop
+"2,1,1,4,3,1","C,D,Eb,E,Ab,B","Harmonic Major(no4,no5)(add #2) Bebop"
+"2,2,1,1,5,1","C,D,E,F,Gb,B",Major Scale(no6) b5 Bebop
+"2,1,1,5,2,1","C,D,Eb,E,A,B","Major Scale(no4,no6)(add #2) Bebop"
 "1,2,1,2,1,5","C,Db,Eb,E,Gb,G","Diminished Scale(no7,no8)"
 "2,1,2,2,4,1","C,D,Eb,F,G,B",Harmonic Minor(no6)
 "2,1,2,3,3,1","C,D,Eb,F,Ab,B",Harmonic Minor(no5)
