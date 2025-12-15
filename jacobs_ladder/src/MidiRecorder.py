@@ -1,11 +1,21 @@
 import threading
 import mido
 import os
-from jacobs_ladder import qpc_utils
+import sys
+
+is_posix = sys.platform.startswith("darwin") or sys.platform.startswith("linux")
+print(f"{is_posix=}")
+try:
+    from jacobs_ladder import qpc_utils
+except ImportError:
+    from .MockQpc import MockQpcUtils
 
 class MidiRecorder:
     def __init__(self):
-        self.qpc = qpc_utils.QpcUtils()
+        if not is_posix:
+            self.qpc = qpc_utils.QpcUtils()
+        else:
+            self.qpc = MockQpcUtils()
         self.is_recording = False
         self.is_saving = False
         self.start_ticks = None

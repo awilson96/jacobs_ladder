@@ -1,5 +1,5 @@
 import argparse
-import datetime
+import sys
 import heapq
 import logging
 import rtmidi
@@ -143,13 +143,23 @@ class MidiController:
         self.logger.info("Exiting...")
 
     def initialize_ports(self):
-        """Initialize input and output ports based on user provided values
+        """Initialize input and output ports based on OS"""
 
-        Raises:
-            ValueError: If the input/output port is not found, an error is raised
-            RuntimeError: If either a value error or a rtmidi system error is caught, then an error is raised
-        """
-        # Initialize MIDI input port
+        is_posix = sys.platform.startswith("darwin") or sys.platform.startswith("linux")
+
+        if is_posix:
+            self.logger.info("Detected macOS/Linux — creating virtual MIDI ports")
+
+            # Create virtual MIDI input
+            self.midi_in.open_virtual_port(self.input_port)
+            self.logger.info(f"Created virtual MIDI input: {self.input_port}")
+
+            # Create 12 virtual MIDI outputs
+            for i, port_name in enumerate(self.output_ports):
+                self.midi_out_ports[i].open_virtual_port(port_name)
+                self.logger.info(f"Created virtual MIDI output: {port_name}")
+
+            return
         try:
             available_input_ports = self.midi_in.get_ports()
             if self.print_msgs:

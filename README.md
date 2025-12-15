@@ -41,16 +41,13 @@ To create an anaconda environment with all of the required dependencies, run the
 - `conda env create -f environment.yaml`
 
 # Usage:
-```
-usage: MidiManager.py [-h] [-p] [-t]
+To run the MidiManager (the backend), run:
 
-Initialize the MidiController with specific settings.
-
-options:
-  -h, --help    show this help message and exit
-  -p, --print   Enable printing to the console.
-  -t, --tuning  Enable tuning.
+```bash
+python -m jacobs_ladder.src.MidiManager ./jacobs_ladder/configuration/yaml/default_config.yaml
 ```
+
+Navigate the the default_config.yaml for more details on what fields are configurable. 
 
 # Cython compilation
 
