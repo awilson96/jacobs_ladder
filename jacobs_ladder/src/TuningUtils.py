@@ -1,7 +1,6 @@
 import json
 import math
 import os
-import random
 
 from itertools import product
 from fractions import Fraction
@@ -282,7 +281,7 @@ def create_tuning_config(ratios: list[Fraction], intervals: list[int], name: str
         tuning_config[interval].append(postive_metadata)
         tuning_config["-" + str(interval)].append(negative_metadata)
 
-    filename = os.path.join("configuration", "json", "pitch", f"{name}.json") 
+    filename = os.path.join("jacobs_ladder", "configuration", "json", "pitch", f"{name}.json")
     with open(filename, "w") as json_file:
         json.dump(tuning_config, json_file, indent=4)
 

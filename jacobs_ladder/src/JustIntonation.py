@@ -1,9 +1,5 @@
-from collections import Counter
 from copy import copy
-from itertools import combinations
-import time
 
-from .Dictionaries import midi_notes
 from .Enums import Pitch
 from .Logging import setup_logging
 from .Utilities import determine_octave, get_root_from_letter_note, remove_harmonically_redundant_intervals

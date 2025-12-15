@@ -4,7 +4,6 @@ import os
 import sys
 
 is_posix = sys.platform.startswith("darwin") or sys.platform.startswith("linux")
-print(f"{is_posix=}")
 try:
     from jacobs_ladder import qpc_utils
 except ImportError:

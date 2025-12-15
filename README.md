@@ -7,7 +7,7 @@ JacobsLadder is an opens source Music AI project which conveys music theory insi
 3. pybind11
 4. cmake (for MacOS be sure to install the compiler toolchain via `xcode-select --install` or compilations will fail at later steps)
 5. dart/flutter (for MacOS you will need to install xcode from the app store and accept the licensing agreement.)
-
+6. On MacOS `brew install aubio libsndfile fftw libsamplerate`. TODO: either bring everything back to 3.11 or give instructions for setting up a separate conda env for the Tuner functionality to work correctly.
 
 # Setup
 

@@ -4,7 +4,6 @@ import struct
 import sys
 import yaml
 
-from itertools import product
 from .Enums import NoteDivisions
 
 def determine_octave(message_heap: list, note: int):

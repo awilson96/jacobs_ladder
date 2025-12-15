@@ -1,8 +1,6 @@
 import os
 import pandas as pd
 from .Dictionaries import get_midi_notes
-from .DataClasses import Scale 
-from .Scales import get_major_scales, get_harmonic_minor_scales, get_harmonic_major_scales, get_melodic_minor_scales
 
 class Compatibility:
     def __init__(self):
