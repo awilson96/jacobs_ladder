@@ -47,6 +47,8 @@ options:
 To clean and rebuild:
 `Remove-Item -Path .\build\ -Recurse -Force; mkdir build; cd build; $PYBIND_DIR = python -c "import pybind11; print(pybind11.get_cmake_dir())"; cmake .. -Dpybind11_DIR="$PYBIND_DIR"; cmake --build .; cd ..`
 
+Note: Don't try to compile while any of the cpp binaries are running or you will get copy errors in windows. 
+
 # Dart/Flutter build
 `cd <project_root>/jacobs_ladder/ladder/`
 `flutter run`
