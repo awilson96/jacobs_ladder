@@ -90,6 +90,8 @@ The following binaries are supported for the following tasks:
 
 Note that the VirtualMidiPortScript **IS REQUIRED** for the MidiManager to work correctly on Windows.
 
+Note: Don't try to compile while any of the cpp binaries are running or you will get copy errors in windows. 
+
 # Dart/Flutter build
 
 ## MacOS
