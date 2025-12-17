@@ -15,4 +15,6 @@ html/*
 *.xcconfig
 *.pbxproj
 *.xcworkspacedata
+*.metadata
+*.DS_Store
 *Podfile
