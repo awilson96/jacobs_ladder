@@ -92,6 +92,8 @@ Note that the VirtualMidiPortScript **IS REQUIRED** for the MidiManager to work 
 
 Note: Don't try to compile while any of the cpp binaries are running or you will get copy errors in windows. 
 
+Note: Don't try to compile while any of the cpp binaries are running or you will get copy errors in windows. 
+
 # Dart/Flutter build
 
 ## MacOS
