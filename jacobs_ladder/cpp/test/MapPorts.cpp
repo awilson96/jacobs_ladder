@@ -30,7 +30,6 @@ std::string basePortName(const std::string& fullName) {
     return oss.str();
 }
 
-
 // Find a port index by substring match (case-sensitive)
 int findPortByName(RtMidi& midi, const std::string& name) {
     unsigned int portCount = midi.getPortCount();
@@ -43,17 +42,19 @@ int findPortByName(RtMidi& midi, const std::string& name) {
     return -1;
 }
 
-// List all MIDI ports (strip trailing numbers)
-void listPorts() {
+// List MIDI input ports only
+void listInputPorts() {
     RtMidiIn midiIn;
-    RtMidiOut midiOut;
-
     std::cout << "MIDI INPUT PORTS:\n";
     for (unsigned int i = 0; i < midiIn.getPortCount(); ++i) {
         std::cout << "  " << basePortName(midiIn.getPortName(i)) << "\n";
     }
+}
 
-    std::cout << "\nMIDI OUTPUT PORTS:\n";
+// List MIDI output ports only
+void listOutputPorts() {
+    RtMidiOut midiOut;
+    std::cout << "MIDI OUTPUT PORTS:\n";
     for (unsigned int i = 0; i < midiOut.getPortCount(); ++i) {
         std::cout << "  " << basePortName(midiOut.getPortName(i)) << "\n";
     }
@@ -73,13 +74,17 @@ void midiCallback(
 
 int main(int argc, char* argv[]) {
     std::string inputPortName;
-    bool listOnly = false;
+    bool listInput = false;
+    bool listOutput = false;
 
     // Simple CLI parsing
     for (int i = 1; i < argc; ++i) {
-        if (std::strcmp(argv[i], "-l") == 0 ||
-            std::strcmp(argv[i], "--list") == 0) {
-            listOnly = true;
+        if (std::strcmp(argv[i], "-i") == 0 ||
+            std::strcmp(argv[i], "--input-ports") == 0) {
+            listInput = true;
+        } else if (std::strcmp(argv[i], "-o") == 0 ||
+                   std::strcmp(argv[i], "--output-ports") == 0) {
+            listOutput = true;
         } else if ((std::strcmp(argv[i], "-p") == 0 ||
                     std::strcmp(argv[i], "--port") == 0) &&
                    i + 1 < argc) {
@@ -88,15 +93,24 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    if (listOnly) {
-        listPorts();
+    if (listInput) {
+        listInputPorts();
+    }
+
+    if (listOutput) {
+        listOutputPorts();
+    }
+
+    // If we only listed ports, exit
+    if (listInput || listOutput) {
         return 0;
     }
 
     if (inputPortName.empty()) {
         std::cerr
             << "Usage:\n"
-            << "  MapPorts -l | --list\n"
+            << "  MapPorts -i | --input-ports\n"
+            << "  MapPorts -o | --output-ports\n"
             << "  MapPorts -p | --port \"<input_port_name>\"\n";
         return 1;
     }
