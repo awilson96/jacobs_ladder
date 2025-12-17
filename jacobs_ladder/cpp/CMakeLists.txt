@@ -117,9 +117,21 @@ target_include_directories(RtMidiLib
     PUBLIC ${CMAKE_SOURCE_DIR}/external/rtmidi
 )
 
-target_link_libraries(RtMidiLib
-    PUBLIC ${PLATFORM_LIBS}
-)
+# Define platform-specific compile flags for RtMidi
+if(APPLE)
+    target_compile_definitions(RtMidiLib PRIVATE __MACOSX_CORE__)
+    target_link_libraries(RtMidiLib
+        PUBLIC
+            "-framework CoreMIDI"
+            "-framework CoreFoundation"
+            "-framework CoreAudio"
+    )
+elseif(UNIX)
+    target_compile_definitions(RtMidiLib PRIVATE __LINUX_ALSA__)
+    target_link_libraries(RtMidiLib PUBLIC asound pthread)
+elseif(WIN32)
+    target_compile_definitions(RtMidiLib PRIVATE _WINDOWS)
+endif()
 
 set_target_properties(RtMidiLib PROPERTIES
     OUTPUT_NAME rtmidi
