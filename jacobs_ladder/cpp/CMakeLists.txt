@@ -102,13 +102,14 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/external
     ${CMAKE_SOURCE_DIR}/external/catch2
     ${CMAKE_SOURCE_DIR}/external/rtmidi
+    ${pybind11_INCLUDE_DIRS}
 )
 
 # ------------------------------------------------------------------
 # RtMidi shared library (single source of truth)
 # ------------------------------------------------------------------
 
-add_library(RtMidiLib SHARED
+add_library(RtMidiLib STATIC
     external/rtmidi/RtMidi.cpp
     external/rtmidi/rtmidi_c.cpp
 )
@@ -130,7 +131,7 @@ elseif(UNIX)
     target_compile_definitions(RtMidiLib PRIVATE __LINUX_ALSA__)
     target_link_libraries(RtMidiLib PUBLIC asound pthread)
 elseif(WIN32)
-    target_compile_definitions(RtMidiLib PRIVATE _WINDOWS)
+    target_compile_definitions(RtMidiLib PRIVATE __WINDOWS_MM__)
 endif()
 
 set_target_properties(RtMidiLib PROPERTIES
@@ -151,6 +152,7 @@ target_link_libraries(MyLib
         RtMidiLib
         ${PLATFORM_LIBS}
         ${WINDOWS_VENDOR_LIBS}
+        pybind11::module
 )
 
 # ------------------------------------------------------------------
@@ -164,13 +166,12 @@ foreach(test_file ${TEST_FILES})
 
     target_link_libraries(${test_name}
         PRIVATE
+            RtMidiLib
             MyLib
             ${WINDOWS_VENDOR_LIBS}
+            ${PLATFORM_LIBS}
+            pybind11::module
     )
-
-    if("${test_file}" MATCHES ".*Test\\.cpp$")
-        target_link_libraries(${test_name} PRIVATE ${PLATFORM_LIBS})
-    endif()
 endforeach()
 
 # ------------------------------------------------------------------

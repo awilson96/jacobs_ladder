@@ -17,7 +17,7 @@ std::string basePortName(const std::string& fullName) {
     if (tokens.empty()) return fullName;
     // Remove last token if it is a number
     try {
-        std::stoi(tokens.back());
+        (void)std::stoi(tokens.back());
         tokens.pop_back();
     } catch (...) {
         // last token is not a number, keep it
@@ -29,6 +29,7 @@ std::string basePortName(const std::string& fullName) {
     }
     return oss.str();
 }
+
 
 // Find a port index by substring match (case-sensitive)
 int findPortByName(RtMidi& midi, const std::string& name) {
