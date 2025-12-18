@@ -21,44 +21,108 @@ class UdpService {
 
   Stream<Uint8List> get messages => _incomingController.stream;
 
+  bool _sendReady = false;
+  final List<Uint8List> _sendQueue = [];
+
   // Private constructor
   UdpService._internal();
 
   /// Start receiving on the fixed port
   Future<void> start() async {
-    if (_receiveSocket != null) return;
+    if (_receiveSocket != null) {
+      print('UDPService: already started');
+      return;
+    }
 
-    // Bind receive socket
-    _receiveSocket = await RawDatagramSocket.bind(_receiveHost, _receivePort);
-    _receiveSocket!.listen(_onReceiveEvent);
+    try {
+      _receiveSocket = await RawDatagramSocket.bind(_receiveHost, _receivePort);
+      _receiveSocket!.listen(_onReceiveEvent, onError: (e) {
+        print('UDPService: receive socket error: $e');
+      }, onDone: () {
+        print('UDPService: receive socket done');
+      });
+      print('UDPService: receive socket bound to ${_receiveSocket!.address.address}:${_receiveSocket!.port}');
+    } catch (e) {
+      print('UDPService: failed to bind receive socket: $e');
+    }
 
-    // Bind send socket on ephemeral port
-    _sendSocket = await RawDatagramSocket.bind(InternetAddress.loopbackIPv4, 0);
-
-    print('UDP receive socket bound to ${_receiveSocket!.address.address}:${_receiveSocket!.port}');
-    print('UDP send socket bound to ${_sendSocket!.address.address}:${_sendSocket!.port}');
+    try {
+      // Bind send socket to any interface
+      _sendSocket = await RawDatagramSocket.bind(InternetAddress.loopbackIPv4, 0);
+      _sendSocket!.listen(_onSendEvent, onError: (e) {
+        print('UDPService: send socket error: $e');
+      }, onDone: () {
+        print('UDPService: send socket done');
+      });
+      print('UDPService: send socket bound to ${_sendSocket!.address.address}:${_sendSocket!.port}');
+    } catch (e) {
+      print('UDPService: failed to bind send socket: $e');
+    }
   }
 
   void _onReceiveEvent(RawSocketEvent event) {
+    // Debug log
+    print('UDPService: receive event: $event');
     if (event == RawSocketEvent.read) {
       final datagram = _receiveSocket!.receive();
       if (datagram != null) {
+        print('UDPService: received ${datagram.data.length} bytes from ${datagram.address.address}:${datagram.port}');
         _incomingController.add(datagram.data);
+      } else {
+        print('UDPService: receive event triggered but datagram is null');
       }
+    }
+  }
+
+  void _onSendEvent(RawSocketEvent event) {
+    if (event == RawSocketEvent.write) {
+      _sendReady = true;
+      // Flush queued messages
+      while (_sendQueue.isNotEmpty) {
+        final data = _sendQueue.removeAt(0);
+        _sendNow(data);
+      }
+    }
+  }
+
+  void _sendNow(Uint8List data) {
+    if (_sendSocket == null) return;
+
+    final sent = _sendSocket!.send(data, _sendHost, _sendPort);
+    print('UDPService: send returned $sent');
+    if (sent == 0) {
+      print('UDPService: send returned 0, requeueing data');
+      _sendQueue.add(data);
     }
   }
 
   /// Send data to the fixed send address/port
   void send(Uint8List data) {
-    _sendSocket?.send(data, _sendHost, _sendPort);
+    if (_sendSocket == null) {
+      print('UDPService: cannot send, send socket not initialized');
+      return;
+    }
+
+    print('UDPService: attempting to send ${data.length} bytes to ${_sendHost.address}:$_sendPort');
+
+    if (_sendReady) {
+      _sendNow(data);
+    } else {
+      print('UDPService: send socket not ready, queuing message');
+      _sendQueue.add(data);
+    }
   }
 
   /// Stop the service
   Future<void> stop() async {
+    print('UDPService: stopping service...');
     await _incomingController.close();
     _receiveSocket?.close();
     _receiveSocket = null;
     _sendSocket?.close();
     _sendSocket = null;
+    _sendQueue.clear();
+    _sendReady = false;
+    print('UDPService: sockets closed and service stopped');
   }
 }
