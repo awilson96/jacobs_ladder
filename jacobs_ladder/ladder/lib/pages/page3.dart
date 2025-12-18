@@ -1,9 +1,12 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import '../services/udp_service.dart';
 
 class Page3 extends StatefulWidget {
-  const Page3({super.key});
+  const Page3({super.key, required this.udpService});
+
+  final UdpService udpService;
 
   @override
   State<Page3> createState() => _Page3State();
@@ -12,23 +15,15 @@ class Page3 extends StatefulWidget {
 class _Page3State extends State<Page3> {
   bool _isRecording = false;
   int _tempoBpm = 120; // Default BPM
-  RawDatagramSocket? _socket;
-  final String _host = "127.0.0.1";
-  final int _port = 50000;
+  late final UdpService udpService;
 
   @override
   void initState() {
     super.initState();
-    _initSocket();
-  }
-
-  Future<void> _initSocket() async {
-    _socket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
+    udpService = widget.udpService;
   }
 
   void _sendRecordingMessage(bool start) {
-    if (_socket == null) return;
-
     final int messageType = 1;
     final int recordingState = start ? 1 : 0;
 
@@ -37,7 +32,8 @@ class _Page3State extends State<Page3> {
     builder.add(_int32ToBytes(recordingState));  // 4 bytes - start/stop
     builder.add(_int32ToBytes(_tempoBpm));       // 4 bytes - tempo BPM
 
-    _socket!.send(builder.toBytes(), InternetAddress(_host), _port);
+    // Send via udpService instead of raw socket
+    udpService.send(builder.toBytes());
   }
 
   Uint8List _int32ToBytes(int value) {
@@ -119,7 +115,6 @@ class _Page3State extends State<Page3> {
 
   @override
   void dispose() {
-    _socket?.close();
     super.dispose();
   }
 }

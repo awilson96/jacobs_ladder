@@ -3,8 +3,10 @@ import 'package:ladder/models/color_mapping.dart';
 import 'dart:typed_data';
 
 import '../controllers/piano_udp_controller.dart';
+import '../services/udp_service.dart';
 
 class Piano extends StatefulWidget {
+  final UdpService udpService;
   final PianoColorMode colorMode;
   final double lowThreshold;
   final double highThreshold;
@@ -21,6 +23,7 @@ class Piano extends StatefulWidget {
     this.colorMode = PianoColorMode.overlapHeatmap,
     this.lowThreshold = 0.33,
     this.highThreshold = 0.66,
+    required this.udpService,
   });
 
   @override
@@ -54,6 +57,7 @@ class _PianoState extends State<Piano> {
   void initState() {
     super.initState();
     _udpController = PianoUdpController(
+      udpService: widget.udpService,
       onKeyUpdate: (isWhite, keyIndex, pressed) {
         setState(() {
           if (isWhite) {

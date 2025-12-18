@@ -1,5 +1,6 @@
 import struct
 
+from .Utilities import build_udp_message
 from .Udp import UDPReceiver
 
 class JacobMonitor(UDPReceiver):
@@ -24,10 +25,12 @@ class JacobMonitor(UDPReceiver):
 
         if message_type == 1:
             self._handle_recording_message(payload)
+        elif message_type == 2:
+            self._handle_get_midi_ports_message()
         else:
             print(f"Unknown message type: {message_type}")
 
-    def _handle_recording_message(self, payload: bytes):
+    def _handle_recording_message(self, payload: bytes) -> None:
         """Handle recording start/stop messages, with optional tempo BPM."""
         if len(payload) < 8:
             print(f"Recording message too short (got {len(payload)} bytes)")
@@ -45,4 +48,28 @@ class JacobMonitor(UDPReceiver):
                 print("Unable to change recording mode!")
         else:
             print("Manager does not implement change_recording_mode()")
+            
+    def _handle_get_midi_ports_message(self) -> None:
+        """Handle request for available MIDI input ports."""
+        if not hasattr(self.manager, "get_midi_input_ports"):
+            print("Manager does not implement get_midi_input_ports()")
+            return
 
+        ports = self.manager.get_midi_input_ports()
+        
+        if self.print_msgs:
+            print(f"Recieved get_midi_input_ports request...\nSending ports:\n{ports}")
+
+        if not ports:
+            payload = b""
+        else:
+            # UTF-8, null-separated, trailing null is OK
+            payload = b"\0".join(p.encode("utf-8") for p in ports) + b"\0"
+
+        datagram = build_udp_message(
+            message_type=2,
+            payload_bytes=payload,
+        )
+
+        # Send back to frontend
+        self.manager.udp_sender.send_bytes(datagram)

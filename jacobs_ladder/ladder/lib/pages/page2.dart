@@ -4,15 +4,34 @@ import 'package:flutter/gestures.dart';
 import '../models/licks.dart';
 import '../widgets/lick_table.dart';
 import '../widgets/add_lick_dialog.dart';
+import '../services/udp_service.dart';
 
 class Page2 extends StatefulWidget {
-  const Page2({super.key});
+  const Page2({super.key, required this.udpService});
+
+  final UdpService udpService; // widget now only holds a final reference
 
   @override
   State<Page2> createState() => _Page2State();
 }
 
 class _Page2State extends State<Page2> {
+  late final UdpService udpService;
+
+  @override
+  void initState() {
+    super.initState();
+    // The state now owns its own reference to the UDP service
+    udpService = widget.udpService;
+    udpService.start(); // ensure the service is running
+
+    // Example: listen to incoming UDP messages
+    udpService.messages.listen((data) {
+      // handle incoming data here if needed
+      debugPrint('Received UDP data: $data');
+    });
+  }
+
   final List<String> genres = const [
     "Rock", "Pop", "Jazz", "Hip-Hop", "Classical",
     "Electronic", "Country", "Reggae", "Blues", "Metal"

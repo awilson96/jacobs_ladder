@@ -5,10 +5,13 @@ import '../models/color_mapping.dart';
 import '../widgets/piano.dart';
 import '../widgets/scale_legend.dart';
 import '../services/settings_service.dart';
+import '../services/udp_service.dart';
 
 /// Page1 with Piano, vertical stacked legend, and persistent settings
 class Page1 extends StatefulWidget {
-  const Page1({super.key});
+  const Page1({super.key, required this.udpService});
+
+  final UdpService udpService;
 
   @override
   State<Page1> createState() => _Page1State();
@@ -227,6 +230,7 @@ class _Page1State extends State<Page1> {
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Piano(
+                  udpService: widget.udpService,
                   onSuggestionUpdate: updateLegend,
                   suggestionMasks: activeSuggestionMasks,
                   colorMode: PianoColorMode.suggestionColoring,

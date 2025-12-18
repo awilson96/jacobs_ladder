@@ -1,21 +1,24 @@
 // piano_udp_controller.dart
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../models/color_mapping.dart';
 import '../models/key_mapping.dart';
+import '../services/udp_service.dart';
 
 typedef KeyUpdateCallback = void Function(bool isWhite, int keyIndex, bool pressed);
 typedef SuggestionUpdateCallback = void Function(Map<String, Uint8List> suggestions);
 typedef KeyColorUpdateCallback = void Function(Map<int, Color> keyColors);
 
 class PianoUdpController {
+  final UdpService udpService;
   final KeyUpdateCallback onKeyUpdate;
   final SuggestionUpdateCallback? onSuggestionUpdate;
   final KeyColorUpdateCallback? onKeyColorUpdate;
 
-  RawDatagramSocket? _socket;
+  StreamSubscription<Uint8List>? _udpSubscription;
 
   // Last Live keys mask
   List<int> _lastLiveMask = List.filled(11, 0);
@@ -33,6 +36,7 @@ class PianoUdpController {
   bool showMelodicMinor = true;
 
   PianoUdpController({
+    required this.udpService,
     required this.onKeyUpdate,
     this.onSuggestionUpdate,
     this.onKeyColorUpdate,
@@ -91,20 +95,16 @@ class PianoUdpController {
   }
 
   Future<void> start() async {
-    _socket = await RawDatagramSocket.bind(InternetAddress.loopbackIPv4, 50005);
-    _socket!.listen((event) {
-      if (event == RawSocketEvent.read) {
-        Datagram? datagram = _socket!.receive();
-        if (datagram != null) {
-          _handleIncomingMessage(datagram.data);
-        }
-      }
+    // Subscribe to the udpService
+    _udpSubscription = udpService.messages.listen((data) {
+      _handleIncomingMessage(data);
     });
   }
 
   void dispose() {
-    _socket?.close();
+    _udpSubscription?.cancel();
   }
+
 
   void _handleIncomingMessage(Uint8List data) {
     int offset = 0;

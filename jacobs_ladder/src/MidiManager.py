@@ -369,6 +369,14 @@ class MidiController:
             self.recorder.stop()
         else:
             print("Error: Incorrect recording mode")
+            
+    def get_midi_input_ports(self) -> list[str]:
+        """Get a list of the MIDI input ports
+
+        Returns:
+            list[str]: a list of MIDI input ports
+        """
+        return self.midi_in.get_ports()
     
     def transpose_by(self, amount: int) -> None:
         """Transpose by a given integer number of notes away from the root up or down

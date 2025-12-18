@@ -1,9 +1,13 @@
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+
 import '../models/app_theme.dart';
 import 'page1.dart';
 import 'page2.dart';
 import 'page3.dart';
 import 'settings_page.dart';
+import '../services/udp_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({
@@ -23,12 +27,30 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+  late final UdpService udpService;
+  late final List<Widget> _pages;
 
-  final List<Widget> _pages = [
-    const Page1(),
-    const Page2(),
-    const Page3(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+
+    // Instantiate the UDP service
+    udpService = UdpService();
+    udpService.start();
+
+    // Initialize pages after udpService is available
+    _pages = [
+      Page1(udpService: udpService),
+      Page2(udpService: udpService),
+      Page3(udpService: udpService),
+    ];
+  }
+
+  @override
+  void dispose() {
+    udpService.stop();
+    super.dispose();
+  }
 
   void _selectPage(int index) {
     setState(() {
@@ -47,7 +69,7 @@ class _HomePageState extends State<HomePage> {
             Container(
               height: 56,
               width: double.infinity,
-              color: Color.fromARGB(255, 52, 64, 52),
+              color: const Color.fromARGB(255, 52, 64, 52),
               alignment: Alignment.center,
               child: const Text(
                 'Menu',
@@ -87,6 +109,7 @@ class _HomePageState extends State<HomePage> {
                   builder: (_) => SettingsPage(
                     currentTheme: widget.currentTheme,
                     updateTheme: widget.updateTheme,
+                    udpService: udpService, // pass UDP service
                   ),
                 ));
               },
