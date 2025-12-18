@@ -27,6 +27,8 @@ class JacobMonitor(UDPReceiver):
             self._handle_recording_message(payload)
         elif message_type == 2:
             self._handle_get_midi_ports_message()
+        elif message_type == 3:
+            self._handle_set_midi_input_port_message(payload)
         else:
             print(f"Unknown message type: {message_type}")
 
@@ -56,15 +58,23 @@ class JacobMonitor(UDPReceiver):
             return
 
         ports = self.manager.get_midi_input_ports()
-        
-        if self.print_msgs:
-            print(f"Recieved get_midi_input_ports request...\nSending ports:\n{ports}")
 
-        if not ports:
+        # Remove trailing indices if present
+        cleaned_ports = []
+        for port in ports:
+            if " " in port and port.split()[-1].isdigit():
+                cleaned_ports.append(" ".join(port.split()[:-1]))
+            else:
+                cleaned_ports.append(port)
+
+        if self.print_msgs:
+            print(f"Received get_midi_input_ports request...\nSending cleaned ports:\n{cleaned_ports}")
+
+        if not cleaned_ports:
             payload = b""
         else:
             # UTF-8, null-separated, trailing null is OK
-            payload = b"\0".join(p.encode("utf-8") for p in ports) + b"\0"
+            payload = b"\0".join(p.encode("utf-8") for p in cleaned_ports) + b"\0"
 
         datagram = build_udp_message(
             message_type=2,
@@ -73,3 +83,30 @@ class JacobMonitor(UDPReceiver):
 
         # Send back to frontend
         self.manager.udp_sender.send_bytes(datagram)
+
+    def _handle_set_midi_input_port_message(self, payload: bytes) -> None:
+        """Switch MIDI input port without touching outputs."""
+        if not hasattr(self.manager, "set_input_port") or not hasattr(self.manager, "initialize_ports") or not hasattr(self.manager, "set_midi_callback"):
+            print("Manager does not implement one of the following:\nset_input_port()\ninitialize_ports()\nset_midi_callback")
+            return
+        
+        self.manager.close_ports()
+        try:
+            new_port = payload.decode("utf-8").strip()
+            if not new_port:
+                return
+            
+            self.manager.set_input_port(new_port)
+
+            # 2. Re-initialize input and output ports
+            self.manager.initialize_ports()  # your full initialize_ports() method
+
+            # 3. Rebind the MIDI callback
+            self.manager.set_midi_callback()
+
+            print(f"Input port switched successfully: {new_port}")
+        except Exception as e:
+            print(f"Failed to switch input port: {e}")
+
+
+

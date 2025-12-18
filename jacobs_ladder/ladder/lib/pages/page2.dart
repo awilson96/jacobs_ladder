@@ -28,7 +28,6 @@ class _Page2State extends State<Page2> {
     // Example: listen to incoming UDP messages
     udpService.messages.listen((data) {
       // handle incoming data here if needed
-      debugPrint('Received UDP data: $data');
     });
   }
 

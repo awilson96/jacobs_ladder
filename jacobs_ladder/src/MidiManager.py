@@ -55,7 +55,7 @@ class MidiController:
             if key not in allowed_keys:
                 raise ValueError(f"Unknown argument: {key}")
         
-        self.input_port = kwargs.get('input_port', 'jacobs_ladder')
+        self.input_port = kwargs.get('input_port', None)
         self.output_ports = kwargs.get('output_ports', [f"jacobs_ladder_{i}" for i in range(12)])
         self.print_msgs = kwargs.get('print_msgs', False)
         self.print_key = kwargs.get('print_key', False)
@@ -143,7 +143,7 @@ class MidiController:
         self.logger.info("Exiting...")
 
     def initialize_ports(self):
-        """Initialize input and output ports based on OS"""
+        """Initialize input and output ports based on OS."""
 
         is_posix = sys.platform.startswith("darwin") or sys.platform.startswith("linux")
 
@@ -160,34 +160,50 @@ class MidiController:
                 self.logger.info(f"Created virtual MIDI output: {port_name}")
 
             return
+
+        # Non-POSIX (Windows)
         try:
             available_input_ports = self.midi_in.get_ports()
             if self.print_msgs:
                 print(f"available_input_ports \n{available_input_ports}")
-            input_port_index = None
-            for port in available_input_ports:
-                if port.split(" ")[0] == (self.input_port):
-                    input_port_index = available_input_ports.index(port)
-                    break
+
+            # Match full port name or startswith self.input_port
+            input_port_index = next(
+                (i for i, p in enumerate(available_input_ports) if p.startswith(self.input_port)),
+                None
+            )
+
             if input_port_index is not None:
                 self.midi_in.open_port(input_port_index)
+                self.logger.info(f"Opened MIDI input port: {available_input_ports[input_port_index]}")
             else:
                 raise ValueError(f"Input port '{self.input_port}' not found.")
-        except (ValueError, rtmidi._rtmidi.SystemError):
-            raise RuntimeError(f"Failed to open input port '{self.input_port}'")
+
+        except (ValueError, rtmidi._rtmidi.SystemError) as e:
+            raise RuntimeError(f"Failed to open input port '{self.input_port}': {e}")
 
         # Initialize MIDI output ports
         try:
-            available_output_ports = [port.split(" ", 1)[0] for port in self.midi_out_ports[0].get_ports()]
+            available_output_ports = self.midi_out_ports[0].get_ports()
+            if self.print_msgs:
+                print(f"available_output_ports \n{available_output_ports}")
+
             for midi_out_idx, port_name in enumerate(self.output_ports):
-                if port_name in available_output_ports:
-                    output_port_index = available_output_ports.index(port_name)
-                    midi_out_port = self.midi_out_ports[midi_out_idx]
-                    midi_out_port.open_port(output_port_index)
+                # Match full port name or startswith
+                output_port_index = next(
+                    (i for i, p in enumerate(available_output_ports) if p.startswith(port_name)),
+                    None
+                )
+
+                if output_port_index is not None:
+                    self.midi_out_ports[midi_out_idx].open_port(output_port_index)
+                    self.logger.info(f"Opened MIDI output port: {available_output_ports[output_port_index]}")
                 else:
                     raise ValueError(f"Output port '{port_name}' not found.")
-        except (ValueError, rtmidi._rtmidi.SystemError):
-            raise RuntimeError(f"Failed to open output port '{port_name}'")
+
+        except (ValueError, rtmidi._rtmidi.SystemError) as e:
+            raise RuntimeError(f"Failed to open output port '{port_name}': {e}")
+
 
     def close_ports(self):
         """Closes all opened input and output ports."""
@@ -199,6 +215,22 @@ class MidiController:
         for midi_out_port in self.midi_out_ports:
             if midi_out_port.is_port_open():
                 midi_out_port.close_port()
+
+    def set_input_port(self, port: str) -> None:
+        """Set the input port to something new (used by the frontend to change the input midi port)
+
+        Args:
+            port (str): the Midi port you want to select
+        """
+        available_input_ports = self.midi_in.get_ports()
+        input_port_index = next(
+            (i for i, p in enumerate(available_input_ports) if p.startswith(port)),
+            None
+        )
+        if input_port_index is not None:
+            self.input_port = port
+        else:
+            raise RuntimeError(f"Failed to find port {port}")
 
     def delete_suspended_note(self, sus_note: list):
         """Delete notes which have been sustained when the associated NOTE_OFF message has already been played
