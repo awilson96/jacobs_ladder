@@ -1,26 +1,31 @@
+import logging
 import struct
+import sys
+import subprocess
+from pathlib import Path
 
 from .Utilities import build_udp_message
 from .Udp import UDPReceiver
 
 class JacobMonitor(UDPReceiver):
 
-    def __init__(self, manager, host: str = "127.0.0.1", port: int = 50001, print_msgs: bool = False):
+    def __init__(self, manager, host: str = "127.0.0.1", port: int = 50001, print_msgs: bool = False, logger: logging.Logger = None):
         super().__init__(host=host, port=port, print_msgs=print_msgs)
 
         self.manager = manager
+        self.logger = logger
 
     def dispatch_message(self, data: bytes):
         """Decode and dispatch incoming UDP datagrams by message type."""
         if len(data) < 4:
-            print("Received message too short")
+            self.logger.warning("Received message too short")
             return
 
         # Unpack 32-bit message type (big-endian)
         message_type = struct.unpack_from(">I", data, 0)[0]
         payload = data[4:]
 
-        print(f"Received message type: {message_type}")
+        self.logger.info(f"Received message type: {message_type}")
 
 
         if message_type == 1:
@@ -30,31 +35,31 @@ class JacobMonitor(UDPReceiver):
         elif message_type == 3:
             self._handle_set_midi_input_port_message(payload)
         else:
-            print(f"Unknown message type: {message_type}")
+            self.logger.warning(f"Unknown message type: {message_type}")
 
     def _handle_recording_message(self, payload: bytes) -> None:
         """Handle recording start/stop messages, with optional tempo BPM."""
         if len(payload) < 8:
-            print(f"Recording message too short (got {len(payload)} bytes)")
+            self.logger.warning(f"Recording message too short (got {len(payload)} bytes)")
             return
 
         # Unpack recording_state and tempo_bpm (both uint32, big-endian)
         recording_state, tempo_bpm = struct.unpack_from(">II", payload, 0)
 
-        print(f"Received recording_state={recording_state}, tempo_bpm={tempo_bpm}")
+        self.logger.info(f"Received recording_state={recording_state}, tempo_bpm={tempo_bpm}")
 
         if hasattr(self.manager, "change_recording_mode"):
             try:
                 self.manager.change_recording_mode(int(recording_state), int(tempo_bpm))
             except TypeError:
-                print("Unable to change recording mode!")
+                self.logger.error("Unable to change recording mode!")
         else:
-            print("Manager does not implement change_recording_mode()")
+            self.logger.error("Manager does not implement change_recording_mode()")
             
     def _handle_get_midi_ports_message(self) -> None:
         """Handle request for available MIDI input ports."""
         if not hasattr(self.manager, "get_midi_input_ports"):
-            print("Manager does not implement get_midi_input_ports()")
+            self.logger.error("Manager does not implement get_midi_input_ports()")
             return
 
         ports = self.manager.get_midi_input_ports()
@@ -62,13 +67,14 @@ class JacobMonitor(UDPReceiver):
         # Remove trailing indices if present
         cleaned_ports = []
         for port in ports:
-            if " " in port and port.split()[-1].isdigit():
+            if "jacob" in port:
+                continue
+            elif " " in port and port.split()[-1].isdigit():
                 cleaned_ports.append(" ".join(port.split()[:-1]))
             else:
                 cleaned_ports.append(port)
 
-        if self.print_msgs:
-            print(f"Received get_midi_input_ports request...\nSending cleaned ports:\n{cleaned_ports}")
+        self.logger.info(f"Received get_midi_input_ports request...\nSending cleaned ports:\n{cleaned_ports}")
 
         if not cleaned_ports:
             payload = b""
@@ -83,30 +89,67 @@ class JacobMonitor(UDPReceiver):
 
         # Send back to frontend
         self.manager.udp_sender.send_bytes(datagram)
+        
 
     def _handle_set_midi_input_port_message(self, payload: bytes) -> None:
-        """Switch MIDI input port without touching outputs."""
-        if not hasattr(self.manager, "set_input_port") or not hasattr(self.manager, "initialize_ports") or not hasattr(self.manager, "set_midi_callback"):
-            print("Manager does not implement one of the following:\nset_input_port()\ninitialize_ports()\nset_midi_callback")
+        """Switch MIDI input port (physical device selection)."""
+
+        required_methods = (
+            "set_input_port",
+            "initialize_ports",
+            "set_midi_callback",
+            "close_ports",
+        )
+        if not all(hasattr(self.manager, m) for m in required_methods):
+            self.logger.error(
+                "Manager does not implement one of the following:\n"
+                "set_input_port()\ninitialize_ports()\nset_midi_callback()\nclose_ports()"
+            )
             return
-        
-        self.manager.close_ports()
+
         try:
             new_port = payload.decode("utf-8").strip()
             if not new_port:
                 return
-            
-            self.manager.set_input_port(new_port)
 
-            # 2. Re-initialize input and output ports
-            self.manager.initialize_ports()  # your full initialize_ports() method
+            if sys.platform.startswith("win"):
+                if not hasattr(self, "_map_ports_process"):
+                    self._map_ports_process = None
+                    self._mapped_input_port = None
 
-            # 3. Rebind the MIDI callback
+                if new_port != getattr(self, "_mapped_input_port", None):
+                    if self._map_ports_process is not None:
+                        try:
+                            self._map_ports_process.terminate()
+                            self._map_ports_process.wait(timeout=2)
+                        except Exception:
+                            self._map_ports_process.kill()
+                        finally:
+                            self._map_ports_process = None
+
+                    project_root = Path(__file__).resolve().parents[2]
+                    map_ports_bin = project_root / "jacobs_ladder" / "cpp" / "bin" / "MapPorts"
+
+                    self.logger.info(f"Launching MapPorts for input: {new_port}")
+                    self._map_ports_process = subprocess.Popen(
+                        [str(map_ports_bin), "--port", new_port],
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                    )
+                    self._mapped_input_port = new_port
+
+                effective_input_port = "jacobs_ladder"
+
+            else:
+                effective_input_port = new_port
+
+            self.manager.close_ports()
+            self.manager.set_input_port(effective_input_port)
+            self.manager.initialize_ports()
             self.manager.set_midi_callback()
 
-            print(f"Input port switched successfully: {new_port}")
+            
+            self.logger.info(f"Input port switched successfully: {new_port}")
+
         except Exception as e:
-            print(f"Failed to switch input port: {e}")
-
-
-
+            self.logger.error(f"Failed to switch input port: {e}")

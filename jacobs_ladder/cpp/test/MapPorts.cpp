@@ -7,6 +7,16 @@
 #include <chrono>
 #include <sstream>
 #include <cstring>
+#include <csignal>
+#include <atomic>
+
+// Atomic flag to control the main loop
+std::atomic<bool> running{true};
+
+// Signal handler to exit gracefully
+void handleSignal(int) {
+    running = false;
+}
 
 // Helper to strip trailing numbers from a port name
 std::string basePortName(const std::string& fullName) {
@@ -77,6 +87,10 @@ int main(int argc, char* argv[]) {
     bool listInput = false;
     bool listOutput = false;
 
+    // Register signal handlers
+    std::signal(SIGINT, handleSignal);
+    std::signal(SIGTERM, handleSignal);
+
     // Simple CLI parsing
     for (int i = 1; i < argc; ++i) {
         if (std::strcmp(argv[i], "-i") == 0 ||
@@ -115,10 +129,10 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    try {
-        RtMidiIn midiIn;
-        RtMidiOut midiOut;
+    RtMidiIn midiIn;
+    RtMidiOut midiOut;
 
+    try {
         int inputIndex = findPortByName(midiIn, inputPortName);
         if (inputIndex < 0) {
             std::cerr << "ERROR: Input MIDI port not found: "
@@ -145,11 +159,20 @@ int main(int argc, char* argv[]) {
                   << "\"\n";
         std::cout << "Press Ctrl+C to exit.\n";
 
-        while (true) std::this_thread::sleep_for(std::chrono::seconds(1));
+        // Main loop controlled by signal
+        while (running.load()) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        }
+
+        std::cout << "Shutting down...\n";
     } catch (RtMidiError& e) {
         e.printMessage();
         return 1;
     }
+
+    // Explicit cleanup
+    if (midiIn.isPortOpen()) midiIn.closePort();
+    if (midiOut.isPortOpen()) midiOut.closePort();
 
     return 0;
 }

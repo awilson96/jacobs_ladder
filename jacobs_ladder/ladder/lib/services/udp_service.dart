@@ -30,7 +30,6 @@ class UdpService {
   /// Start receiving on the fixed port
   Future<void> start() async {
     if (_receiveSocket != null) {
-      print('UDPService: already started');
       return;
     }
 
@@ -38,10 +37,7 @@ class UdpService {
       _receiveSocket = await RawDatagramSocket.bind(_receiveHost, _receivePort);
       _receiveSocket!.listen(_onReceiveEvent, onError: (e) {
         print('UDPService: receive socket error: $e');
-      }, onDone: () {
-        print('UDPService: receive socket done');
-      });
-      print('UDPService: receive socket bound to ${_receiveSocket!.address.address}:${_receiveSocket!.port}');
+      }, onDone: () {});
     } catch (e) {
       print('UDPService: failed to bind receive socket: $e');
     }
@@ -51,25 +47,17 @@ class UdpService {
       _sendSocket = await RawDatagramSocket.bind(InternetAddress.loopbackIPv4, 0);
       _sendSocket!.listen(_onSendEvent, onError: (e) {
         print('UDPService: send socket error: $e');
-      }, onDone: () {
-        print('UDPService: send socket done');
-      });
-      print('UDPService: send socket bound to ${_sendSocket!.address.address}:${_sendSocket!.port}');
+      }, onDone: () {});
     } catch (e) {
       print('UDPService: failed to bind send socket: $e');
     }
   }
 
   void _onReceiveEvent(RawSocketEvent event) {
-    // Debug log
-    print('UDPService: receive event: $event');
     if (event == RawSocketEvent.read) {
       final datagram = _receiveSocket!.receive();
       if (datagram != null) {
-        print('UDPService: received ${datagram.data.length} bytes from ${datagram.address.address}:${datagram.port}');
         _incomingController.add(datagram.data);
-      } else {
-        print('UDPService: receive event triggered but datagram is null');
       }
     }
   }
@@ -89,9 +77,7 @@ class UdpService {
     if (_sendSocket == null) return;
 
     final sent = _sendSocket!.send(data, _sendHost, _sendPort);
-    print('UDPService: send returned $sent');
     if (sent == 0) {
-      print('UDPService: send returned 0, requeueing data');
       _sendQueue.add(data);
     }
   }
@@ -99,23 +85,18 @@ class UdpService {
   /// Send data to the fixed send address/port
   void send(Uint8List data) {
     if (_sendSocket == null) {
-      print('UDPService: cannot send, send socket not initialized');
       return;
     }
-
-    print('UDPService: attempting to send ${data.length} bytes to ${_sendHost.address}:$_sendPort');
 
     if (_sendReady) {
       _sendNow(data);
     } else {
-      print('UDPService: send socket not ready, queuing message');
       _sendQueue.add(data);
     }
   }
 
   /// Stop the service
   Future<void> stop() async {
-    print('UDPService: stopping service...');
     await _incomingController.close();
     _receiveSocket?.close();
     _receiveSocket = null;
@@ -123,6 +104,5 @@ class UdpService {
     _sendSocket = null;
     _sendQueue.clear();
     _sendReady = false;
-    print('UDPService: sockets closed and service stopped');
   }
 }

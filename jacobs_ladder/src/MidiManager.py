@@ -57,6 +57,7 @@ class MidiController:
         
         self.input_port = kwargs.get('input_port', None)
         self.output_ports = kwargs.get('output_ports', [f"jacobs_ladder_{i}" for i in range(12)])
+        self.virtual_ports_initialized = False
         self.print_msgs = kwargs.get('print_msgs', False)
         self.print_key = kwargs.get('print_key', False)
         self.print_avoid_notes_only = kwargs.get('print_avoid_notes_only', False)
@@ -122,12 +123,12 @@ class MidiController:
         if self.output_ports == [f"jacobs_ladder_{i}" for i in range(12)]:
             self.udp_sender = UDPSender(host='127.0.0.1', port=50005)
             
-            self.udp_receiver = JacobMonitor(manager=self, host='127.0.0.1', port=50000, print_msgs=self.print_msgs)
+            self.udp_receiver = JacobMonitor(manager=self, host='127.0.0.1', port=50000, print_msgs=self.print_msgs, logger=self.logger)
             self.udp_receiver.start_listener()
             
             self.logger.info("Initializing connection to Jacob...")
         else:
-            self.udp_receiver = JacobMonitor(manager=self, host='127.0.0.1', port=50002, print_msgs=self.print_msgs)
+            self.udp_receiver = JacobMonitor(manager=self, host='127.0.0.1', port=50002, print_msgs=self.print_msgs, logger=self.logger)
             self.udp_receiver.start_listener()
             self.udp_sender = MockSender(host='127.0.0.1', port=50003)
             self.logger.info("Initializing connection to User...")
@@ -148,17 +149,20 @@ class MidiController:
         is_posix = sys.platform.startswith("darwin") or sys.platform.startswith("linux")
 
         if is_posix:
+            if self.virtual_ports_initialized:
+                self.logger.info("Virtual MIDI ports already initialized — skipping")
+                return
+
             self.logger.info("Detected macOS/Linux — creating virtual MIDI ports")
 
-            # Create virtual MIDI input
             self.midi_in.open_virtual_port(self.input_port)
             self.logger.info(f"Created virtual MIDI input: {self.input_port}")
 
-            # Create 12 virtual MIDI outputs
             for i, port_name in enumerate(self.output_ports):
                 self.midi_out_ports[i].open_virtual_port(port_name)
                 self.logger.info(f"Created virtual MIDI output: {port_name}")
 
+            self.virtual_ports_initialized = True
             return
 
         # Non-POSIX (Windows)
