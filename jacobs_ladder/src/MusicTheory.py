@@ -19,20 +19,14 @@ class MusicTheory:
     recognition and display, potential scales which can be played over currently suspended notes, representing 
     chords in the simplest harmonic form possible, and key determination.
     """
-    def __init__(self, print_msgs: bool = False, player: str = None):
-        """MusicTheory class takes a flag called print to indicate whether or not to print chords to the console, 
-        (defaults to false).
+    def __init__(self, logger: logging.Logger):
+        """A class used for determining chords and scales that the real-time midi notes which are currently player are a part of
 
         Args:
-            print (bool, optional): if true print chords to the console, otherwise don't. Defaults to False.
+            logger (logging.Logger, optional): a reference to the MidiManager's logger. Defaults to None.
         """
-        # Setup logging
-        if not player:
-            self.logger = setup_logging("MusicTheory")
-        else:
-            mt_string = str(f"MusicTheory{player.capitalize()}")
-            self.logger = setup_logging(mt_string)
-        
+        self.logger = logger
+  
         # Dictionary to convert int midi notes into letter notes assuming all flats for ease of logic
         self.int_note:              dict[int, str]              = get_midi_notes()
         
@@ -55,9 +49,7 @@ class MusicTheory:
         self.QUEUE_SIZE = 5
         self.history = InOutQueue(self.QUEUE_SIZE)
         self.key = "C Ionian"
-        
-        # Jacob's Ladder
-        self.print = print_msgs
+
 
     def determine_chord(self, message_heap: list[list[int]]):
         """Based on the currently active notes in the message_heap, determine the chord
@@ -80,17 +72,17 @@ class MusicTheory:
             return f" "
         elif len(intervals) == 1:
             diads = self.get_diad(intervals)
-            # if self.print: print(diads)   
+            self.logger.debug(f"[MT] {diads=}")
             return f"{diads}"      
             
         elif len(intervals) == 2:      
             triad_log, triad_internal = self.get_triad(intervals, notes)
-            # if self.print: print(triad_log)
+            self.logger.debug(f"[MT] {triad_log=}")
             return triad_internal      
         
         elif len(intervals) == 3:      
             tetrad = self.get_tetrad(intervals, notes)
-            # if self.print: print(tetrad)
+            self.logger.debug(f"[MT] {tetrad=}")
             return tetrad
         else:
             return None
@@ -163,9 +155,9 @@ class MusicTheory:
                     if note in avoid_notes:
                         avoid_notes.remove(note)
                         bitmasks.append(self.get_bitmask(scale=scale))
-            if self.print:
-                if avoid_notes:
-                    print(f"\r{sorted(list(avoid_notes))}")
+            
+            if avoid_notes:
+                self.logger.debug(f"[MT] \r{sorted(list(avoid_notes))}")
 
         candidate_key_names = [candidate_key.name for candidate_key in candidate_keys]
 

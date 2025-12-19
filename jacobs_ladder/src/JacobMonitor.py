@@ -3,14 +3,15 @@ import struct
 import sys
 import subprocess
 from pathlib import Path
+import yaml
 
 from .Utilities import build_udp_message
 from .Udp import UDPReceiver
 
 class JacobMonitor(UDPReceiver):
 
-    def __init__(self, manager, host: str = "127.0.0.1", port: int = 50001, print_msgs: bool = False, logger: logging.Logger = None):
-        super().__init__(host=host, port=port, print_msgs=print_msgs)
+    def __init__(self, manager, host: str = "127.0.0.1", port: int = 50001, logger: logging.Logger = None):
+        super().__init__(host=host, port=port, logger=logger)
 
         self.manager = manager
         self.logger = logger
@@ -18,14 +19,14 @@ class JacobMonitor(UDPReceiver):
     def dispatch_message(self, data: bytes):
         """Decode and dispatch incoming UDP datagrams by message type."""
         if len(data) < 4:
-            self.logger.warning("Received message too short")
+            self.logger.warning("[JM] Received message too short")
             return
 
         # Unpack 32-bit message type (big-endian)
         message_type = struct.unpack_from(">I", data, 0)[0]
         payload = data[4:]
 
-        self.logger.info(f"Received message type: {message_type}")
+        self.logger.info(f"[JM] Received message type: {message_type}")
 
 
         if message_type == 1:
@@ -35,31 +36,31 @@ class JacobMonitor(UDPReceiver):
         elif message_type == 3:
             self._handle_set_midi_input_port_message(payload)
         else:
-            self.logger.warning(f"Unknown message type: {message_type}")
+            self.logger.warning(f"[JM] Unknown message type: {message_type}")
 
     def _handle_recording_message(self, payload: bytes) -> None:
         """Handle recording start/stop messages, with optional tempo BPM."""
         if len(payload) < 8:
-            self.logger.warning(f"Recording message too short (got {len(payload)} bytes)")
+            self.logger.warning(f"[JM] Recording message too short (got {len(payload)} bytes)")
             return
 
         # Unpack recording_state and tempo_bpm (both uint32, big-endian)
         recording_state, tempo_bpm = struct.unpack_from(">II", payload, 0)
 
-        self.logger.info(f"Received recording_state={recording_state}, tempo_bpm={tempo_bpm}")
+        self.logger.info(f"[JM] Received recording_state={recording_state}, tempo_bpm={tempo_bpm}")
 
         if hasattr(self.manager, "change_recording_mode"):
             try:
                 self.manager.change_recording_mode(int(recording_state), int(tempo_bpm))
             except TypeError:
-                self.logger.error("Unable to change recording mode!")
+                self.logger.error("[JM] Unable to change recording mode!")
         else:
-            self.logger.error("Manager does not implement change_recording_mode()")
+            self.logger.error("[JM] Manager does not implement change_recording_mode()")
             
     def _handle_get_midi_ports_message(self) -> None:
         """Handle request for available MIDI input ports."""
         if not hasattr(self.manager, "get_midi_input_ports"):
-            self.logger.error("Manager does not implement get_midi_input_ports()")
+            self.logger.error("[JM] Manager does not implement get_midi_input_ports()")
             return
 
         ports = self.manager.get_midi_input_ports()
@@ -74,7 +75,7 @@ class JacobMonitor(UDPReceiver):
             else:
                 cleaned_ports.append(port)
 
-        self.logger.info(f"Received get_midi_input_ports request...\nSending cleaned ports:\n{cleaned_ports}")
+        self.logger.info(f"[JM] Received get_midi_input_ports request...\nSending cleaned ports:\n{cleaned_ports}")
 
         if not cleaned_ports:
             payload = b""
@@ -92,7 +93,7 @@ class JacobMonitor(UDPReceiver):
         
 
     def _handle_set_midi_input_port_message(self, payload: bytes) -> None:
-        """Switch MIDI input port (physical device selection)."""
+        """Switch MIDI input port (physical device selection) and update default_config.yaml."""
 
         required_methods = (
             "set_input_port",
@@ -102,16 +103,17 @@ class JacobMonitor(UDPReceiver):
         )
         if not all(hasattr(self.manager, m) for m in required_methods):
             self.logger.error(
-                "Manager does not implement one of the following:\n"
+                "[JM] Manager does not implement one of the following:\n"
                 "set_input_port()\ninitialize_ports()\nset_midi_callback()\nclose_ports()"
             )
             return
-
+        
         try:
             new_port = payload.decode("utf-8").strip()
             if not new_port:
                 return
 
+            # Determine effective input port
             if sys.platform.startswith("win"):
                 if not hasattr(self, "_map_ports_process"):
                     self._map_ports_process = None
@@ -130,7 +132,7 @@ class JacobMonitor(UDPReceiver):
                     project_root = Path(__file__).resolve().parents[2]
                     map_ports_bin = project_root / "jacobs_ladder" / "cpp" / "bin" / "MapPorts"
 
-                    self.logger.info(f"Launching MapPorts for input: {new_port}")
+                    self.logger.info(f"[JM] Launching MapPorts for input: {new_port}")
                     self._map_ports_process = subprocess.Popen(
                         [str(map_ports_bin), "--port", new_port],
                         stdout=subprocess.DEVNULL,
@@ -139,17 +141,34 @@ class JacobMonitor(UDPReceiver):
                     self._mapped_input_port = new_port
 
                 effective_input_port = "jacobs_ladder"
-
             else:
                 effective_input_port = new_port
 
+            # Switch the port in the manager
             self.manager.close_ports()
             self.manager.set_input_port(effective_input_port)
             self.manager.initialize_ports()
             self.manager.set_midi_callback()
 
-            
-            self.logger.info(f"Input port switched successfully: {new_port}")
+            self.logger.info(f"[JM] Input port switched successfully: {new_port}")
+
+            # --- Update default_config.yaml ---
+            project_root = Path(__file__).resolve().parents[2]
+            config_path = project_root / "jacobs_ladder" / "configuration" / "yaml" / "default_config.yaml"
+
+            if config_path.exists():
+                with open(config_path, "r", encoding="utf-8") as f:
+                    config_data = yaml.safe_load(f) or {}
+
+                # Update the input_port key
+                config_data["input_port"] = new_port
+
+                with open(config_path, "w", encoding="utf-8") as f:
+                    yaml.safe_dump(config_data, f, default_flow_style=False, sort_keys=False)
+
+                self.logger.info(f"[JM] default_config.yaml updated with input_port: {new_port}")
+            else:
+                self.logger.warning(f"[JM] default_config.yaml not found at {config_path}")
 
         except Exception as e:
-            self.logger.error(f"Failed to switch input port: {e}")
+            self.logger.error(f"[JM] Failed to switch input port: {e}")

@@ -3,8 +3,10 @@ import sys
 import heapq
 import logging
 import rtmidi
+import subprocess
 import warnings
 
+from pathlib import Path
 from copy import deepcopy
 
 from .JacobMonitor import JacobMonitor
@@ -40,7 +42,6 @@ class MidiController:
         Args:
             input_port (str, optional): input port name. Defaults to "jacobs_ladder".
             output_ports (list, optional): output port name. Defaults to [f"jacobs_ladder_{i}" for i in range(12)].
-            print_msgs (bool, optional): True if you wish to print msgs to the console. Defaults to False.
             tuning (dict, optional): a dictionary giving the controller its tuning. Defaults to None.
             tuning_mode (str, optional): static, dynamic, or None for no tuning. Defaults to None.
         """
@@ -68,7 +69,6 @@ class MidiController:
         self.tuning_mode = tuning_cfg.get('tuning_mode', None)
         self.tuning_ratios_all = tuning_cfg.get('tuning_ratios_all', '5-limit-ratios')
         self.tuning_ratios_pref = tuning_cfg.get('tuning_ratios_pref', '5-limit-pref')
-
         self.tempo = kwargs.get('tempo', 120)
         self.time_signature = kwargs.get('time_signature', "4/4")
 
@@ -81,15 +81,15 @@ class MidiController:
             self.logger = setup_logging("Jacob")
         else:
             self.logger = setup_logging(self.input_port)
-        self.logger.info("Initializing MidiController...")
+        self.logger.info("[MM] Initializing MidiController...")
         
         # MIDI port management
         self.midi_in = rtmidi.MidiIn()
         self.midi_out_ports = [rtmidi.MidiOut() for _ in range(12)]
         self.input_port = self.input_port
         self.output_ports = self.output_ports
-        self.logger.info(f"Input port: {self.input_port}")
-        self.logger.info(f"Output ports: {self.output_ports}")
+        self.logger.info(f"[MM] Input port: {self.input_port}")
+        self.logger.info(f"[MM] Output ports: {self.output_ports}")
         
         # Create midi in and midi out virtual port objects
         self.initialize_ports()
@@ -104,17 +104,17 @@ class MidiController:
         self.sustained_notes = []
         
         # Music Theory
-        self.music_theory = MusicTheory(print_msgs=self.print_msgs, player=self.input_port if self.input_port != "jacobs_ladder" else "User")
-        self.logger.info(f"Initializing MusicTheory...")
+        self.music_theory = MusicTheory(logger=self.logger)
+        self.logger.info(f"[MM] Initializing MusicTheory...")
 
         # Tuning management
-        self.logger.info("Initializing JustIntonation...")
+        self.logger.info("[MM] Initializing JustIntonation...")
         if self.tuning and self.tuning_mode: 
-            self.logger.info("Tuning is enabled")
-            self.logger.info(f"Mode is set to \"{self.tuning_mode}\" tuning")
+            self.logger.info("[MM] Tuning is enabled")
+            self.logger.info(f"[MM] Mode is set to \"{self.tuning_mode}\" tuning")
         else:
-            self.logger.info("Tuning is disabled")
-        self.just_intonation = JustIntonation(**kwargs.get("tuning_configuration", None))
+            self.logger.info("[MM] Tuning is disabled")
+        self.just_intonation = JustIntonation(self.logger, **kwargs.get("tuning_configuration", None))
             
         # Transposition Management
         self.transpose = 0
@@ -123,25 +123,26 @@ class MidiController:
         if self.output_ports == [f"jacobs_ladder_{i}" for i in range(12)]:
             self.udp_sender = UDPSender(host='127.0.0.1', port=50005)
             
-            self.udp_receiver = JacobMonitor(manager=self, host='127.0.0.1', port=50000, print_msgs=self.print_msgs, logger=self.logger)
+            self.udp_receiver = JacobMonitor(manager=self, host='127.0.0.1', port=50000, logger=self.logger)
             self.udp_receiver.start_listener()
             
-            self.logger.info("Initializing connection to Jacob...")
+            self.logger.info("[MM] Initializing connection to Jacob...")
         else:
-            self.udp_receiver = JacobMonitor(manager=self, host='127.0.0.1', port=50002, print_msgs=self.print_msgs, logger=self.logger)
+            self.udp_receiver = JacobMonitor(manager=self, host='127.0.0.1', port=50002, logger=self.logger)
             self.udp_receiver.start_listener()
             self.udp_sender = MockSender(host='127.0.0.1', port=50003)
-            self.logger.info("Initializing connection to User...")
+            self.logger.info("[MM] Initializing connection to User...")
 
         # Recorder
         self.should_record = False
-        self.recorder = MidiRecorder()
+        self.recorder = MidiRecorder(logger=self.logger)
         
-        self.logger.info("Listening for Midi messages...")
+        self.logger.info("[MM] Listening for Midi messages...")
         self.set_midi_callback()
         self.start_listening()
         
-        self.logger.info("Exiting...")
+        self.logger.info("[MM] Exiting...")
+
 
     def initialize_ports(self):
         """Initialize input and output ports based on OS."""
@@ -150,17 +151,17 @@ class MidiController:
 
         if is_posix:
             if self.virtual_ports_initialized:
-                self.logger.info("Virtual MIDI ports already initialized — skipping")
+                self.logger.info("[MM] Virtual MIDI ports already initialized — skipping")
                 return
 
-            self.logger.info("Detected macOS/Linux — creating virtual MIDI ports")
+            self.logger.info("[MM] Detected macOS/Linux — creating virtual MIDI ports")
 
             self.midi_in.open_virtual_port(self.input_port)
-            self.logger.info(f"Created virtual MIDI input: {self.input_port}")
+            self.logger.info(f"[MM] Created virtual MIDI input: {self.input_port}")
 
             for i, port_name in enumerate(self.output_ports):
                 self.midi_out_ports[i].open_virtual_port(port_name)
-                self.logger.info(f"Created virtual MIDI output: {port_name}")
+                self.logger.info(f"[MM] Created virtual MIDI output: {port_name}")
 
             self.virtual_ports_initialized = True
             return
@@ -168,8 +169,7 @@ class MidiController:
         # Non-POSIX (Windows)
         try:
             available_input_ports = self.midi_in.get_ports()
-            if self.print_msgs:
-                print(f"available_input_ports \n{available_input_ports}")
+            self.logger.debug(f"[MM] available_input_ports (Windows) \n{available_input_ports}")
 
             # Match full port name or startswith self.input_port
             input_port_index = next(
@@ -179,18 +179,17 @@ class MidiController:
 
             if input_port_index is not None:
                 self.midi_in.open_port(input_port_index)
-                self.logger.info(f"Opened MIDI input port: {available_input_ports[input_port_index]}")
+                self.logger.info(f"[MM] Opened MIDI input port: {available_input_ports[input_port_index]}")
             else:
-                raise ValueError(f"Input port '{self.input_port}' not found.")
+                raise ValueError(f"[MM] Input port '{self.input_port}' not found.")
 
         except (ValueError, rtmidi._rtmidi.SystemError) as e:
-            raise RuntimeError(f"Failed to open input port '{self.input_port}': {e}")
+            raise RuntimeError(f"[MM] Failed to open input port '{self.input_port}': {e}")
 
         # Initialize MIDI output ports
         try:
             available_output_ports = self.midi_out_ports[0].get_ports()
-            if self.print_msgs:
-                print(f"available_output_ports \n{available_output_ports}")
+            self.logger.debug(f"[MM] available_output_ports (Windows) \n{available_output_ports}")
 
             for midi_out_idx, port_name in enumerate(self.output_ports):
                 # Match full port name or startswith
@@ -201,12 +200,12 @@ class MidiController:
 
                 if output_port_index is not None:
                     self.midi_out_ports[midi_out_idx].open_port(output_port_index)
-                    self.logger.info(f"Opened MIDI output port: {available_output_ports[output_port_index]}")
+                    self.logger.info(f"[MM] Opened MIDI output port: {available_output_ports[output_port_index]}")
                 else:
-                    raise ValueError(f"Output port '{port_name}' not found.")
+                    raise ValueError(f"[MM] Output port '{port_name}' not found.")
 
         except (ValueError, rtmidi._rtmidi.SystemError) as e:
-            raise RuntimeError(f"Failed to open output port '{port_name}': {e}")
+            raise RuntimeError(f"[MM] Failed to open output port '{port_name}': {e}")
 
 
     def close_ports(self):
@@ -279,30 +278,28 @@ class MidiController:
             self.in_use_indices[note] = instance_index
             heapq.heappush(self.message_heap, [note + self.transpose, instance_index, status, velocity, None])
 
-            if self.print_msgs:
-                print(self.message_heap)
+            self.logger.debug(f"[MM] {self.message_heap=}")
             
             chord = self.music_theory.determine_chord(self.message_heap)
             candidate_scales, bitmasks = self.music_theory.get_candidate_scales(message_heap=self.message_heap, scale_includes=self.scale_includes)
             key = self.music_theory.find_key()
-            if self.print_key and not self.print_avoid_notes_only:
-                print(f"key: {key}")
-            if self.print_scales and not self.print_avoid_notes_only:
-                print(f"candidate_scales: {candidate_scales}")
+
+            self.logger.debug(f"[MM] {chord=}")
+            self.logger.debug(f"[MM] {candidate_scales=}")
+            self.logger.debug(f"[MM] {bitmasks=}")
+            self.logger.debug(f"[MM] {key=}")
 
             data_bytes = pack_message(message_heap=self.message_heap, candidate_scales=candidate_scales, bitmasks=bitmasks)
             datagram = build_udp_message(message_type=1, payload_bytes=data_bytes)
             self.udp_sender.send_bytes(datagram)
 
-            if self.tuning_mode == "static" or self.tuning_mode == "dynamic":
-                tuning_index, pitch_bend_message, message_heap = self.just_intonation.get_tuning_info(message_heap=self.message_heap, current_msg=[note, instance_index, status, velocity, None], dt=dt, key=key)
-                self.message_heap = message_heap
-                self.midi_out_ports[tuning_index].send_message(pitch_bend_message)
-            elif self.tuning_mode == "just-intonation":
+            if self.tuning_mode == "static" or self.tuning_mode == "dynamic" or self.tuning_mode == "just-intonation":
+                self.logger.debug(f"[MM] Tuning using {self.tuning_mode}")
                 tuning_index, pitch_bend_message, message_heap = self.just_intonation.get_tuning_info(message_heap=self.message_heap, current_msg=[note, instance_index, status, velocity, None], dt=dt, key=key)
                 self.message_heap = message_heap
                 self.midi_out_ports[tuning_index].send_message(pitch_bend_message)
             else:
+                self.logger.debug(f"[MM] Applying no tuning to each MIDI instance...")
                 self.midi_out_ports[instance_index].send_message([224, 0, 64])
             
             self.midi_out_ports[instance_index].send_message([status, note, velocity])
@@ -327,10 +324,10 @@ class MidiController:
             chord = self.music_theory.determine_chord(self.message_heap)
             candidate_scales, bitmasks = self.music_theory.get_candidate_scales(message_heap=self.message_heap, scale_includes=self.scale_includes)
             key = self.music_theory.find_key()
-            if self.print_key and not self.print_avoid_notes_only:
-                print(f"key: {key}")
-            if self.print_scales and not self.print_avoid_notes_only:
-                print(f"candidate_scales: {candidate_scales}")
+            self.logger.debug(f"[MM] {chord=}")
+            self.logger.debug(f"[MM] {candidate_scales=}")
+            self.logger.debug(f"[MM] {bitmasks=}")
+            self.logger.debug(f"[MM] {key=}")
 
             data_bytes = pack_message(message_heap=self.message_heap, candidate_scales=candidate_scales, bitmasks=bitmasks)
             if data_bytes:

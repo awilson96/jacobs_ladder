@@ -1,3 +1,4 @@
+import logging
 import threading
 import mido
 import os
@@ -10,11 +11,12 @@ except ImportError:
     from .MockQpc import MockQpcUtils
 
 class MidiRecorder:
-    def __init__(self):
+    def __init__(self, logger: logging.Logger):
         if not is_posix:
             self.qpc = qpc_utils.QpcUtils()
         else:
             self.qpc = MockQpcUtils()
+        self.logger = logger
         self.is_recording = False
         self.is_saving = False
         self.start_ticks = None
@@ -26,10 +28,10 @@ class MidiRecorder:
     def start(self, tempo: int):
         """Begin recording MIDI messages."""
         if self.is_recording:
-            print("Warning: Recorder is already running.")
+            self.logger.warning("Warning: Recorder is already running.")
             return
         if self.is_saving:
-            print("Cannot start recording: previous recording is still saving.")
+            self.logger.warning("Cannot start recording: previous recording is still saving.")
             return
 
         self.tempo = tempo
@@ -37,19 +39,19 @@ class MidiRecorder:
         self.start_ticks = self.qpc.qpcGetTicks()
         self.last_ticks = self.start_ticks
         self.messages = []
-        print("Recording started...")
+        self.logger.info("Recording started...")
 
     def stop(self, filename="recording.mid"):
         """Stop recording and save in background. Safe against multiple calls."""
         if not self.is_recording:
             if self.is_saving:
-                print("Stop called, but a save is already in progress. Ignoring.")
+                self.logger.warning("Stop called, but a save is already in progress. Ignoring.")
             else:
-                print("No active recording to stop.")
+                self.logger.warning("No active recording to stop.")
             return
 
         if not self.messages:
-            print("No MIDI messages recorded.")
+            self.logger.warning("No MIDI messages recorded.")
             self.is_recording = False
             return
 
@@ -64,7 +66,7 @@ class MidiRecorder:
             daemon=True
         )
         self._saving_thread.start()
-        print(f"Recording stopped — saving in background to {filename}...")
+        self.logger.info(f"Recording stopped — saving in background to {filename}...")
 
     def _save_recording(self, filename, start_ticks):
         """Threaded save operation, clears messages after saving."""
@@ -91,7 +93,7 @@ class MidiRecorder:
                 elif 176 <= status < 192:
                     msg_type = 'control_change'
 
-                print(msg_type, note_or_control, velocity_or_value, delta_s)
+                self.logger.debug(msg_type, note_or_control, velocity_or_value, delta_s)
 
                 if msg_type:
                     delta_ticks = int(mido.second2tick(delta_s, mid.ticks_per_beat, tempo))
@@ -108,13 +110,13 @@ class MidiRecorder:
                                         time=delta_ticks)
                     track.append(msg)
                 else:
-                    print(f"Skipped unknown status byte: {status}")
+                    self.logger.warning(f"Skipped unknown status byte: {status}")
 
             mid.save(filename)
-            print(f"Recording saved to: {os.path.abspath(filename)}")
+            self.logger.info(f"Recording saved to: {os.path.abspath(filename)}")
 
         except Exception as e:
-            print(f"Error while saving MIDI file: {e}")
+            self.logger.error(f"Error while saving MIDI file: {e}")
 
         finally:
             # Clear messages and reset flags
@@ -127,7 +129,7 @@ class MidiRecorder:
         if not self.is_recording:
             return
         if self.is_saving:
-            print("Recording blocked: previous recording is still saving.")
+            self.logger.warning("Recording blocked: previous recording is still saving.")
             return
         ticks = self.qpc.qpcGetTicks()
         self.messages.append(((status, note, velocity), ticks))

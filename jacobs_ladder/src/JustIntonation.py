@@ -15,7 +15,7 @@ class JustIntonation:
     chord and/or melodic sequence remains in perfect pitch with the currenlty suspended notes. The secondary goal 
     of the class is to ensure that after silence, new notes must be in pitch with the previously played notes 
     creating pitch drift as would be expected in true Just Intonation."""
-    def __init__(self, **kwargs):
+    def __init__(self, logger, **kwargs, ):
 
         allowed_keys = {"player", "tuning", "tuning_mode", "tuning_config", "tuning_ratios_pref", "tuning_ratios_all"}
 
@@ -24,7 +24,7 @@ class JustIntonation:
                 raise ValueError(f"Unknown argument: {key}")
             
         self.player = kwargs.get("player", "User")
-        self.logger = setup_logging(f"JustIntonation{self.player.capitalize()}")
+        self.logger = logger
         self.center_frequency = 8192
         self.pitch_table = {key: 8192 for key in range(-11, 12)}
         self.previous_root = 60
@@ -34,6 +34,8 @@ class JustIntonation:
         self.tuning_config = read_tuning_config(name=kwargs.get("tuning_ratios_all", "5-limit-ratios"))
         self.tuning_pref = read_tuning_config(name=kwargs.get("tuning_ratios_pref", "5-limit-pref"))
         self.tuning_limit = kwargs.get("tuning_limit", 5) 
+
+        self.logger.info("[JI] Construtor called")
         
         if self.tuning:
             self.calculate_pitch_table(offset=0)
@@ -156,7 +158,7 @@ class JustIntonation:
                 elif shortest_difference == 6:
                     message_heap[message_heap.index(current_msg)][4] = self.tuning["tritone_up"]
                 else:
-                    print("something weird happened")
+                    self.logger.error("[JI] shortest_difference value was invalid... Re-examine dynamic tuning logic")
 
             pitch_bend_msg = self.get_pitch_bend_message(message_heap_elem=message_heap[current_msg_index])
     
@@ -205,7 +207,7 @@ class JustIntonation:
                 elif shortest_difference == 6:
                     message_heap[message_heap.index(current_msg)][4] = self.tuning["tritone_up"]
                 else:
-                    print("something weird happened")
+                    self.logger.error("[JI] shortest_difference value was invalid... Re-examine static tuning logic")
 
             pitch_bend_msg = self.get_pitch_bend_message(message_heap_elem=message_heap[current_msg_index])
     
@@ -632,7 +634,7 @@ class JustIntonation:
             ratios = []
             for relationship in tuning:
                 ratios.append(self.select_tuning_ratio(relationship=relationship, tuning_config=tuning_config, method="random")["ratio"])
-            print(f"{tuning}\t{ratios}")
+            self.logger.info(f"[JI] {tuning}\t{ratios}")
 
 if __name__ == "__main__":
     kwargs = {

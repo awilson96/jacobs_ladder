@@ -1,5 +1,5 @@
 # --- MIDI ports ---
-input_port: "jacobs_ladder"
+input_port: "Arturia KeyLab Essential 88"
 output_ports:
   - "jacobs_ladder_0"
   - "jacobs_ladder_1"
