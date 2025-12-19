@@ -46,7 +46,7 @@ class MidiController:
             tuning_mode (str, optional): static, dynamic, or None for no tuning. Defaults to None.
         """
         allowed_keys = {
-            'input_port', 'output_ports', 'scale_includes', 'tempo', 'time_signature', 'player', 
+            'log_level', 'input_port', 'output_ports', 'scale_includes', 'tempo', 'time_signature', 'player', 
             'tuning', 'tuning_mode', 'tuning_ratios_all', 'tuning_ratios_pref', 'tuning_configuration'
         }
 
@@ -54,6 +54,7 @@ class MidiController:
             if key not in allowed_keys:
                 raise ValueError(f"Unknown argument: {key}")
         
+        self.log_level = kwargs.get('log_level', 20)
         self.input_port = kwargs.get('input_port', None)
         self.output_ports = kwargs.get('output_ports', [f"jacobs_ladder_{i}" for i in range(12)])
         self.virtual_ports_initialized = False
@@ -66,7 +67,7 @@ class MidiController:
         self.tempo = kwargs.get('tempo', 120)
         self.time_signature = kwargs.get('time_signature', "4/4")
 
-        self.logger = setup_logging(app_name="JacobsLadder")
+        self.logger = setup_logging(app_name="JacobsLadder", level=self.log_level)
         self.logger.info("[MM] Initializing MidiController...")
         
         # MIDI port management

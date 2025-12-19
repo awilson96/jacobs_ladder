@@ -120,6 +120,19 @@ def parse_midi_controller_config(config_path: str, print_config=False) -> dict:
         print("Error: 'tuning_mode' is static or dynamic, but no 'tuning' provided.")
         sys.exit(1)
 
+    # --- Log level ---
+    LOG_LEVELS = {
+        "DEBUG": 10,
+        "INFO": 20,
+        "WARNING": 30,
+        "ERROR": 40,
+        "CRITICAL": 50
+    }
+    log_level_str = config.get('log_level', 'INFO')
+    if log_level_str not in LOG_LEVELS:
+        raise ValueError(f"Invalid log_level '{log_level_str}'. Must be one of {list(LOG_LEVELS.keys())}.")
+    log_level = LOG_LEVELS[log_level_str]
+
     formatted_tuning_config = {
         'tuning_configuration': {
             'player': player,
@@ -136,6 +149,7 @@ def parse_midi_controller_config(config_path: str, print_config=False) -> dict:
         'scale_includes': scale_includes,
         'tempo': tempo,
         'time_signature': time_signature,
+        'log_level': log_level,
         **formatted_tuning_config
     }
 
@@ -144,6 +158,7 @@ def parse_midi_controller_config(config_path: str, print_config=False) -> dict:
         print(json.dumps(kwargs, indent=4))
 
     return kwargs
+
 
 def remove_harmonically_redundant_intervals(message_heap: list[list[int]]):
     """Take in a message heap and return a sorted message heap with redundant harmonies excluded 

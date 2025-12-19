@@ -1,5 +1,5 @@
 # --- MIDI ports ---
-input_port: "Arturia KeyLab Essential 88"
+input_port: "Arturia"
 output_ports:
   - "jacobs_ladder_0"
   - "jacobs_ladder_1"
@@ -66,3 +66,6 @@ tuning_configuration:
   tuning_mode: none # dynamic, static, just-intonation, or none
   tuning_ratios_all: 5-limit-ratios
   tuning_ratios_pref: 5-limit-pref
+
+# --- Logging ---
+log_level: INFO  # Acceptable values are: [DEBUG, INFO, WARNING, ERROR, CRITICAL]

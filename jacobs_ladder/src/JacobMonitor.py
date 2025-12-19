@@ -3,14 +3,14 @@ import struct
 import sys
 import subprocess
 from pathlib import Path
-import yaml
+import re
 
 from .Utilities import build_udp_message
 from .Udp import UDPReceiver
 
 class JacobMonitor(UDPReceiver):
 
-    def __init__(self, manager, host: str = "127.0.0.1", port: int = 50001, logger: logging.Logger = None):
+    def __init__(self, manager: object, host: str = "127.0.0.1", port: int = 50001, logger: logging.Logger = None):
         super().__init__(host=host, port=port, logger=logger)
 
         self.manager = manager
@@ -158,13 +158,19 @@ class JacobMonitor(UDPReceiver):
 
             if config_path.exists():
                 with open(config_path, "r", encoding="utf-8") as f:
-                    config_data = yaml.safe_load(f) or {}
+                    config_text = f.read()
 
-                # Update the input_port key
-                config_data["input_port"] = new_port
+                # Regex to match the input_port line (preserve indentation, quotes, etc.)
+                pattern = r'^(\s*input_port\s*:\s*).*?$'
+                replacement = r'\1"{}"'.format(new_port)
+
+                new_config_text, count = re.subn(pattern, replacement, config_text, flags=re.MULTILINE)
+                if count == 0:
+                    self.logger.warning("[JM] input_port key not found in default_config.yaml. Adding it at top.")
+                    new_config_text = f'input_port: "{new_port}"\n' + config_text
 
                 with open(config_path, "w", encoding="utf-8") as f:
-                    yaml.safe_dump(config_data, f, default_flow_style=False, sort_keys=False)
+                    f.write(new_config_text)
 
                 self.logger.info(f"[JM] default_config.yaml updated with input_port: {new_port}")
             else:
