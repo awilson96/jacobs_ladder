@@ -1,15 +1,26 @@
 import logging
 
-def setup_logging(app_name: str) -> logging.Logger:
+def setup_logging(app_name: str, level: int = 20) -> logging.Logger:
+    """Setup logging for the MidiManager class
+
+    Args:
+        app_name (str): the name of the app and subsequently the name of the logfile
+        level (int, optional): 10: DEBUG, 20: INFO, 30: WARNING, 40: ERROR, 50: CRITICAL. Defaults to 20.
+
+    Returns:
+        logging.Logger: _description_
+    """
     log_filename = f"./jacobs_ladder/logs/{app_name}.log"
+    
+    loglevel = logging.getLevelName(level)
     
     # Create a logger
     logger = logging.getLogger(app_name)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(loglevel)
     
     # Create file handler
     file_handler = logging.FileHandler(log_filename, mode="w")
-    file_handler.setLevel(logging.INFO)
+    file_handler.setLevel(loglevel)
     
     # Create a formatter and set it for the handler
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')

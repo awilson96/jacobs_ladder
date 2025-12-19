@@ -46,10 +46,8 @@ class MidiController:
             tuning_mode (str, optional): static, dynamic, or None for no tuning. Defaults to None.
         """
         allowed_keys = {
-            'input_port', 'output_ports', 'print_msgs',
-            'print_key', 'print_avoid_notes_only', 'print_scales', 'scale_includes',
-            'tempo', 'time_signature', 'player', 'tuning', 'tuning_mode', 'tuning_ratios_all',
-            'tuning_ratios_pref', 'tuning_configuration'
+            'input_port', 'output_ports', 'scale_includes', 'tempo', 'time_signature', 'player', 
+            'tuning', 'tuning_mode', 'tuning_ratios_all', 'tuning_ratios_pref', 'tuning_configuration'
         }
 
         for key in kwargs:
@@ -59,10 +57,6 @@ class MidiController:
         self.input_port = kwargs.get('input_port', None)
         self.output_ports = kwargs.get('output_ports', [f"jacobs_ladder_{i}" for i in range(12)])
         self.virtual_ports_initialized = False
-        self.print_msgs = kwargs.get('print_msgs', False)
-        self.print_key = kwargs.get('print_key', False)
-        self.print_avoid_notes_only = kwargs.get('print_avoid_notes_only', False)
-        self.print_scales = kwargs.get('print_scales', False)
         self.scale_includes = kwargs.get('scale_includes', [])
         tuning_cfg = kwargs.get('tuning_configuration', {})
         self.tuning = tuning_cfg.get('tuning', None)
@@ -72,20 +66,12 @@ class MidiController:
         self.tempo = kwargs.get('tempo', 120)
         self.time_signature = kwargs.get('time_signature', "4/4")
 
-        # Set up logging
-        if self.input_port == "jacobs_ladder":
-            # TODO: Make this work
-            self.logger = setup_logging("User")
-        elif self.input_port == "jacob":
-            # TODO: Make this work
-            self.logger = setup_logging("Jacob")
-        else:
-            self.logger = setup_logging(self.input_port)
+        self.logger = setup_logging(app_name="JacobsLadder")
         self.logger.info("[MM] Initializing MidiController...")
         
         # MIDI port management
         self.midi_in = rtmidi.MidiIn()
-        self.midi_out_ports = [rtmidi.MidiOut() for _ in range(12)]
+        self.midi_out_ports = [rtmidi.MidiOut() for _ in range(12)] if sys.platform.startswith("win") else []
         self.input_port = self.input_port
         self.output_ports = self.output_ports
         self.logger.info(f"[MM] Input port: {self.input_port}")
@@ -121,7 +107,7 @@ class MidiController:
         
         # Communication with Jacob
         if self.output_ports == [f"jacobs_ladder_{i}" for i in range(12)]:
-            self.udp_sender = UDPSender(host='127.0.0.1', port=50005)
+            self.udp_sender = UDPSender(host='127.0.0.1', port=50005, logger=self.logger)
             
             self.udp_receiver = JacobMonitor(manager=self, host='127.0.0.1', port=50000, logger=self.logger)
             self.udp_receiver.start_listener()
@@ -150,20 +136,26 @@ class MidiController:
         is_posix = sys.platform.startswith("darwin") or sys.platform.startswith("linux")
 
         if is_posix:
-            if self.virtual_ports_initialized:
-                self.logger.info("[MM] Virtual MIDI ports already initialized — skipping")
-                return
+            input_port = None
+            for i, name in enumerate(self.midi_in.get_ports()):
+                if self.input_port in name:
+                    input_port = i
+                    print(f"Using input: {name}")
+                    break
 
-            self.logger.info("[MM] Detected macOS/Linux — creating virtual MIDI ports")
+            if input_port is None:
+                raise RuntimeError("MIDI input not found")
 
-            self.midi_in.open_virtual_port(self.input_port)
-            self.logger.info(f"[MM] Created virtual MIDI input: {self.input_port}")
+            self.midi_in.open_port(input_port)
 
-            for i, port_name in enumerate(self.output_ports):
-                self.midi_out_ports[i].open_virtual_port(port_name)
-                self.logger.info(f"[MM] Created virtual MIDI output: {port_name}")
-
-            self.virtual_ports_initialized = True
+            # ---- Create 12 virtual MIDI outputs ----
+            NUM_PORTS = 12
+            for i in range(NUM_PORTS):
+                out = rtmidi.MidiOut()
+                port_name = f"jacobs_ladder_{i}"
+                out.open_virtual_port(port_name)
+                self.midi_out_ports.append(out)
+                print(f"Created virtual output: {port_name}")
             return
 
         # Non-POSIX (Windows)
@@ -259,8 +251,6 @@ class MidiController:
         """
         payload, dt  = message
         status, note, velocity = payload
-
-        
 
         if self.should_record and self.tuning_mode in ("none", None):
             self.recorder.record_event(status, note, velocity)

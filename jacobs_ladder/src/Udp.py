@@ -9,7 +9,7 @@ from .Logging import setup_logging
 
 
 class UDPSender:
-    def __init__(self, host: str = '127.0.0.1', port: int = 50000, logger: logging.Logger = None):
+    def __init__(self, host: str, port: int, logger: logging.Logger):
         self.logger = logger
         self.send_address = (host, port)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -44,7 +44,7 @@ class UDPSender:
         self.sock.close()
 
 class UDPReceiver(ABC):
-    def __init__(self, host: str = '127.0.0.1', port: int = 50001, logger: logging.Logger = None):
+    def __init__(self, host: str, port: int, logger: logging.Logger):
         self.logger = logger
         self.receive_address = (host, port)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
