@@ -1,10 +1,9 @@
-import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import '../models/app_theme.dart';
 import 'page1.dart';
 import 'page2.dart';
+import 'temperment_page.dart';
 import 'page3.dart';
 import 'settings_page.dart';
 import '../services/udp_service.dart';
@@ -42,6 +41,7 @@ class _HomePageState extends State<HomePage> {
     _pages = [
       Page1(udpService: udpService),
       Page2(udpService: udpService),
+      TempermentPage(udpService: udpService),
       Page3(udpService: udpService),
     ];
   }
@@ -93,10 +93,16 @@ class _HomePageState extends State<HomePage> {
               onTap: () => _selectPage(1),
             ),
             ListTile(
-              leading: const Icon(Icons.mic),
-              title: const Text('Midi Recorder'),
+              leading: const Icon(Icons.tune),
+              title: const Text('Temperament Explorer'),
               selected: _selectedIndex == 2,
               onTap: () => _selectPage(2),
+            ),
+            ListTile(
+              leading: const Icon(Icons.mic),
+              title: const Text('Midi Recorder'),
+              selected: _selectedIndex == 3,
+              onTap: () => _selectPage(3),
             ),
             const Spacer(),
             const Divider(),
