@@ -1,10 +1,10 @@
 // piano_udp_controller.dart
-import 'dart:io';
 import 'dart:typed_data';
 import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../models/color_mapping.dart';
+import '../models/message_heap.dart';
 import '../models/key_mapping.dart';
 import '../services/udp_service.dart';
 
@@ -34,6 +34,9 @@ class PianoUdpController {
   bool showHarmonicMinor = true;
   bool showHarmonicMajor = true;
   bool showMelodicMinor = true;
+
+  // Temperment stuff
+  List<MessageHeap> liveMessageHeap = [];
 
   PianoUdpController({
     required this.udpService,
@@ -115,7 +118,7 @@ class PianoUdpController {
       return;
     }
 
-    // Read the 32-bit message type (big-endian), but ignore it for now
+    // Read the 32-bit message type (big-endian)
     int messageType = (data[offset] << 24) |
         (data[offset + 1] << 16) |
         (data[offset + 2] << 8) |
@@ -157,6 +160,30 @@ class PianoUdpController {
       }
 
       _updateSuggestionColors();
+    } 
+    // Message type of message_heap 
+    else if (messageType == 2) {
+      List<MessageHeap> heap = [];
+
+      // Each note entry = 6 bytes
+      while (offset + 6 <= data.length) {
+        int midiNote = data[offset];
+        int instanceIndex = data[offset + 1];
+        int status = data[offset + 2];
+        int velocity = data[offset + 3];
+        int pitchBend = (data[offset + 4] << 8) | data[offset + 5];
+        offset += 6;
+
+        heap.add(MessageHeap(
+          midiNote: midiNote,
+          instanceIndex: instanceIndex,
+          status: status,
+          velocity: velocity,
+          pitchBend: pitchBend,
+        ));
+      }
+
+      liveMessageHeap = heap;
     }
   }
 

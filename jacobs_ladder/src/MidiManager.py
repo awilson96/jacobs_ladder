@@ -17,7 +17,7 @@ from .MusicTheory import MusicTheory
 from .Udp import UDPSender
 
 from .Logging import setup_logging
-from .Utilities import build_udp_message, determine_octave, parse_midi_controller_config, pack_message
+from .Utilities import build_udp_message, determine_octave, parse_midi_controller_config, pack_message, pack_message_heap
 
 __author__ = "Alex Wilson"
 __copyright__ = "Copyright (c) 2023 Jacob's Ladder"
@@ -77,6 +77,8 @@ class MidiController:
         self.output_ports = self.output_ports
         self.logger.info(f"[MM] Input port: {self.input_port}")
         self.logger.info(f"[MM] Output ports: {self.output_ports}")
+
+        # TODO: On Windows call virtual port setup script here before initilization 
         
         # Create midi in and midi out virtual port objects
         self.initialize_ports()
@@ -281,8 +283,11 @@ class MidiController:
             self.logger.debug(f"[MM] {key=}")
 
             data_bytes = pack_message(message_heap=self.message_heap, candidate_scales=candidate_scales, bitmasks=bitmasks)
-            datagram = build_udp_message(message_type=1, payload_bytes=data_bytes)
-            self.udp_sender.send_bytes(datagram)
+            message_heap_bytes = pack_message_heap(self.message_heap)
+            datagram1 = build_udp_message(message_type=1, payload_bytes=data_bytes)
+            datagram2 = build_udp_message(message_type=2, payload_bytes=message_heap_bytes)
+            self.udp_sender.send_bytes(datagram1)
+            self.udp_sender.send_bytes(datagram2)
 
             if self.tuning_mode == "static" or self.tuning_mode == "dynamic" or self.tuning_mode == "just-intonation":
                 self.logger.debug(f"[MM] Tuning using {self.tuning_mode}")
@@ -292,7 +297,8 @@ class MidiController:
             else:
                 self.logger.debug(f"[MM] Applying no tuning to each MIDI instance...")
                 self.midi_out_ports[instance_index].send_message([224, 0, 64])
-            
+
+            print(f"{self.message_heap}")
             self.midi_out_ports[instance_index].send_message([status, note, velocity])
 
         elif status in range(128, 144):
@@ -321,13 +327,18 @@ class MidiController:
             self.logger.debug(f"[MM] {key=}")
 
             data_bytes = pack_message(message_heap=self.message_heap, candidate_scales=candidate_scales, bitmasks=bitmasks)
+            message_heap_bytes = pack_message_heap(self.message_heap)
             if data_bytes:
-                datagram = build_udp_message(message_type=1, payload_bytes=data_bytes)
-                self.udp_sender.send_bytes(datagram)
+                datagram1 = build_udp_message(message_type=1, payload_bytes=data_bytes)
+                self.udp_sender.send_bytes(datagram1)
+                datagram2 = build_udp_message(message_type=2, payload_bytes=message_heap_bytes)
+                self.udp_sender.send_bytes(datagram2)
             else:
                 live_keys_payload = "Live keys"[:25].ljust(25).encode("ascii") + bytearray([0]*11)
-                datagram = build_udp_message(message_type=1, payload_bytes=live_keys_payload)
-                self.udp_sender.send_bytes(datagram)
+                datagram1 = build_udp_message(message_type=1, payload_bytes=live_keys_payload)
+                self.udp_sender.send_bytes(datagram1)
+                datagram2 = build_udp_message(message_type=2, payload_bytes=message_heap_bytes)
+                self.udp_sender.send_bytes(datagram2)
 
         elif status in range(176, 192) and note == 64:
             if velocity == 127:
