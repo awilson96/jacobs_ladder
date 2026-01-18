@@ -5,6 +5,7 @@ import sys
 import yaml
 
 from .Enums import NoteDivisions
+from .Pitch import PitchInfo
 
 def determine_octave(message_heap: list, note: int):
     """Determine if the current note is an octave of any of the currently active notes.
@@ -237,32 +238,39 @@ def pack_message(message_heap: list[list[int]], candidate_scales: list[str], bit
 
     return data_bytes
 
-def pack_message_heap(message_heap: list[list[int]]) -> bytes:
+def pack_message_heap(message_heap: list[list]) -> bytes:
     """Pack the entire message heap into bytes for sending as message type 2.
-    Each element: note (1B), instance_index (1B), status (1B), velocity (1B), pitch_bend (2B)
 
-    Args:
-        message_heap (list[list[int]]): a message consisting of [note, instance_index, status, velocity, and pitch_bend]
+    Each element:
+    [note, instance_index, status, velocity, pitch_info]
 
-    Returns:
-        bytes: a serialized version of message_heap
+    Layout per entry:
+    - note: 1 byte
+    - instance_index: 1 byte
+    - status: 1 byte
+    - velocity: 1 byte
+    - pitch_info: 21 bytes (PitchInfo.serialize)
+    Total: 25 bytes per message
     """
     if not message_heap:
         return b""
 
-    payload = b""
+    payload = bytearray()
+
     for msg in message_heap:
         note = msg[0] & 0xFF
         instance_index = msg[1] & 0xFF
         status = msg[2] & 0xFF
         velocity = msg[3] & 0xFF
-        pitch_bend = msg[4] if msg[4] is not None else 8192
-        pitch_high = (pitch_bend >> 8) & 0xFF
-        pitch_low = pitch_bend & 0xFF
+        pitch_info = msg[4]
 
-        payload += bytes([note, instance_index, status, velocity, pitch_high, pitch_low])
+        if pitch_info is None:
+            pitch_info = PitchInfo()
 
-    return payload
+        payload.extend([note, instance_index, status, velocity])
+        payload.extend(pitch_info.serialize())
+
+    return bytes(payload)
 
 
 def build_udp_message(message_type: int, payload_bytes: bytes) -> bytes:

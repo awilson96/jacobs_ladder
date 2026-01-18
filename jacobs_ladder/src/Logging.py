@@ -1,5 +1,7 @@
 import logging
 
+import logging
+
 def setup_logging(app_name: str, level: int = 20) -> logging.Logger:
     """Setup logging for the MidiManager class
 
@@ -8,7 +10,7 @@ def setup_logging(app_name: str, level: int = 20) -> logging.Logger:
         level (int, optional): 10: DEBUG, 20: INFO, 30: WARNING, 40: ERROR, 50: CRITICAL. Defaults to 20.
 
     Returns:
-        logging.Logger: _description_
+        logging.Logger
     """
     log_filename = f"./jacobs_ladder/logs/{app_name}.log"
     
@@ -18,8 +20,8 @@ def setup_logging(app_name: str, level: int = 20) -> logging.Logger:
     logger = logging.getLogger(app_name)
     logger.setLevel(loglevel)
     
-    # Create file handler
-    file_handler = logging.FileHandler(log_filename, mode="w")
+    # Create file handler with UTF-8 encoding
+    file_handler = logging.FileHandler(log_filename, mode="w", encoding="utf-8")
     file_handler.setLevel(loglevel)
     
     # Create a formatter and set it for the handler

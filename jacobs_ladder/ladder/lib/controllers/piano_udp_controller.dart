@@ -17,6 +17,7 @@ class PianoUdpController {
   final KeyUpdateCallback onKeyUpdate;
   final SuggestionUpdateCallback? onSuggestionUpdate;
   final KeyColorUpdateCallback? onKeyColorUpdate;
+  final void Function(List<MessageHeap>)? onHeapUpdate;
 
   StreamSubscription<Uint8List>? _udpSubscription;
 
@@ -43,6 +44,7 @@ class PianoUdpController {
     required this.onKeyUpdate,
     this.onSuggestionUpdate,
     this.onKeyColorUpdate,
+    this.onHeapUpdate,
     this.showMajor = true,
     this.showHarmonicMinor = true,
     this.showHarmonicMajor = true,
@@ -165,25 +167,68 @@ class PianoUdpController {
     else if (messageType == 2) {
       List<MessageHeap> heap = [];
 
-      // Each note entry = 6 bytes
-      while (offset + 6 <= data.length) {
+      const int entrySize = 25;
+
+      while (offset + entrySize <= data.length) {
         int midiNote = data[offset];
         int instanceIndex = data[offset + 1];
         int status = data[offset + 2];
         int velocity = data[offset + 3];
-        int pitchBend = (data[offset + 4] << 8) | data[offset + 5];
-        offset += 6;
+        offset += 4;
+
+        int analogAbs =
+            (data[offset] << 8) | data[offset + 1];
+        int analogRel =
+            (data[offset + 2] << 8) | data[offset + 3];
+        if (analogRel & 0x8000 != 0) {
+          analogRel -= 0x10000; // signed short
+        }
+
+        ByteData bd = ByteData(4);
+        for (int i = 0; i < 4; i++) {
+          bd.setUint8(i, data[offset + 4 + i]);
+        }
+        double cents = bd.getFloat32(0, Endian.big);
+
+        int noteOrder =
+            (data[offset + 8] << 8) | data[offset + 9];
+        if (noteOrder & 0x8000 != 0) {
+          noteOrder -= 0x10000;
+        }
+
+        String ratio = String.fromCharCodes(
+          data.sublist(offset + 10, offset + 20),
+        ).trim();
+
+        int dirByte = data[offset + 20];
+        String direction = switch (dirByte) {
+          117 => "up",    // 'u'
+          100 => "down",  // 'd'
+          _ => "none",    // 'n'
+        };
+
+        offset += 21;
+
+        PitchInfo pitchInfo = PitchInfo(
+          analogAbs: analogAbs,
+          analogRel: analogRel,
+          cents: cents,
+          noteOrder: noteOrder,
+          ratio: ratio,
+          direction: direction,
+        );
 
         heap.add(MessageHeap(
           midiNote: midiNote,
           instanceIndex: instanceIndex,
           status: status,
           velocity: velocity,
-          pitchBend: pitchBend,
+          pitchInfo: pitchInfo,
         ));
       }
 
       liveMessageHeap = heap;
+      onHeapUpdate?.call(heap);
     }
   }
 

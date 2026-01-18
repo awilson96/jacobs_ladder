@@ -14,6 +14,7 @@ from .JustIntonation import JustIntonation
 from .MidiRecorder import MidiRecorder
 from .MockSender import MockSender
 from .MusicTheory import MusicTheory
+from .Pitch import PitchInfo
 from .Udp import UDPSender
 
 from .Logging import setup_logging
@@ -269,7 +270,8 @@ class MidiController:
                     logging.warning(f"no instances are left! {instance_index}")
                         
             self.in_use_indices[note] = instance_index
-            heapq.heappush(self.message_heap, [note + self.transpose, instance_index, status, velocity, None])
+            current_msg = [note + self.transpose, instance_index, status, velocity, PitchInfo()]
+            heapq.heappush(self.message_heap, current_msg)
 
             self.logger.debug(f"[MM] {self.message_heap=}")
             
@@ -283,22 +285,22 @@ class MidiController:
             self.logger.debug(f"[MM] {key=}")
 
             data_bytes = pack_message(message_heap=self.message_heap, candidate_scales=candidate_scales, bitmasks=bitmasks)
-            message_heap_bytes = pack_message_heap(self.message_heap)
             datagram1 = build_udp_message(message_type=1, payload_bytes=data_bytes)
-            datagram2 = build_udp_message(message_type=2, payload_bytes=message_heap_bytes)
             self.udp_sender.send_bytes(datagram1)
-            self.udp_sender.send_bytes(datagram2)
-
+            
             if self.tuning_mode == "static" or self.tuning_mode == "dynamic" or self.tuning_mode == "just-intonation":
                 self.logger.debug(f"[MM] Tuning using {self.tuning_mode}")
-                tuning_index, pitch_bend_message, message_heap = self.just_intonation.get_tuning_info(message_heap=self.message_heap, current_msg=[note, instance_index, status, velocity, None], dt=dt, key=key)
+                tuning_index, pitch_bend_message, message_heap = self.just_intonation.get_tuning_info(message_heap=self.message_heap, current_msg=current_msg, dt=dt, key=key)
                 self.message_heap = message_heap
                 self.midi_out_ports[tuning_index].send_message(pitch_bend_message)
             else:
                 self.logger.debug(f"[MM] Applying no tuning to each MIDI instance...")
                 self.midi_out_ports[instance_index].send_message([224, 0, 64])
 
-            print(f"{self.message_heap}")
+            message_heap_bytes = pack_message_heap(self.message_heap)
+            datagram2 = build_udp_message(message_type=2, payload_bytes=message_heap_bytes)
+            self.udp_sender.send_bytes(datagram2)
+
             self.midi_out_ports[instance_index].send_message([status, note, velocity])
 
         elif status in range(128, 144):
@@ -327,18 +329,17 @@ class MidiController:
             self.logger.debug(f"[MM] {key=}")
 
             data_bytes = pack_message(message_heap=self.message_heap, candidate_scales=candidate_scales, bitmasks=bitmasks)
-            message_heap_bytes = pack_message_heap(self.message_heap)
             if data_bytes:
                 datagram1 = build_udp_message(message_type=1, payload_bytes=data_bytes)
                 self.udp_sender.send_bytes(datagram1)
-                datagram2 = build_udp_message(message_type=2, payload_bytes=message_heap_bytes)
-                self.udp_sender.send_bytes(datagram2)
             else:
                 live_keys_payload = "Live keys"[:25].ljust(25).encode("ascii") + bytearray([0]*11)
                 datagram1 = build_udp_message(message_type=1, payload_bytes=live_keys_payload)
                 self.udp_sender.send_bytes(datagram1)
-                datagram2 = build_udp_message(message_type=2, payload_bytes=message_heap_bytes)
-                self.udp_sender.send_bytes(datagram2)
+            
+            message_heap_bytes = pack_message_heap(self.message_heap)
+            datagram2 = build_udp_message(message_type=2, payload_bytes=message_heap_bytes)
+            self.udp_sender.send_bytes(datagram2)
 
         elif status in range(176, 192) and note == 64:
             if velocity == 127:

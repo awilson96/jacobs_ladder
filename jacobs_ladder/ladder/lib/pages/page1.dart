@@ -236,6 +236,7 @@ class _Page1State extends State<Page1> {
                   colorMode: PianoColorMode.suggestionColoring,
                   lowThreshold: 0.33,
                   highThreshold: 0.66,
+                  showTuningInfo: false,
                 ),
               ),
             ),

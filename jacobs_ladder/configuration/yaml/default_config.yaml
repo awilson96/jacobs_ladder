@@ -16,13 +16,13 @@ output_ports:
 
 # --- Print behavior ---
 print:
-  print_msgs: true
+  print_msgs: false
   print_key: false
   print_scales: false
   print_avoid_notes_only: false
   scale_includes:
     # - "Avoid"                         # Who knows
-    - "Diminished"                    # Octatonic
+    # - "Diminished"                    # Octatonic
     - "Ionian"                        # Septatonic
     - "Harmonic Minor"                # Septatonic
     - "Harmonic Major"                # Septatonic
@@ -68,4 +68,4 @@ tuning_configuration:
   tuning_ratios_pref: 5-limit-pref
 
 # --- Logging ---
-log_level: INFO  # Acceptable values are: [DEBUG, INFO, WARNING, ERROR, CRITICAL]
+log_level: DEBUG  # Acceptable values are: [DEBUG, INFO, WARNING, ERROR, CRITICAL]

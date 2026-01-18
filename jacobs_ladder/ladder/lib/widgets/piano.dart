@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import '../controllers/piano_udp_controller.dart';
 import '../services/udp_service.dart';
+import '../models/message_heap.dart';
 
 class Piano extends StatefulWidget {
   final UdpService udpService;
@@ -12,18 +13,22 @@ class Piano extends StatefulWidget {
   final double highThreshold;
   /// Callback to notify parent about updated suggestion headers
   final void Function(Map<String, Uint8List>)? onSuggestionUpdate;
+  final void Function(List<MessageHeap>)? onHeapUpdate;
 
   /// Filtered suggestion masks from Page1
   final Map<String, Uint8List> suggestionMasks;
+  final bool showTuningInfo;
 
   const Piano({
-    super.key,
-    this.onSuggestionUpdate,
+    required this.udpService,
     required this.suggestionMasks,
+    super.key,
     this.colorMode = PianoColorMode.overlapHeatmap,
+    this.onSuggestionUpdate,
+    this.onHeapUpdate,
     this.lowThreshold = 0.33,
     this.highThreshold = 0.66,
-    required this.udpService,
+    this.showTuningInfo = false,
   });
 
   @override
@@ -77,6 +82,9 @@ class _PianoState extends State<Piano> {
           keyColors.clear();
           keyColors.addAll(colors);
         });
+      },
+      onHeapUpdate: (heap) {
+        widget.onHeapUpdate?.call(heap);
       },
       colorMode: widget.colorMode,
       lowThreshold: widget.lowThreshold,
