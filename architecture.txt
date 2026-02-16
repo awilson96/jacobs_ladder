@@ -1,0 +1,203 @@
+file name: [functions]
+
+(static)
+ChordClassifier.py
+    def rotate(lst, n):
+    def all_rotations(lst):
+    def intervals_to_notes(intervals, root_pc=0):
+    def find_rotation_match(intervals, template_dict):
+    def classify_csv(path: Path):
+
+(static)
+ChordSeqTree.py
+    def generate_chord_sequences(self, chords: list[str], choices: int):
+
+(static)
+Compatibility.py
+    def create_scale(self, starting_note: int, data: pd.DataFrame) -> None:
+    def create_named_scale(self):
+    def remove_rotated_duplicates(self, dfs):
+    def determine_compatibility(self, scales_df, higher_degree_dfs, include_weak=False):
+    def determine_compatibility(self, scales_dict, higher_degree_dfs, include_weak=False):
+    def is_subset(self, current_scale_notes, other_scale_notes):
+    def reorder_chords(self, chord_dict):
+    def reorder_string(chord, start):
+
+(main)
+DataClasses.py
+    @dataclass
+    class Scale:
+    @dataclass
+    class IntervalScale:
+    @dataclass
+    class NoteEvent:
+    @dataclass
+    class RhythmNoteEvent:
+
+(main)
+Dictionaries.py
+    midi_notes
+    notes_to_midi
+    beat_to_note_divisions
+    def get_midi_notes():
+
+(main)
+Enums.py
+    class Pitch(Enum):
+    class NoteDivisions(Enum):
+    class MidiStatus(Enum):
+
+(main)
+JacobMonitor.py
+    def dispatch_message(self, data: bytes):
+    def _handle_recording_message(self, payload: bytes) -> None:
+    def _handle_get_midi_ports_message(self) -> None:
+    def _handle_set_midi_input_port_message(self, payload: bytes) -> None:
+    def map_ports(self, new_port: str) -> str:
+
+(main)
+JustIntonation.py
+    def calculate_pitch_table(self, offset):
+    def get_intervals(self, notes: list[int]):
+    def get_pitch_bend_message(self, message_heap_elem: list):
+    def get_tuning_info(self, message_heap: list[list], current_msg: list, dt: float, key=None): 
+    def get_diad_pitch(self, interval: int):   
+    def get_triad_pitch(self, chord: str):
+    def recenter_frequency(self, message_heap: list[list], instance_index: int):
+    def select_tuning_ratio(self, relationship: tuple[int], method: str) -> dict:
+    def display_tunings(self, tunings: list[list[tuple[int]]], tuning_config: dict):
+
+(main)
+Logging.py
+    def setup_logging(app_name: str, level: int = 20) -> logging.Logger:
+
+(main)
+MidiManager.py
+    def initialize_ports(self):
+    def close_ports(self):
+    def set_input_port(self, port: str) -> None:
+    def delete_suspended_note(self, sus_note: list):
+    def filter(self, message: tuple, timestamp: float):
+    def change_recording_mode(self, recording_mode: int, tempo: int) -> None:   
+    def get_midi_input_ports(self) -> list[str]:
+    def transpose_by(self, amount: int) -> None:
+    def turn_off_all_notes(self):
+    def set_midi_callback(self):
+    def start_listening(self):
+
+(main)
+MidiRecorder.py
+    def start(self, tempo: int):
+    def stop(self, filename="recording.mid"):
+    def _save_recording(self, filename, start_ticks):
+    def record_event(self, status: int, note: int, velocity: int):
+
+(main)
+MusicTheory.py
+    def determine_chord(self, message_heap: list[list[int]]):
+    def get_candidate_scales(self, message_heap: list[list[int]], scale_includes: list[str]) -> list[str]:
+    def get_bitmask(self, scale: Scale) -> list[int]:
+    def find_key(self):
+    def get_intervals(self, notes: list[int]):
+    def get_diad(self, intervals: list[int]):
+    def get_triad(self, intervals: list, notes: list):
+    def get_tetrad(self, intervals: list[int], notes: list[int]):
+    def get_pentad(self, intervals: list[int], notes: list[int]) -> str:
+
+(main)
+Pitch.py
+    @dataclass
+    class PitchInfo:
+    def serialize(self) -> bytes:
+    def get_preferred_interval_name(analog_value: int) -> str | None:
+
+(static)
+PlayMidi.py
+    def play_midi_file(filename: str, port_name: str = "jacob"):
+
+(main)
+Queue.py
+    def enqueue(self, elem):
+    def get_queue(self):
+
+(static)
+ScaleClassifier.py
+    def read_csv_files(self):
+    def convert_intervals(self, starting_note: int):
+    def create_harmonized_scale(self, scale: list, num_voices: int):
+
+(main)
+Scales.py
+    def get_diminished_scales() -> list[Scale]:
+    def get_diminished_scales_dict():
+    def get_major_scales(): 
+    def get_major_scales_dict():
+    def get_harmonic_minor_scales():
+    def get_harmonic_minor_scales_dict():
+    def get_harmonic_major_scales():
+    def get_harmonic_major_scales_dict():
+    def get_melodic_minor_scales():
+    def get_melodic_minor_scales_dict():
+    def get_diminished_blues_scales():
+    def get_diminished_blues_scales_dict():
+    def get_diminished_harmonic_scales():
+    def get_diminished_harmonic_scales_dict():
+    def get_whole_tone_scales():
+    def get_whole_tone_scales_dict():
+    def get_pentatonic_scales():
+    def get_pentatonic_scales_dict():
+
+(static)
+ScaleTree.py
+    def create_shifted_copies(self, row: list):
+    def generate_combinations_dataframe(self, scale_degree: int, max_interval: int, max_consecutive_ones: int): 
+    def generate_scales(self, max_degree: int, max_interval: int | list[int], num_consecutive_ones: int = 0, disp=False):
+    def convert_intervals_to_notes(self):
+
+(static)
+Tuner.py
+
+(main)
+TuningUtils.py
+    def __calculate_cents_from_interval__(interval: float):
+    def calculate_cents_offset_from_interval(interval: float):
+    def calculate_analog_pitch_wheel_value_from_cents_offset(cents_offset: float):
+    def generate_tunings(notes: list[int], root: int = None) -> list[list[tuple]]:
+    def reaches_root(root: int, tuning: list[tuple], idx: int, visited: set) -> bool:
+    def remove_cycles(tunings: list[list[tuple]], root: int) -> list[list[tuple]]:
+    def __edit_sign__(tunings: list[list[tuple[int]]]) -> list[tuple[int]]:
+    def prime_factors(n):
+    def generate_ratios(limit, max_exponent=2):
+    def determine_interval_based_on_ratio(ratio: Fraction | list[Fraction]) -> int | list[int]: 
+    def __get_interval_from_ratio__(ratio: Fraction) -> int:  
+    def create_tuning_config(ratios: list[Fraction], intervals: list[int], name: str) -> None:
+    def read_tuning_config(name: str) -> dict:
+
+(main)
+Udp.py
+    class UDPSender:
+        def __init__(self, host: str, port: int, logger: logging.Logger):
+        def send(self, data):
+        def send_bytes(self, data_bytes: bytes):
+        def stop(self):
+
+    class UDPReceiver(ABC):
+        def __init__(self, host: str, port: int, logger: logging.Logger):
+        def listen(self):
+        def start_listener(self):
+        def stop(self):
+        @abstractmethod
+        def dispatch_message(self, data):
+
+(main)
+Utilities.py
+    def determine_octave(message_heap: list, note: int):
+    def division_to_dt(division: str, tempo: int) -> int:
+    def get_root_from_letter_note(letter_note: str):
+    def parse_midi_controller_config(config_path: str, print_config=False) -> dict:
+    def remove_harmonically_redundant_intervals(message_heap: list[list[int]]):
+    def sanitize_scale_name(name: str) -> str:
+    def build_live_keys_bitmask(message_heap: list[list[int]]) -> list[int]:
+    def pack_message(message_heap: list[list[int]], candidate_scales: list[str], bitmasks: list[list[int]]) -> bytes:
+    def pack_message_heap(message_heap: list[list]) -> bytes:
+    def build_udp_message(message_type: int, payload_bytes: bytes) -> bytes:

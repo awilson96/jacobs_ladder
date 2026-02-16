@@ -1,0 +1,1782 @@
+/**
+ * @class MidiController
+ *
+ * @brief Central runtime coordinator for real-time MIDI processing.
+ *
+ * MidiController serves as the primary orchestration layer of the application.
+ * It manages MIDI input/output ports, per-note output instance allocation,
+ * sustain pedal behavior, tuning application, harmonic analysis integration,
+ * UDP communication, and recording control.
+ *
+ * Architectural Responsibilities:
+ *
+ * 1. MIDI I/O Management
+ *    - Initializes and owns MIDI input and output ports.
+ *    - Maps a single input port to 12 output ports for per-note pitch isolation.
+ *    - Registers and manages MIDI callback processing.
+ *
+ * 2. Per-Note Output Allocation
+ *    - Maintains allocation indices for 12 output instances.
+ *    - Tracks active note assignments and manages reallocation.
+ *
+ * 3. Real-Time Note State Tracking
+ *    - Maintains a message heap representing currently active notes.
+ *    - Tracks sustain pedal state and deferred note releases.
+ *
+ * 4. Tuning Integration
+ *    - Owns and configures the JustIntonation subsystem.
+ *    - Applies tuning adjustments during MIDI processing.
+ *
+ * 5. Harmonic Analysis Integration
+ *    - Owns MusicTheory subsystem.
+ *    - Delegates chord and scale inference based on active notes.
+ *
+ * 6. Communication Layer
+ *    - Owns UDP sender and receiver interfaces.
+ *    - Bridges external control/UI commands to internal runtime state.
+ *
+ * 7. Recording Control
+ *    - Owns MidiRecorder instance.
+ *    - Controls recording lifecycle.
+ *
+ * 8. Runtime Configuration
+ *    - Stores tempo, time signature, transposition, and tuning configuration.
+ *
+ * This class currently acts as the top-level application engine and
+ * central dependency owner of all real-time subsystems.
+ */
+class MidiManager
+
+/**
+ * @brief Constructs and initializes the MIDI runtime environment.
+ *
+ * Responsibilities performed during construction:
+ *
+ *  - Validates and parses configuration parameters.
+ *  - Initializes logging subsystem.
+ *  - Instantiates MIDI input and output interfaces.
+ *  - Opens and binds configured MIDI ports.
+ *  - Initializes per-note output instance allocation structures.
+ *  - Initializes sustain state tracking.
+ *  - Instantiates MusicTheory analysis subsystem.
+ *  - Instantiates JustIntonation tuning subsystem.
+ *  - Instantiates UDP communication interfaces.
+ *  - Instantiates recording subsystem.
+ *  - Registers MIDI callback and begins listening for events.
+ *
+ * @param kwargs Runtime configuration parameters controlling:
+ *        - MIDI port names
+ *        - Tuning configuration
+ *        - Tempo and time signature
+ *        - Logging level
+ *        - Scale filtering
+ *
+ * @note Construction currently performs side effects including
+ *       opening ports, starting listeners, and spawning threads.
+ *       In a C++ redesign, lifecycle control should be separated
+ *       from construction.
+ */
+MidiManager constructor
+
+class MidiPortManager
+/**
+ * @brief Initialize and bind MIDI input and output ports.
+ *
+ * Performs platform-specific MIDI port initialization.
+ *
+ * On POSIX systems:
+ *  - Searches available input ports for a match with the configured input name.
+ *  - Opens the matching input port.
+ *  - Creates 12 virtual MIDI output ports for per-note channel isolation.
+ *
+ * On Windows:
+ *  - Searches available input ports for a matching name prefix.
+ *  - Opens the matching input port.
+ *  - Searches and opens 12 configured physical output ports.
+ *
+ * @throws RuntimeError if required input or output ports cannot be found or opened.
+ *
+ * @note This function performs resource acquisition and must be paired with closePorts().
+ */
+void initializePorts();
+
+class IMidiPortStrategy {
+    virtual void initializeInput(...) = 0;
+    virtual void initializeOutputs(...) = 0;
+};
+
+class PosixMidiPortStrategy : public IMidiPortStrategy
+class WindowsMidiPortStrategy : public IMidiPortStrategy
+
+/**
+ * @brief Close all currently opened MIDI input and output ports.
+ *
+ * Safely releases any open MIDI input and output resources.
+ * Does nothing for ports that are not open.
+ *
+ * This function should be called during shutdown or prior to reinitialization.
+ */
+void closePorts();
+
+/**
+ * @brief Update the configured MIDI input port name.
+ *
+ * Verifies that the requested port exists among available system MIDI inputs.
+ * If found, updates the internal configuration.
+ *
+ * @param port The name or prefix of the desired MIDI input port.
+ *
+ * @throws RuntimeError if the specified port cannot be found.
+ *
+ * @note This function does not automatically reopen or rebind the port.
+ *       A reinitialization call is required to apply the change.
+ */
+bool rebindInputPort(const std::string& port);
+
+/**
+ * @brief Remove a note from the message heap after its NOTE_OFF has been processed.
+ *
+ * This function is used when a sustained note is no longer active and needs to be deleted
+ * from the runtime heap tracking currently playing notes.
+ *
+ * @param susNote The suspended note information (note number, instance index, status, velocity)
+ *        to be removed from the heap.
+ *
+ * @note Part of the SustainManager / RuntimeNoteManager subsystem.
+ */
+void deleteSuspendedNote(const NoteEvent& susNote);
+
+/**
+ * @brief Main MIDI callback for processing incoming messages in real-time.
+ *
+ * Handles NOTE_ON, NOTE_OFF, CONTROL_CHANGE (sustain, modulation), and ALL_NOTES_OFF messages.
+ * This function manages:
+ *  - Instance allocation for per-note outputs.
+ *  - Runtime note state via messageHeap and inUseIndices.
+ *  - Sustain pedal behavior (storing and releasing notes).
+ *  - Music theory analysis (chords, scales, key) via MusicTheoryEngine.
+ *  - Tuning application using JustIntonationEngine.
+ *  - Sending updates to frontend/UI via UDP.
+ *  - Actual MIDI output to allocated channels.
+ *
+ * @param message The raw MIDI message ([status, note, velocity], delta_time)
+ * @param timestamp Placeholder required by the MIDI callback API (ignored).
+ *
+ * @note Part of the RuntimeNoteManager / MidiController orchestrator.
+ * @note In C++, this would ideally be split into smaller functions:
+ *       handleNoteOn(), handleNoteOff(), handleControlChange(), updateFrontend().
+ */
+void filter(const MidiMessage& message, double timestamp);
+
+potentially consider these options for filter:
+    handleNoteOn()
+        Allocate instance, push message to heap, run theory, apply tuning, send MIDI
+    handleNoteOff()
+        Remove note from heap or add to sustainedNotes, update theory, send MIDI
+    handleControlChange()
+        Sustain pedal, modulation, etc.
+    updateFrontend()
+        Pack message heap, pack scales/chords, send via UDP
+    applyTuning()
+        Query JustIntonation, send pitch-bend messages
+
+/**
+ * @brief Start or stop MIDI recording.
+ *
+ * Updates the internal recording state and forwards the command to the MidiRecorder.
+ *
+ * @param recordingMode 1 to start recording, 0 to stop recording
+ * @param tempo Current tempo (used when starting recording)
+ *
+ * @note Part of the Recording subsystem.
+ */
+void changeRecordingMode(int recordingMode, int tempo);
+
+/**
+ * @brief Retrieve all available MIDI input ports.
+ *
+ * @return std::vector<std::string> List of MIDI input port names.
+ *
+ * @note Used by the frontend or configuration subsystem to allow users to select an input port.
+ */
+std::vector<std::string> getMidiInputPorts() const;
+
+/**
+ * @brief Set the current transposition amount for all incoming MIDI notes.
+ *
+ * @param amount Number of semitones to transpose (-12 to +12)
+ *
+ * @note Part of the RuntimeNoteManager / MidiController orchestrator.
+ */
+void transposeBy(int amount);
+
+/**
+ * @brief Silences all MIDI output and resets pitch bend.
+ *
+ * Sends an ALL_NOTES_OFF and resets pitch bend for all output instances.
+ *
+ * @note Part of RuntimeNoteManager; useful for troubleshooting and emergency reset.
+ */
+void turnOffAllNotes();
+
+/**
+ * @brief Register the MIDI input callback function.
+ *
+ * The callback is invoked on every incoming MIDI message and filters messages
+ * for processing by the controller.
+ *
+ * @note Part of MidiController initialization. The callback function points
+ *       to the RuntimeNoteManager subsystem (filter()).
+ */
+void setMidiCallback();
+
+/**
+ * @brief Start the main MIDI listening loop.
+ *
+ * Continuously waits for MIDI messages from the input port. Messages are processed
+ * by the registered callback function (filter). Ensures proper shutdown by turning
+ * off all notes and closing ports when exiting.
+ *
+ * @note In C++, this could be a dedicated listener thread or event-driven loop.
+ * @note Part of the MidiController orchestrator.
+ */
+void startListening();
+
+MidiController Responsibilities (High-Level)
+
+1. MIDI Port Management
+Initialize input and output ports (initialize_ports())
+Close all ports (close_ports())
+Select input port dynamically (set_input_port())
+
+2. Runtime Note Management
+Maintain message_heap of currently active notes
+Handle note allocation to unique output instances (filter())
+Manage sustain pedal and suspended notes (filter(), delete_suspended_note())
+Transpose incoming notes (transpose_by())
+Emergency stop / reset of all notes (turn_off_all_notes())
+
+3. Communication
+Send live MIDI state to external consumer (UDP in Python)
+Pack and dispatch messages (filter() → pack_message, build_udp_message)
+
+4. Music Theory & Tuning Integration
+Determine chord, key, and candidate scales for currently held notes (filter() → MusicTheory)
+Apply tuning (static/dynamic/just intonation) per note instance (filter() → JustIntonation)
+
+5. Recording
+Start/stop MIDI recording (change_recording_mode())
+Feed MIDI events to recorder (filter() → MidiRecorder)
+
+6. Event Loop / Callback
+Register MIDI callback (set_midi_callback())
+Start main listening loop (start_listening())
+
+Cross-Cutting Concerns
+Logging for debugging / runtime monitoring
+OS-specific handling (Windows vs POSIX) for MIDI ports
+Pitch wheel management for single-note tuning
+
+-----------------------------------------
+
+/**
+ * @class MusicTheory
+ * @brief Encapsulates music theory logic for real-time MIDI analysis.
+ *
+ * The MusicTheory class is responsible for:
+ * - Determining the chord being played from a set of active MIDI notes.
+ * - Suggesting compatible scales based on currently held notes.
+ * - Representing chords in their simplest harmonic form.
+ * - Determining the musical key over a short history of notes.
+ * 
+ * This class does not handle MIDI I/O or tuning, but works with the
+ * note data provided by the MidiController.
+ */
+class MusicTheory
+
+/**
+ * @brief Constructor.
+ * @param logger A pointer or reference to a logging object used for runtime diagnostics.
+ */
+MusicTheory constructor
+
+
+ /**
+ * @brief Determine the chord currently being played based on active MIDI notes.
+ *
+ * Analyzes the provided message heap, simplifies intervals, and returns
+ * a string representation of the chord. Supports diads, triads, tetrads, or empty output.
+ *
+ * @param message_heap A vector of vectors representing currently active notes:
+ *                     Each inner vector contains [note, instance_index, status, velocity].
+ * @return std::string String describing the chord played, or empty string if undetermined.
+ */
+std::string determine_chord(const std::vector<std::vector<int>>& message_heap);
+
+/**
+ * @brief Get candidate scales compatible with the currently active MIDI notes.
+ *
+ * Examines the current notes and returns a list of compatible scales filtered
+ * by the provided scale types. Also returns a bitmask for each scale.
+ *
+ * @param message_heap A vector of vectors representing currently active notes:
+ *                     Each inner vector contains [note, instance_index, status, velocity].
+ * @param scale_includes A list of scale type names to include in the search (e.g., "Ionian", "Pentatonic").
+ * @return std::pair<std::vector<std::string>, std::vector<std::vector<int>>>
+ *         First element: vector of scale names (compatible candidate scales)
+ *         Second element: vector of bitmasks corresponding to each scale
+ */
+std::pair<std::vector<std::string>, std::vector<std::vector<int>>>
+get_candidate_scales(const std::vector<std::vector<int>>& message_heap, 
+                     const std::vector<std::string>& scale_includes);
+
+
+/**
+ * @brief Generates a tightly packed 88-key bitmask for a given scale.
+ *
+ * Each bit represents one of the 88 MIDI keys (A0 = MIDI 21). 
+ * A bit is set to 1 if the note is included in the scale, 0 otherwise.
+ *
+ * @param scale The Scale object to convert to a bitmask.
+ * @return std::vector<uint8_t> A vector of 11 bytes (88 bits) representing the scale.
+ */
+std::vector<uint8_t> get_bitmask(const Scale& scale);
+
+
+/**
+ * @brief Determine the current key based on the last N frames of candidate scales.
+ *
+ * Checks if the previous key is still compatible with the current notes. If not,
+ * attempts to select a key from Ionian or Major scales first. Otherwise, chooses
+ * the most common scale from the last QUEUE_SIZE frames.
+ *
+ * @return std::optional<std::string> The determined key if available, or std::nullopt if history is insufficient.
+ */
+std::optional<std::string> find_key();
+
+
+/**
+ * @brief Calculate intervals between a list of MIDI notes.
+ *
+ * Intervals are computed from the sorted list of notes. Only differences
+ * between consecutive notes are returned.
+ *
+ * @param notes A vector of unsorted integer MIDI notes.
+ * @return std::vector<int> Sorted list of intervals from lowest to highest note.
+ */
+std::vector<int> get_intervals(const std::vector<int>& notes);
+
+
+/**
+ * @brief Get the name of a diad interval.
+ *
+ * Maps a single interval (or multiple intervals, returns first match) to a string
+ * describing the intervallic relationship between two notes.
+ *
+ * @param intervals A vector of integer intervals.
+ * @return std::string Interval name (e.g., "Major 3", "Perfect 5").
+ */
+std::string get_diad(const std::vector<int>& intervals);
+
+
+/**
+ * @brief Determine the triad chord from a list of two intervals and three notes.
+ *
+ * Returns both a stringified chord name and a chord type identifier.
+ * Handles major, minor, diminished, augmented, suspended, and extended triads.
+ *
+ * @param intervals List of intervals between sorted notes (lowest to highest).
+ * @param notes List of sorted MIDI notes (lowest to highest).
+ * @return std::pair<std::string, std::string> First = chord name, Second = internal chord type.
+ */
+std::pair<std::string, std::string> get_triad(const std::vector<int>& intervals, const std::vector<int>& notes);
+
+
+/**
+ * @brief Determine the tetrad chord (four-note chord) based on intervals and notes.
+ *
+ * Handles major 7, minor 7, dominant 7, diminished, augmented, and other
+ * four-note chord forms with inversions.
+ *
+ * @param intervals List of three intervals between sorted notes (lowest to highest).
+ * @param notes List of four sorted MIDI notes (lowest to highest).
+ * @return std::string Chord name (e.g., "Cmaj7", "G7/B").
+ */
+std::string get_tetrad(const std::vector<int>& intervals, const std::vector<int>& notes);
+
+
+/**
+ * @brief Determine the pentad chord (five-note chord) based on intervals and notes.
+ *
+ * Handles extended chords (9ths, 11ths, add2/add9, etc.) and inversions.
+ * Currently placeholder for interval patterns; should be expanded with
+ * proper chord definitions.
+ *
+ * @param intervals List of four intervals between sorted notes (lowest to highest).
+ * @param notes List of five sorted MIDI notes (lowest to highest).
+ * @return std::string Chord name (e.g., "Cmaj9", "G7sus4/B").
+ */
+std::string get_pentad(const std::vector<int>& intervals, const std::vector<int>& notes);
+
+----------------------------------------------------
+
+/**
+ * @class JustIntonation
+ * @brief Handles pitch manipulation of notes using Just Intonation.
+ *
+ * This class ensures that chords and melodic sequences remain in perfect pitch
+ * relative to currently suspended notes. It also maintains pitch coherence across
+ * sequences, including after silence, simulating natural pitch drift as expected
+ * in true Just Intonation.
+ *
+ * Responsibilities:
+ * - Maintain a pitch table mapping intervals relative to the root to JI frequencies.
+ * - Track current and previous root notes for consistent tuning.
+ * - Apply tuning preferences, modes, and limits based on configuration.
+ * - Support multiple tunings and tuning modes.
+ * - Integrate with external logging and optional player metadata.
+ *
+ * @note This class is designed to be data-driven, with future refactoring
+ *       aimed at separating configuration reading, logging, and pitch calculation
+ *       to facilitate cross-platform usage and potential performance improvements.
+ */
+class JustIntonation {
+public:
+    /**
+     * @brief Constructs a JustIntonation instance with optional tuning parameters.
+     *
+     * Initializes the pitch table, tuning configuration, and root tracking.
+     * Applies tuning preferences and sets up the class for pitch calculations.
+     *
+     * @param logger Reference to a logging object for reporting events.
+     * @param player Optional identifier for the note player. Default is "User".
+     * @param tuning Optional active tuning data.
+     * @param tuning_mode Optional tuning mode.
+     * @param tuning_config Optional tuning configuration data.
+     * @param tuning_ratios_pref Optional preferred tuning ratios.
+     * @param tuning_ratios_all Optional complete tuning ratios.
+     * @param tuning_limit Optional limit for tuning calculations. Default is 5.
+     */
+    JustIntonation(Logger& logger,
+                   const std::string& player = "User",
+                   Tuning* tuning = nullptr,
+                   TuningMode tuning_mode = TuningMode::Default,
+                   const TuningConfig& tuning_config = TuningConfig(),
+                   const TuningConfig& tuning_ratios_pref = TuningConfig(),
+                   const TuningConfig& tuning_ratios_all = TuningConfig(),
+                   int tuning_limit = 5);
+};
+
+/**
+ * @brief Recalculates the Just Intonation pitch table based on currently held notes.
+ *
+ * This method updates the internal pitch table to maintain correct tuning
+ * relative to the most recently played note. The offset allows the pitch
+ * bend wheel to track pitch drift.
+ *
+ * @param offset The amount of analog bits to adjust the pitch wheel.
+ */
+void calculatePitchTable(int offset);
+
+/**
+ * @brief Computes the intervals between a list of notes.
+ *
+ * Given a list of notes (unsorted), this function calculates the interval
+ * between consecutive notes modulo 12, returning them sorted from lowest
+ * to highest note.
+ *
+ * @param notes A list of integer note values.
+ * @return std::vector<int> Sorted list of intervals between notes.
+ */
+std::vector<int> getIntervals(const std::vector<int>& notes);
+
+/**
+ * @brief Forms a MIDI pitch bend message for a given note.
+ *
+ * Generates a pitch bend message suitable for sending via the MIDI manager.
+ * The pitch bend value is constrained to the valid MIDI range [0, 16383].
+ * The message includes the LSB and MSB of the pitch bend and an appropriate
+ * status byte based on the note status.
+ *
+ * @param messageHeapElem A single note plus metadata in the format:
+ *                        [note, instance_index, status, velocity, pitch]
+ * @return std::vector<uint8_t> The pitch bend MIDI message [status, LSB, MSB].
+ */
+std::vector<uint8_t> getPitchBendMessage(const std::vector<MessageElem>& messageHeapElem);
+
+/**
+ * @brief Adjusts the pitch of individual notes within a chord or using intervals.
+ *
+ * This method computes tuning adjustments for notes in a given chord or a single note.
+ * Depending on the tuning mode ("dynamic", "static", or "just-intonation"), it updates
+ * the pitch bend value for each note in the message heap to maintain correct tuning.
+ * 
+ * - In "dynamic" mode, the root note may be adjusted if a key is provided.
+ * - In "static" mode, the pitch is adjusted relative to the fixed root.
+ * - In "just-intonation" mode, a specialized JI algorithm is applied (TODO).
+ *
+ * @param messageHeap A vector of notes and their metadata; each element is expected to be:
+ *                    [note, instance_index, status, velocity, pitch].
+ * @param currentMsg The current note message being processed in the same format as messageHeap elements.
+ * @param dt Time delta since the last update (used for tuning calculations, if needed).
+ * @param key Optional musical key string used to determine the chord root. Defaults to nullptr.
+ *
+ * @return std::tuple<int, std::vector<uint8_t>, std::vector<std::vector<MessageElem>>>
+ *         - tuning index of the note,
+ *         - pitch bend MIDI message [status, LSB, MSB],
+ *         - possibly modified message heap with updated pitch values.
+ *
+ * @note The returned pitch bend message can be sent to the MIDI manager to adjust the note's pitch.
+ */
+std::tuple<int, std::vector<uint8_t>, std::vector<std::vector<MessageElem>>>
+getTuningInfo(std::vector<std::vector<MessageElem>>& messageHeap,
+              std::vector<MessageElem>& currentMsg,
+              float dt,
+              const std::string* key = nullptr);
+
+/**
+ * @brief Returns the analog pitch value for a given interval in semitones.
+ *
+ * Given an interval between two notes (positive or negative), this function
+ * returns the corresponding pitch bend analog value in the 0-16383 range
+ * to correctly tune the note according to Just Intonation.
+ *
+ * @param interval The intervalic distance between two notes in semitones.
+ *                 Positive values indicate upward intervals, negative downward.
+ *
+ * @return int The analog pitch value corresponding to the interval.
+ */
+int getDiadPitch(int interval);
+
+
+/**
+ * @brief (Placeholder) Determines pitch adjustment for a triad chord.
+ *
+ * This function is intended to provide Just Intonation pitch values for a
+ * given triad chord based on its name. Currently unused but may be used in
+ * the future for more advanced chord tuning.
+ *
+ * @param chord The name of the chord as a string. For example, "major_triad",
+ *              "minor_triad", "sus4", "maj7_no_third", etc.
+ *
+ * @note The function currently contains only placeholders for different chord types.
+ *       Each chord type can be mapped to specific pitch adjustments in future implementations.
+ */
+void getTriadPitch(const std::string& chord);
+
+/**
+ * @brief Recenter the base frequencies of instances that are no longer active.
+ *
+ * This function is intended to reset or recenter the tuning/frequency
+ * of a given instance when it has received a "note off" event. This helps
+ * maintain stability in Just Intonation tuning by preventing drift from
+ * inactive notes.
+ *
+ * @param message_heap A list of notes with their metadata in the form:
+ *                     [note, instance_index, status, velocity].
+ * @param instance_index The specific instance index corresponding to the note
+ *                       that has been released (note off).
+ */
+void recenterFrequency(const std::vector<std::vector<int>>& message_heap, int instance_index);
+
+
+/**
+ * @brief Select a Just Intonation tuning ratio based on the interval relationship.
+ *
+ * Chooses a tuning ratio for a given interval relationship. Supports two methods:
+ * - "random": uniformly selects a tuning from all available ratios for the interval.
+ * - "singular": selects a preferred tuning based on the user's configuration.
+ *
+ * @param relationship A tuple containing (index, reference, relative_interval),
+ *                     where relative_interval is the semitone distance between notes.
+ * @param method The method to select a tuning ratio, either "random" or "singular".
+ *
+ * @return A dictionary (or struct) with keys/fields:
+ *         - "ratio": the frequency ratio as a string (e.g., "3/2")
+ *         - "cents_offset": the tuning offset in cents (float)
+ *         - "analog_pitch_wheel_value_offset": the corresponding analog MIDI pitch bend value (int)
+ */
+std::map<std::string, std::variant<std::string, double, int>>
+selectTuningRatio(const std::tuple<int,int,int>& relationship, const std::string& method);
+
+
+/**
+ * @brief Display the different Just Intonation tuning options for a given chord.
+ *
+ * Iterates through all potential tunings for a chord and logs their corresponding
+ * frequency ratios. Useful for debugging or visualizing the available JI tunings.
+ *
+ * @param tunings A vector of tunings, where each tuning is represented as a vector
+ *                of interval relationships (tuples of integers).
+ * @param tuning_config A dictionary containing tuning metadata for a given n-limit
+ *                      Just Intonation system.
+ */
+void displayTunings(const std::vector<std::vector<std::tuple<int,int,int>>>& tunings,
+                    const std::map<std::string, std::vector<std::map<std::string,std::map<std::string,double>>>>& tuning_config);
+
+Suggestions:
+
+1. Split Responsibilities Into Focused Classes
+Responsibility	                 Proposed Class	        Notes
+Pitch/Interval Calculations	     PitchTable	            Maintains pitch values, interval mappings, recalculation logic.
+Tuning Ratios	                 TuningManager	        Encapsulates tuning_config, tuning_pref, select_tuning_ratio, mode handling.
+MIDI Interaction	             MIDIPitchController	Creates pitch bend messages, manages message_heap, recentering, and per-instance tuning.
+Chord/Scale Analysis	         ChordAnalyzer	        Computes intervals, identifies chord structures, manages diad/triad pitch calculations.
+
+2. Separate tuning modes:
+class TuningMode:
+    def apply(self, message_heap, current_msg, root):
+        pass
+
+class DynamicTuning(TuningMode):
+    ...
+
+class StaticTuning(TuningMode):
+    ...
+
+class JustIntonationTuning(TuningMode):
+    ...
+
+-------------------------------------
+
+/**
+ * @class JacobMonitor
+ * @brief Monitors and dispatches incoming UDP messages for the Jacob's Ladder system.
+ * 
+ * Inherits from UDPReceiver. Handles messages related to recording state, 
+ * MIDI port queries, and MIDI input port selection. Works in conjunction 
+ * with a manager object that implements the actual recording and MIDI functionality.
+ */
+class JacobMonitor : public UDPReceiver
+{
+public:
+    /**
+     * @brief Construct a new JacobMonitor object
+     * 
+     * @param manager Pointer to the manager object handling recording and MIDI.
+     * @param host Host IP for the UDP receiver (default: "127.0.0.1").
+     * @param port Port for the UDP receiver (default: 50001).
+     * @param logger Optional logging object for diagnostic messages.
+     */
+    JacobMonitor(Manager* manager, std::string host = "127.0.0.1", int port = 50001, Logger* logger = nullptr);
+
+    /**
+     * @brief Decode and dispatch an incoming UDP datagram based on its message type.
+     * 
+     * @param data Raw bytes received over UDP.
+     */
+    void dispatch_message(const std::vector<uint8_t>& data);
+
+private:
+    /**
+     * @brief Handle a recording start/stop message, optionally including tempo BPM.
+     * 
+     * @param payload Payload bytes containing recording state and BPM.
+     */
+    void _handle_recording_message(const std::vector<uint8_t>& payload);
+
+    /**
+     * @brief Handle a request to query available MIDI input ports.
+     * 
+     * Sends a response back to the frontend with cleaned port names.
+     */
+    void _handle_get_midi_ports_message();
+
+    /**
+     * @brief Handle a request to set the MIDI input port (physical device selection)
+     * and update the default configuration file.
+     * 
+     * @param payload Payload containing the desired input port name as UTF-8 bytes.
+     */
+    void _handle_set_midi_input_port_message(const std::vector<uint8_t>& payload);
+
+    /**
+     * @brief Map a MIDI input port to the effective port name for the system.
+     * 
+     * On Windows, may launch a subprocess to manage port mapping.
+     * 
+     * @param new_port Name of the new input port to map.
+     * @return std::string Effective input port name used by the system.
+     */
+    std::string map_ports(const std::string& new_port);
+
+private:
+    Manager* manager;      ///< Pointer to manager handling MIDI and recording.
+    Logger* logger;        ///< Optional logger for diagnostics.
+    // Windows-specific mapping state
+    void* _map_ports_process = nullptr;
+    std::string _mapped_input_port;
+};
+
+---------------------------------------------
+DataClasses
+
+/**
+ * @file MusicalEvents.h
+ * @brief Defines lightweight data structures representing musical scales and note events.
+ *
+ * These classes are used to represent scales, interval-based scales, and individual
+ * note events with timing, velocity, and rhythmic information. They serve as the
+ * foundational data structures for MIDI processing, rhythm handling, and scale-based
+ * analysis in the backend.
+ */
+
+#pragma once
+#include <string>
+#include <vector>
+
+/**
+ * @brief Represents a basic musical scale.
+ * 
+ * Stores a human-readable name and the notes included in the scale.
+ */
+struct Scale {
+    std::string name;            /**< Name of the scale, e.g., "C Major" */
+    std::vector<std::string> notes; /**< List of note names, e.g., {"C", "D", "E", ...} */
+};
+
+/**
+ * @brief Represents a scale in terms of intervals from a starting note.
+ * 
+ * Includes additional metadata for rhythmic divisions and velocities.
+ */
+struct IntervalScale {
+    std::string name;               /**< Name of the scale */
+    int starting_note;              /**< MIDI note number of the root/start note */
+    std::vector<int> intervals;     /**< Intervals from the starting note */
+    std::vector<std::string> divisions; /**< Rhythmic divisions associated with each note */
+    std::vector<int> velocities;    /**< Velocity values for each note */
+};
+
+/**
+ * @brief Represents a single MIDI note event with timing and velocity.
+ */
+struct NoteEvent {
+    float dt;      /**< Time delta or duration in seconds */
+    int note;      /**< MIDI note number */
+    int status;    /**< MIDI status (e.g., NOTE_ON, NOTE_OFF) */
+    int velocity;  /**< MIDI velocity */
+};
+
+/**
+ * @brief Represents a note event with rhythmic information.
+ * 
+ * Stores offset in beats, rhythmic division, note name, MIDI status, velocity, and tempo.
+ * Also calculates absolute timing based on offset, division, and tempo.
+ */
+struct RhythmNoteEvent {
+    float offset;         /**< Offset from start in beats */
+    std::string division; /**< Rhythmic division, e.g., "1/4", "1/8" */
+    std::string note;     /**< Note name, e.g., "C4" */
+    std::string status;   /**< MIDI status string */
+    int velocity;         /**< Velocity */
+    int tempo;            /**< Tempo in BPM */
+    float absolute_time;  /**< Absolute time computed from offset + division-to-dt conversion */
+
+    /**
+     * @brief Construct a RhythmNoteEvent and compute absolute timing.
+     * @param offset Offset in beats
+     * @param division Rhythmic division string
+     * @param note Note name
+     * @param status MIDI status string
+     * @param velocity Velocity
+     * @param tempo Tempo in BPM
+     */
+    RhythmNoteEvent(float offset, const std::string& division, const std::string& note,
+                    const std::string& status, int velocity, int tempo);
+};
+
+-------------------------------------------------
+Dictionaries.py
+
+/**
+ * @file MidiMappings.h
+ * @brief Defines mappings between MIDI note numbers, note names, and rhythmic divisions.
+ *
+ * This module provides constants and utility functions for converting between
+ * MIDI note numbers and human-readable note names, as well as converting
+ * beat positions to standard rhythmic divisions.
+ *
+ * It serves as a reference for MIDI processing and rhythm interpretation
+ * in the backend.
+ */
+
+#pragma once
+#include <string>
+#include <unordered_map>
+
+/**
+ * @brief Maps MIDI note numbers (21-108) to note names.
+ *
+ * Example: 60 -> "C4"
+ */
+extern const std::unordered_map<int, std::string> midi_notes;
+
+/**
+ * @brief Maps note names to their corresponding MIDI note numbers.
+ *
+ * Example: "C4" -> 60
+ */
+extern const std::unordered_map<std::string, int> notes_to_midi;
+
+/**
+ * @brief Maps beat numbers to rhythmic division names.
+ *
+ * Provides a human-readable label for a given beat position.
+ *
+ * Example: 4 -> "QUARTER"
+ */
+extern const std::unordered_map<int, std::string> beat_to_note_divisions;
+
+/**
+ * @brief Returns a copy of the MIDI note to name mapping.
+ *
+ * @return std::unordered_map<int, std::string> A mapping from MIDI note numbers to note names.
+ */
+std::unordered_map<int, std::string> get_midi_notes();
+
+
+--------------------------------------------------
+Enums
+
+/**
+ * @file MidiEnums.h
+ * @brief Defines enums for pitch wheel offsets, note divisions, and MIDI status codes.
+ *
+ * These enums abstract the details of pitch bending for just intonation,
+ * represent note durations in milliseconds, and encode standard MIDI message
+ * types.
+ */
+
+#pragma once
+
+/**
+ * @enum Pitch
+ * @brief Represents the analog pitch wheel offsets for Just Intonation intervals.
+ *
+ * The values are scaled to the MIDI pitch wheel range [0, 16383], where
+ * 8192 represents no pitch adjustment. Positive and negative offsets indicate
+ * upward or downward pitch bends relative to equal temperament.
+ *
+ * Example usage:
+ * @code
+ * int pitchValue = static_cast<int>(Pitch::major_third_up);
+ * @endcode
+ */
+enum class Pitch : int {
+    minor_second_up = 8673,           /**< 16/15 = +11.731 cents */
+    major_second_up = 8352,           /**< 9/8   = +3.910 cents */
+    major_second_harmonic_up = 9469,  /**< 8/7   = +31.173 cents */
+    major_second_flat_up = 7471,      /**< 10/9  = -17.596 cents */
+    major_second_half_flat_up = 6355, /**< 35/32 = -55.140 cents */
+    minor_third_up = 8833,            /**< 6/5   = +15.641 cents */
+    minor_third_harmonic_up = 6835,   /**< 7/6   = -33.129 cents */
+    major_third_up = 7631,            /**< 5/4   = -13.686 cents */
+    perfect_fourth_up = 8112,         /**< 4/3   = -1.955 cents */
+    perfect_fourth_sharp_up = 8993,   /**< 27/20 = +19.551 cents */
+    tritone_up = 7792,                /**< 45/32 = -9.776 cents */
+    tritone_sharp_up = 8592,          /**< 64/45 = +9.776 cents */
+    perfect_fifth_up = 8272,          /**< 3/2   = +1.955 cents */
+    minor_sixth_up = 8753,            /**< 8/5   = +13.686 cents */
+    major_sixth_up = 7551,            /**< 5/3   = -15.641 cents */
+    major_sixth_sharp_up = 8432,      /**< 27/16 = +5.865 cents */
+    major_sixth_half_flat_up = 6435,  /**< 105/64= +57.095 cents */
+    minor_seventh_up = 8913,          /**< 9/5   = +17.596 cents */
+    minor_harmonic_seventh_up = 6915, /**< 7/4   = -31.173 cents */
+    minor_seventh_symetric_up = 8032, /**< 16/9  = -3.910 cents */
+    major_seventh_up = 7711,          /**< 15/8  = -11.731 cents */
+    
+    minor_second_down = 7711,                /**< 15/16 = -11.731 cents */
+    major_second_down = 8032,                /**< 8/9   = -3.910 cents */
+    major_second_harmonic_down = 6915,       /**< 7/8   = -31.173 cents */
+    major_second_flat_down = 8913,           /**< 9/10  = +17.596 cents */
+    major_second_half_flat_down = 10029,     /**< 32/35 = +55.140 cents */
+    minor_third_down = 7551,                 /**< 5/6   = -15.641 cents */
+    minor_third_harmonic_down = 9549,        /**< 6/7   = +33.129 cents */
+    major_third_down = 8753,                 /**< 4/5   = +13.686 cents */
+    perfect_fourth_down = 8272,              /**< 3/4   = +1.955 cents */
+    perfect_fourth_sharp_down = 7391,        /**< 20/27 = -19.551 cents */
+    tritone_down = 8592,                     /**< 32/45 = +9.776 cents */
+    tritone_sharp_down = 7792,               /**< 45/64 = -9.776 cents */
+    perfect_fifth_down = 8112,               /**< 2/3   = -1.955 cents */
+    minor_sixth_down = 7631,                 /**< 5/8   = -13.686 cents */
+    major_sixth_down = 8833,                 /**< 3/5   = +15.641 cents */
+    major_sixth_sharp_down = 7952,           /**< 16/27 = -5.865 cents */
+    major_sixth_half_flat_down = 9949,       /**< 64/105= -57.095 cents */
+    minor_seventh_down = 7471,               /**< 5/9   = -17.596 cents */
+    minor_harmonic_seventh_down = 9469,      /**< 4/7   = +31.173 cents */
+    minor_seventh_symetric_down = 8352,      /**< 9/16  = +3.910 cents */
+    major_seventh_down = 9153,               /**< 8/15  = +11.731 cents */
+
+    octave = 8192                            /**< 2/1 or 1/2, center pitch wheel value */
+};
+
+/**
+ * @enum NoteDivisions
+ * @brief Represents musical note durations in milliseconds.
+ *
+ * Positive values are note-on durations, negative values are rests of the same length.
+ */
+enum class NoteDivisions : int {
+    WHOLE = 4000,
+    WHOLE_REST = -4000,
+    DOTTED_HALF = 3000,
+    DOTTED_HALF_REST = -3000,
+    HALF = 2000,
+    HALF_REST = -2000,
+    TRIPLET_HALF = 1333,
+    TRIPLET_HALF_REST = -1333,
+    DOTTED_QUARTER = 1500,
+    DOTTED_QUARTER_REST = -1500,
+    QUARTER = 1000,
+    QUARTER_REST = -1000,
+    QUINTUPLET_QUARTER = 800,
+    QUINTUPLET_QUARTER_REST = -800,
+    TRIPLET_QUARTER = 666,
+    TRIPLET_QUARTER_REST = -666,
+    DOTTED_EIGHTH = 750,
+    DOTTED_EIGHTH_REST = -750,
+    SEPTUPLET_QUARTER = 571,
+    SEPTUPLET_QUARTER_REST = -571,
+    EIGHTH = 500,
+    EIGHTH_REST = -500,
+    TRIPLET_EIGHTH = 333,
+    TRIPLET_EIGHTH_REST = -333,
+    DOTTED_SIXTEENTH = 375,
+    DOTTED_SIXTEENTH_REST = -375,
+    SIXTEENTH = 250,
+    SIXTEENTH_REST = -250,
+    TRIPLET_SIXTEENTH = 166,
+    TRIPLET_SIXTEENTH_REST = -166,
+    THIRTYSECOND = 125,
+    THIRTYSECOND_REST = -125,
+    TRIPLET_THIRTYSECOND = 83,
+    TRIPLET_THIRTYSECOND_REST = -83,
+    ZERO = 0
+};
+
+/**
+ * @enum MidiStatus
+ * @brief Standard MIDI message status bytes.
+ */
+enum class MidiStatus : int {
+    NOTE_ON = 144,
+    NOTE_OFF = 128
+};
+
+-------------------------------------
+/**
+ * @file Logging.h
+ * @brief Provides a logging utility for the application, analogous to Python's logging module.
+ *
+ * This utility sets up a logger that writes messages to a file with timestamp, logger name, 
+ * and severity level. Severity levels correspond to standard logging levels: DEBUG, INFO, 
+ * WARNING, ERROR, CRITICAL.
+ *
+ * Usage example:
+ * @code
+ * auto logger = setupLogging("MidiManager", LogLevel::INFO);
+ * logger->info("Initialization complete");
+ * @endcode
+ */
+
+#pragma once
+#include <memory>
+#include <string>
+
+/**
+ * @enum LogLevel
+ * @brief Severity levels for logging messages.
+ */
+enum class LogLevel {
+    DEBUG = 10,
+    INFO = 20,
+    WARNING = 30,
+    ERROR = 40,
+    CRITICAL = 50
+};
+
+/**
+ * @brief Setup logging for the application.
+ *
+ * This function creates or retrieves a logger instance, writes to a file in the
+ * "./jacobs_ladder/logs/" directory, and formats messages with timestamps and level.
+ *
+ * @param app_name Name of the application, also used as the log file name.
+ * @param level Minimum severity level to log.
+ * @return std::shared_ptr to the logger instance.
+ */
+std::shared_ptr<class Logger> setupLogging(const std::string& app_name, LogLevel level = LogLevel::INFO);
+
+------------------------------------
+MidiRecorder.py
+
+/**
+ * @file MidiRecorder.h
+ * @brief Provides a high-resolution MIDI recording utility with threaded saving.
+ *
+ * The MidiRecorder class allows capturing MIDI messages with timestamps based on a high-resolution
+ * performance counter. Messages are stored in memory and can be saved asynchronously to a standard
+ * MIDI (.mid) file. Supports note-on, note-off, and control-change messages.
+ *
+ * @note On POSIX systems (Linux/macOS), a mock high-performance counter is used for testing.
+ *       On Windows, a QPC-based utility provides high-resolution timing.
+ *
+ * Example usage:
+ * @code
+ * auto recorder = std::make_unique<MidiRecorder>(logger);
+ * recorder->start(120);
+ * recorder->recordEvent(144, 60, 100);  // note-on middle C
+ * recorder->stop("my_recording.mid");
+ * @endcode
+ */
+
+#pragma once
+#include <string>
+#include <vector>
+#include <tuple>
+#include <thread>
+#include <atomic>
+#include <memory>
+
+class MidiRecorder {
+public:
+
+    /**
+     * @brief Construct a MidiRecorder instance.
+     * @param logger Shared pointer to a logging facility.
+     */
+    MidiRecorder(std::shared_ptr<class Logger> logger);
+
+    /**
+     * @brief Begin recording MIDI messages.
+     * @param tempo Tempo in beats per minute.
+     *
+     * Initializes internal counters and prepares message storage.
+     * Multiple calls while recording or saving are safely ignored.
+     */
+    void start(int tempo);
+
+    /**
+     * @brief Stop recording and save to file in a background thread.
+     * @param filename Path to the MIDI file to save.
+     *
+     * Safe against multiple calls. If no messages were recorded, the call is ignored.
+     * Actual save occurs in a separate thread to avoid blocking.
+     */
+    void stop(const std::string& filename = "recording.mid");
+
+    /**
+     * @brief Record a single incoming MIDI event.
+     * @param status MIDI status byte (note on/off, control change, etc.).
+     * @param note Note number or control index.
+     * @param velocity Velocity or control value.
+     *
+     * High-resolution timestamps are captured for precise delta-time calculations.
+     * Ignored if the recorder is not active or if a save is in progress.
+     */
+    void recordEvent(int status, int note, int velocity);
+
+private:
+    /**
+     * @brief Internal method to save recorded MIDI messages to a file.
+     * @param filename Output MIDI file path.
+     * @param start_ticks Start time in performance counter ticks.
+     *
+     * Runs in a detached thread. Converts timestamped messages to MIDI delta ticks
+     * and writes to a standard MIDI file format. Clears internal message buffer
+     * and resets flags when finished.
+     */
+    void saveRecording(const std::string& filename, uint64_t start_ticks);
+
+    // Internal flags
+    std::atomic<bool> is_recording;
+    std::atomic<bool> is_saving;
+
+    // High-resolution timing
+    std::unique_ptr<class QpcUtils> qpc;
+    uint64_t start_ticks;
+    uint64_t last_ticks;
+
+    // MIDI storage
+    std::vector<std::tuple<std::tuple<int,int,int>, uint64_t>> messages;
+
+    // Saving thread
+    std::thread saving_thread;
+
+    // Logger
+    std::shared_ptr<class Logger> logger;
+
+    // Tempo
+    int tempo;
+};
+
+--------------------------------------
+PitchInfo:
+
+/**
+ * @file PitchInfo.h
+ * @brief Defines PitchInfo structure for representing just-intonation pitch data and serialization.
+ *
+ * PitchInfo stores both analog pitchwheel values (absolute and relative), the just interval ratio,
+ * deviation in cents, note order, and pitch direction. It provides serialization to a 21-byte format
+ * suitable for sending over UDP.
+ *
+ * A global mapping of pitch names to PitchInfo is provided for common just intervals,
+ * as well as reverse mapping from analog value to pitch name.
+ *
+ * Example usage:
+ * @code
+ * PitchInfo p(8673, 8673 - 8192, "16/15", 11.731, "up", 0);
+ * auto serialized = p.serialize();
+ * std::string pitch_name = getPreferredIntervalName(8673);
+ * @endcode
+ */
+
+#pragma once
+#include <string>
+#include <cstdint>
+#include <array>
+#include <map>
+
+/**
+ * @brief Stores all information about a single pitch in just intonation.
+ */
+struct PitchInfo {
+    uint16_t analog_value_abs;   /**< Absolute pitchwheel value (0–16383, 8192 = no bend) */
+    int16_t analog_value_rel;    /**< Relative deviation from center (8192) */
+    std::string ratio;           /**< Just interval ratio as a string, e.g., "5/4" */
+    float cents;                 /**< Deviation in cents from equal temperament */
+    std::string direction;       /**< "up", "down", or "none" */
+    int16_t note_order;          /**< Optional note order for sorting, -1 if unused */
+
+    /**
+     * @brief Serialize PitchInfo into a fixed-length 21-byte format for UDP transmission.
+     * 
+     * Format:
+     * - analog_value_abs: 2 bytes unsigned short
+     * - analog_value_rel: 2 bytes signed short
+     * - cents: 4 bytes float
+     * - note_order: 2 bytes signed short
+     * - ratio: 10 bytes ASCII, padded with spaces
+     * - direction: 1 byte ('u', 'd', 'n')
+     *
+     * @return std::array<uint8_t, 21> Serialized representation
+     */
+    std::array<uint8_t, 21> serialize() const;
+};
+
+/**
+ * @brief Global map of pitch names to PitchInfo.
+ *
+ * Example:
+ * pitches["major_third_up"] gives the PitchInfo for a major third up.
+ */
+extern const std::map<std::string, PitchInfo> pitches;
+
+/**
+ * @brief Reverse map of analog absolute pitch values to pitch names.
+ */
+extern const std::map<uint16_t, std::string> analogToName;
+
+/**
+ * @brief Get the preferred pitch name given an absolute analog value.
+ * @param analog_value Absolute pitchwheel value.
+ * @return Pitch name string, or empty string if not found.
+ */
+std::string getPreferredIntervalName(uint16_t analog_value);
+
+--------------------------------------
+MidiPlayer.py
+
+/**
+ * @file MidiPlayer.h
+ * @brief Provides functions to play MIDI files via virtual or hardware MIDI ports.
+ *
+ * This module allows playback of standard MIDI files (.mid) through a specified MIDI output port.
+ * It handles connecting to existing ports or virtual ports, timing of note events, and sending
+ * MIDI messages.
+ *
+ * Example usage:
+ * @code
+ * MidiPlayer player;
+ * player.playMidiFile("example.mid", "jacob");
+ * @endcode
+ */
+
+#pragma once
+#include <string>
+
+/**
+ * @class MidiPlayer
+ * @brief Plays a MIDI file through a specified MIDI output port.
+ *
+ * The class handles connecting to a virtual or hardware MIDI port,
+ * streaming messages in time according to the MIDI file's tempo,
+ * and sending them via the MIDI API.
+ */
+class MidiPlayer {
+public:
+    /**
+     * @brief Construct a new MidiPlayer object
+     */
+    MidiPlayer();
+
+    /**
+     * @brief Destroy the MidiPlayer object
+     */
+    ~MidiPlayer();
+
+    /**
+     * @brief Play a MIDI file on a given output port.
+     *
+     * Connects to an existing port with the given name, or prints a warning if not found.
+     * Plays all non-meta MIDI messages with timing based on the MIDI file's tempo.
+     *
+     * @param filename Path to the MIDI file (.mid)
+     * @param portName Name of the MIDI output port (default: "jacob")
+     * @return true if playback started successfully
+     * @return false if the port was not found or file could not be opened
+     */
+    bool playMidiFile(const std::string &filename, const std::string &portName = "jacob");
+
+private:
+    /**
+     * @brief Initialize MIDI output
+     * @param portName Name of the port to connect to
+     * @return true if the port was successfully opened
+     */
+    bool openPort(const std::string &portName);
+
+    /**
+     * @brief Close the MIDI output port and clean up resources
+     */
+    void closePort();
+
+    // Internal MIDI output handler (e.g., RtMidiOut pointer)
+    void *midiOut_; 
+};
+
+-----------------------------------
+InOutQueue
+
+/**
+ * @file InOutQueue.h
+ * @brief Implements a fixed-size in-out queue that maintains the most recent elements.
+ *
+ * This class allows storing a bounded number of elements in a queue.
+ * When the queue exceeds the maximum size, the oldest element is automatically removed.
+ */
+
+#pragma once
+#include <vector>
+
+/**
+ * @class InOutQueue
+ * @brief A fixed-size queue that discards the oldest element when full.
+ *
+ * @tparam T The type of element stored in the queue.
+ */
+template <typename T>
+class InOutQueue {
+public:
+    /**
+     * @brief Construct a new InOutQueue object
+     * 
+     * @param size Maximum number of elements the queue can hold
+     */
+    explicit InOutQueue(size_t size);
+
+    /**
+     * @brief Add a new element to the queue.
+     *
+     * If the queue exceeds the maximum size, the oldest element is removed.
+     *
+     * @param elem The element to enqueue
+     */
+    void enqueue(const T& elem);
+
+    /**
+     * @brief Retrieve the current queue as a vector.
+     *
+     * @return std::vector<T> Copy of the elements in the queue
+     */
+    std::vector<T> getQueue() const;
+
+private:
+    std::vector<T> queue_;   /**< Internal storage for queue elements */
+    size_t maxSize_;         /**< Maximum number of elements in the queue */
+};
+
+--------------------------------------------
+Scales.py
+
+/**
+ * @file Scales.h
+ * @brief Definitions and getter functions for musical scales.
+ *
+ * This file contains definitions of multiple scale objects categorized
+ * into octatonic, heptatonic, hexatonic, and pentatonic scales.
+ * Provides utility functions to retrieve scales as lists or maps
+ * of scale names to notes.
+ */
+
+#pragma once
+
+#include <string>
+#include <vector>
+#include <map>
+
+/**
+ * @class Scale
+ * @brief Represents a musical scale.
+ *
+ * Each scale has a name and a vector of note names.
+ */
+class Scale {
+public:
+    std::string name;             ///< Name of the scale
+    std::vector<std::string> notes; ///< List of note names in the scale
+
+    Scale(const std::string& name, const std::vector<std::string>& notes);
+};
+
+/* -------------------- Octatonic Scales -------------------- */
+
+/** @brief Diminished Scales (Half-Whole version) */
+extern const Scale C_Diminished;
+extern const Scale Db_Diminished;
+extern const Scale D_Diminished;
+
+/* -------------------- Heptatonic Scales -------------------- */
+
+/** @brief Major Scales */
+extern const Scale C_Major;
+extern const Scale Db_Major;
+extern const Scale D_Major;
+extern const Scale Eb_Major;
+extern const Scale E_Major;
+extern const Scale F_Major;
+extern const Scale Gb_Major;
+extern const Scale G_Major;
+extern const Scale Ab_Major;
+extern const Scale A_Major;
+extern const Scale Bb_Major;
+extern const Scale B_Major;
+
+/** @brief Harmonic Minor Scales */
+extern const Scale C_Harmonic_Minor;
+extern const Scale Db_Harmonic_Minor;
+extern const Scale D_Harmonic_Minor;
+extern const Scale Eb_Harmonic_Minor;
+extern const Scale E_Harmonic_Minor;
+extern const Scale F_Harmonic_Minor;
+extern const Scale Gb_Harmonic_Minor;
+extern const Scale G_Harmonic_Minor;
+extern const Scale Ab_Harmonic_Minor;
+extern const Scale A_Harmonic_Minor;
+extern const Scale Bb_Harmonic_Minor;
+extern const Scale B_Harmonic_Minor;
+
+/** @brief Harmonic Major Scales */
+extern const Scale C_Harmonic_Major;
+// ... continue all harmonic major scales similarly
+
+/** @brief Melodic Minor Scales */
+extern const Scale C_Melodic_Minor;
+// ... continue all melodic minor scales similarly
+
+/* -------------------- Hexatonic Scales -------------------- */
+
+/** @brief Whole Tone Scales */
+extern const Scale C_Whole_Tone;
+extern const Scale Db_Whole_Tone;
+
+/* -------------------- Pentatonic Scales -------------------- */
+
+/** @brief Pure Pentatonic Scales */
+extern const Scale C_Pentatonic;
+// ... continue all pentatonic scales
+
+/* -------------------- Scale Getter Functions -------------------- */
+
+/**
+ * @brief Get all diminished scales as a vector
+ * @return std::vector<Scale> containing diminished scales
+ */
+std::vector<Scale> get_diminished_scales();
+
+/**
+ * @brief Get all diminished scales as a map of name -> notes
+ * @return std::map<std::string, std::vector<std::string>>
+ */
+std::map<std::string, std::vector<std::string>> get_diminished_scales_dict();
+
+/**
+ * @brief Get all major scales as a vector
+ */
+std::vector<Scale> get_major_scales();
+
+/**
+ * @brief Get all major scales as a map of name -> notes
+ */
+std::map<std::string, std::vector<std::string>> get_major_scales_dict();
+
+/* Similarly for harmonic_minor, harmonic_major, melodic_minor,
+ * diminished_blues, diminished_harmonic, whole_tone, pentatonic
+ */
+
+
+------------------------------------------------
+TuningUtils.py
+
+/**
+ * @file TuningUtils.h
+ * @brief Utilities for calculating musical tunings, intervals, and pitch offsets.
+ *
+ * Provides functions for:
+ * - Calculating cents offsets from intervals
+ * - Generating MIDI pitch wheel values
+ * - Generating all possible tunings for a given note set
+ * - Detecting cycles in tunings
+ * - Creating and reading JSON tuning configuration files
+ * - Working with n-limit just intonation ratios
+ */
+
+#pragma once
+
+#include <vector>
+#include <tuple>
+#include <set>
+#include <string>
+#include <map>
+#include <fractions>  // hypothetical fraction library for C++ (e.g., Boost.Rational)
+
+/**
+ * @brief Converts a frequency interval into cents.
+ * @param interval The frequency interval
+ * @return Cents equivalent of the interval
+ */
+double calculateCentsFromInterval(double interval);
+
+/**
+ * @brief Calculates the offset from the nearest 100-cent interval.
+ * @param interval The frequency interval
+ * @return Difference in cents from the nearest 100-cent value
+ */
+double calculateCentsOffsetFromInterval(double interval);
+
+/**
+ * @brief Converts a cents offset into an analog MIDI pitch wheel value.
+ * @param centsOffset Offset in cents
+ * @return MIDI pitch wheel value as integer (0-16383)
+ */
+int calculateAnalogPitchWheelValueFromCentsOffset(double centsOffset);
+
+/**
+ * @brief Generate all possible tunings for a list of MIDI notes.
+ * @param notes List of MIDI note numbers
+ * @param root Optional root note index (default: none)
+ * @return A list of tunings. Each tuning is a list of tuples (index, reference index, interval)
+ */
+std::vector<std::vector<std::tuple<int, int, int>>> generateTunings(const std::vector<int>& notes, int root = -1);
+
+/**
+ * @brief Recursively checks if a tuning configuration reaches the root.
+ * @param root The global root index
+ * @param tuning The tuning configuration as a list of tuples (index, ref, interval)
+ * @param idx Current index to check
+ * @param visited Set of visited indices to detect cycles
+ * @return True if the tuning reaches the root, false if a cycle is detected
+ */
+bool reachesRoot(int root, const std::vector<std::tuple<int, int, int>>& tuning, int idx, std::set<int>& visited);
+
+/**
+ * @brief Remove cyclic tunings that do not terminate at the root.
+ * @param tunings List of potential tunings
+ * @param root The root index
+ * @return Filtered list of valid tunings
+ */
+std::vector<std::vector<std::tuple<int, int, int>>> removeCycles(const std::vector<std::vector<std::tuple<int,int,int>>>& tunings, int root);
+
+/**
+ * @brief Adjusts the sign of intervals in tunings to indicate tuning direction relative to root.
+ * @param tunings List of tunings
+ * @return Tunings with signed intervals
+ */
+std::vector<std::vector<std::tuple<int,int,int>>> editSign(const std::vector<std::vector<std::tuple<int,int,int>>>& tunings);
+
+/**
+ * @brief Compute the prime factors of an integer.
+ * @param n The integer to factor
+ * @return Set of prime factors
+ */
+std::set<int> primeFactors(int n);
+
+/**
+ * @brief Generate all frequency ratios using primes up to a limit and max exponent.
+ * @param limit Maximum prime factor to use
+ * @param maxExponent Maximum exponent for each prime (default 2)
+ * @return Sorted vector of fractions representing frequency ratios
+ */
+std::vector<std::pair<int,int>> generateRatios(int limit, int maxExponent = 2); // Fraction as pair<int,int>
+
+/**
+ * @brief Determine the interval corresponding to a ratio.
+ * @param ratio A fraction (numerator/denominator)
+ * @return Interval in semitones (-12 to 12)
+ */
+int determineIntervalBasedOnRatio(const std::pair<int,int>& ratio);
+
+/**
+ * @brief Determine intervals for multiple ratios.
+ * @param ratios Vector of ratios (numerator/denominator)
+ * @return Vector of intervals in semitones
+ */
+std::vector<int> determineIntervalBasedOnRatio(const std::vector<std::pair<int,int>>& ratios);
+
+/**
+ * @brief Create a JSON tuning configuration file for a set of ratios and intervals.
+ * @param ratios Vector of frequency ratios (numerator/denominator)
+ * @param intervals Vector of corresponding intervals in semitones
+ * @param name Name of the output JSON file (without extension)
+ */
+void createTuningConfig(const std::vector<std::pair<int,int>>& ratios, const std::vector<int>& intervals, const std::string& name);
+
+/**
+ * @brief Read a JSON tuning configuration file.
+ * @param name Name of the tuning config (without extension)
+ * @return Map representing the tuning configuration
+ */
+std::map<int, std::vector<std::map<std::string, std::map<std::string,int>>>> readTuningConfig(const std::string& name);
+
+---------------------------------------
+Udp.py
+
+/**
+ * @file UDPUtils.h
+ * @brief Provides UDP sender and receiver utilities for sending and receiving messages.
+ *
+ * This module defines:
+ * - UDPSender: sends JSON-serialized messages or raw bytes over UDP
+ * - UDPReceiver: abstract base class for receiving messages and dispatching them
+ * 
+ * The receiver is intended to be subclassed to implement message-specific dispatch logic.
+ */
+
+#pragma once
+
+#include <string>
+#include <thread>
+#include <vector>
+#include <functional>
+#include <atomic>
+#include <cstdint>
+#include <memory>
+
+/**
+ * @class UDPSender
+ * @brief Sends data over UDP to a specified host and port.
+ */
+class UDPSender {
+public:
+    /**
+     * @brief Construct a UDPSender object.
+     * @param host The hostname or IP to send data to
+     * @param port The UDP port to send data to
+     */
+    UDPSender(const std::string& host, int port);
+
+    ~UDPSender();
+
+    /**
+     * @brief Send a JSON-serializable object over UDP.
+     * @param data Any serializable data
+     */
+    void send(const std::string& data);
+
+    /**
+     * @brief Send raw bytes over UDP.
+     * @param data_bytes Vector of bytes to send
+     */
+    void send_bytes(const std::vector<uint8_t>& data_bytes);
+
+    /**
+     * @brief Stop the sender and close the socket.
+     */
+    void stop();
+
+private:
+    std::string host_;
+    int port_;
+    int sock_fd_;
+};
+
+/**
+ * @class UDPReceiver
+ * @brief Abstract base class for receiving UDP messages.
+ *
+ * Subclass this and implement `dispatch_message()` to process incoming messages.
+ */
+class UDPReceiver {
+public:
+    /**
+     * @brief Construct a UDPReceiver object.
+     * @param host The hostname or IP to bind to
+     * @param port The UDP port to listen on
+     */
+    UDPReceiver(const std::string& host, int port);
+
+    virtual ~UDPReceiver();
+
+    /**
+     * @brief Start the listener thread.
+     */
+    void start_listener();
+
+    /**
+     * @brief Stop the listener and close the socket.
+     */
+    void stop();
+
+protected:
+    /**
+     * @brief Listen for UDP messages on the bound socket.
+     *
+     * This function runs in a separate thread. It blocks until a message is received or
+     * the listener is stopped.
+     */
+    void listen();
+
+    /**
+     * @brief Dispatch an incoming message.
+     *
+     * Must be implemented by subclasses to process messages.
+     * @param data Raw bytes received over UDP
+     */
+    virtual void dispatch_message(const std::vector<uint8_t>& data) = 0;
+
+    std::string host_;
+    int port_;
+    int sock_fd_;
+    std::atomic<bool> running_;
+    std::thread listener_thread_;
+};
+
+---------------------------------------
+Utilities.py
+
+/**
+ * @file Utilities.h
+ * @brief Miscellaneous utility functions for MIDI handling, message packing, and note/tuning operations.
+ *
+ * This module provides:
+ * - Note and octave calculations
+ * - Time division to milliseconds conversion
+ * - MIDI controller configuration parsing
+ * - Harmonic redundancy removal
+ * - Bitmask building for live notes
+ * - Message packing for sending over UDP
+ */
+
+#pragma once
+
+#include <string>
+#include <vector>
+#include <cstdint>
+#include <map>
+#include <optional>
+
+class PitchInfo; // Forward declaration, defined elsewhere
+
+namespace Utilities {
+
+/**
+ * @brief Determine if a note is an octave multiple of any active notes.
+ * 
+ * @param message_heap The currently active note messages as a vector of {note, instance_index, ...}.
+ * @param note The note to check.
+ * @return std::optional<int> Returns the instance index if the note is an octave of an active note, otherwise std::nullopt.
+ */
+std::optional<int> determine_octave(const std::vector<std::vector<int>>& message_heap, int note);
+
+/**
+ * @brief Convert a rhythmic division to a delay time in milliseconds.
+ * 
+ * @param division The rhythmic division (e.g., "WHOLE", "HALF", "QUARTER").
+ * @param tempo The tempo in beats per minute.
+ * @return int Delay time in milliseconds.
+ */
+int division_to_dt(const std::string& division, int tempo);
+
+/**
+ * @brief Convert a letter note to its corresponding MIDI root number.
+ * 
+ * @param letter_note The letter note (e.g., "A", "C♯").
+ * @return int The MIDI note number.
+ */
+int get_root_from_letter_note(const std::string& letter_note);
+
+/**
+ * @brief Parse a YAML MIDI controller configuration file and validate its fields.
+ * 
+ * @param config_path Path to the YAML configuration file.
+ * @param print_config If true, prints the parsed configuration.
+ * @return std::map<std::string, std::any> Parsed configuration.
+ */
+std::map<std::string, std::any> parse_midi_controller_config(const std::string& config_path, bool print_config=false);
+
+/**
+ * @brief Remove harmonically redundant intervals from a message heap.
+ * 
+ * @param message_heap Vector of messages: {note, instance_index, status, velocity}.
+ * @return std::vector<std::vector<int>> Sorted message heap with redundant harmonies removed.
+ */
+std::vector<std::vector<int>> remove_harmonically_redundant_intervals(const std::vector<std::vector<int>>& message_heap);
+
+/**
+ * @brief Convert special characters in a scale name to ASCII-safe equivalents.
+ * 
+ * @param name The original scale name.
+ * @return std::string Sanitized scale name.
+ */
+std::string sanitize_scale_name(const std::string& name);
+
+/**
+ * @brief Build a bitmask representing currently sounding MIDI notes from a message heap.
+ * 
+ * @param message_heap Vector of messages: {note, instance_index, status, velocity}.
+ * @return std::vector<int> Bitmask array of live notes.
+ */
+std::vector<int> build_live_keys_bitmask(const std::vector<std::vector<int>>& message_heap);
+
+/**
+ * @brief Pack message data for sending over UDP.
+ * 
+ * @param message_heap MIDI messages: {note, instance_index, status, velocity}.
+ * @param candidate_scales Names of candidate scales.
+ * @param bitmasks Bitmask per candidate scale.
+ * @return std::vector<uint8_t> Packed UDP datagram.
+ */
+std::vector<uint8_t> pack_message(const std::vector<std::vector<int>>& message_heap,
+                                  const std::vector<std::string>& candidate_scales,
+                                  const std::vector<std::vector<int>>& bitmasks);
+
+/**
+ * @brief Pack the entire message heap into bytes, including pitch information.
+ * 
+ * @param message_heap Each entry: {note, instance_index, status, velocity, PitchInfo}.
+ * @return std::vector<uint8_t> Packed message heap.
+ */
+std::vector<uint8_t> pack_message_heap(const std::vector<std::vector<std::any>>& message_heap);
+
+/**
+ * @brief Build a UDP message with a 32-bit message type prepended to payload.
+ * 
+ * @param message_type 32-bit message type.
+ * @param payload_bytes Payload as bytes.
+ * @return std::vector<uint8_t> Combined UDP datagram.
+ */
+std::vector<uint8_t> build_udp_message(uint32_t message_type, const std::vector<uint8_t>& payload_bytes);
+
+} // namespace Utilities
