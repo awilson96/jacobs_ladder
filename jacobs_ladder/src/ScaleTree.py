@@ -74,20 +74,26 @@ class ScaleTree:
         valid_max_interval_df = valid_scale_length_df[valid_max_interval_mask].reset_index(drop=True)
         
         valid_max_interval_list = valid_max_interval_df.values.tolist()
-        valid_max_interval_list_str = [''.join(map(str, sublist)) for sublist in valid_max_interval_list]
-        valid_max_interval_list_str = [s + s[0] for s in valid_max_interval_list_str]
+        valid_max_interval_list_str = ['|'.join(map(str, sublist)) for sublist in valid_max_interval_list]
+        valid_max_interval_list_str = [s + '|' + s.split('|')[0] for s in valid_max_interval_list_str]
         for scale in valid_max_interval_list_str.copy():
             counts = 0
-            for i in range(len(scale)-1):
-                if scale[i] == scale[i+1] and scale[i] == "1":
+            parts = scale.split('|')
+            for i in range(len(parts)-1):
+                if parts[i] == parts[i+1] == "1":
                     counts += 1
             if counts > max_consecutive_ones:
                 valid_max_interval_list_str.remove(scale)
                 
-        valid_max_interval_list_str = [val[0:-1] for val in valid_max_interval_list_str]
-        valid_max_interval_list_char = [list(string) for string in valid_max_interval_list_str]
-        valid_max_interval_list_ints = [[int(char) for char in char_list] for char_list in valid_max_interval_list_char]
-        
+        # Remove appended first interval
+        valid_max_interval_list_str = [
+            '|'.join(val.split('|')[:-1]) for val in valid_max_interval_list_str
+        ]
+
+        # Convert back safely
+        valid_max_interval_list_ints = [
+            list(map(int, string.split('|'))) for string in valid_max_interval_list_str
+        ]
         
         seen = set()
         for row in valid_max_interval_list_ints.copy():
@@ -180,5 +186,5 @@ class ScaleTree:
 
 if __name__ == "__main__":
     st = ScaleTree(scale_length=12, convert_intervals=True)
-    st.generate_scales(max_degree=8, max_interval=9, num_consecutive_ones=1, disp=True)
+    st.generate_scales(max_degree=8, max_interval=11, num_consecutive_ones=1, disp=True)
     # st.convert_intervals_to_notes()

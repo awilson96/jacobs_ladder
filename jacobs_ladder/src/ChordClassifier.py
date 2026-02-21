@@ -34,6 +34,28 @@ NOTE_NAMES = ["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"]
 # Canonical templates by degree
 # You fill these in manually
 # -----------------------------
+CHORD_TEMPLATES_3 = {
+    "Chromatic":                                [1,1,10],
+    "Maj7(no3)(no5)(add 2)":                    [2,9,1],
+    "MinorMajor7(no5)":                         [3,8,1],
+    "Major7(no5)":                              [4,7,1],
+    "sus#4":                                    [6,1,5],
+    "Major7 b5(no3)":                           [6,5,1],
+    "Major7(no3)":                              [7,4,1],
+    "3(add #2)":                                [3,1,8],
+    "Minor(add 2)(no5)":                        [2,1,9],
+    "Major(add 2)(no5)":                        [2,2,8],
+    "Minor7(no5)":                              [3,7,2],
+    "7(no5)":                                   [4,6,2],
+    "sus2":                                     [2,5,5],
+    "Minor7 b5(no3)":                           [6,4,2],
+    "Minor7 (no3)":                             [7,3,2],
+    "Diminished":                               [3,3,6],
+    "Minor":                                    [3,4,5],
+    "Major":                                    [4,3,5],
+    "Augmented":                                [4,4,4],
+}
+
 CHORD_TEMPLATES_4 = {
     "Major7":                                   [4,3,4,1],
     "Major7(no5)(add2)":                        [2,2,7,1],
@@ -170,8 +192,6 @@ CHORD_TEMPLATES_6 = {
     "Harmonic Major(no4,no5)(add #2) Bebop":    [2,1,1,4,3,1],
     "Major Scale(no6) b5 Bebop":                [2,2,1,1,5,1],
     "Major Scale(no4,no6)(add #2) Bebop":       [2,1,1,5,2,1],
-    # "": [],
-    # "": [],
 }
 CHORD_TEMPLATES_7 = {
     "Diminished Scale(no8)":                    [1,2,1,2,1,2,3],
@@ -208,6 +228,7 @@ CHORD_TEMPLATES_8 = {
 }
 
 TEMPLATES_BY_DEGREE = {
+    3: CHORD_TEMPLATES_3,
     4: CHORD_TEMPLATES_4,
     5: CHORD_TEMPLATES_5,
     6: CHORD_TEMPLATES_6,
@@ -297,13 +318,15 @@ def classify_csv(path: Path):
     print(f"Wrote {out_path}")
 
 if __name__ == "__main__":
-    input = Path("possible_scales/degree_4_interval_9_nco_1.csv")
+    input = Path("possible_scales/degree_3_interval_11_nco_1.csv")
     classify_csv(input)
-    input = Path("possible_scales/degree_5_interval_9_nco_1.csv")
+    input = Path("possible_scales/degree_4_interval_11_nco_1.csv")
     classify_csv(input)
-    input = Path("possible_scales/degree_6_interval_9_nco_1.csv")
+    input = Path("possible_scales/degree_5_interval_11_nco_1.csv")
     classify_csv(input)
-    input = Path("possible_scales/degree_7_interval_9_nco_1.csv")
+    input = Path("possible_scales/degree_6_interval_11_nco_1.csv")
     classify_csv(input)
-    input = Path("possible_scales/degree_8_interval_9_nco_1.csv")
+    input = Path("possible_scales/degree_7_interval_11_nco_1.csv")
+    classify_csv(input)
+    input = Path("possible_scales/degree_8_interval_11_nco_1.csv")
     classify_csv(input)
