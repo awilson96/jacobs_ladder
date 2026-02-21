@@ -120,26 +120,15 @@ class JustIntonation:
                             message_heap[current_msg_index][4] = msg[4]
                             break
             else:
-                min_diff = (-1, 108)
-                differences = [(note - oct) for oct in octaves]
-                
-                for idx, diff in enumerate(differences):
-                    if abs(diff) < min_diff[1]:
-                        min_diff = (idx, abs(diff))
-                shortest_difference = differences[min_diff[0]]
-                if shortest_difference == -1:
-                    message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["major_seventh_up"])]
-                elif shortest_difference == -2:
-                    message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["minor_seventh_up"])]
-                elif shortest_difference == -3:
-                    message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["major_sixth_up"])]
-                elif shortest_difference == -4:
-                    message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["minor_sixth_up"])]
-                elif shortest_difference == -5:
-                    message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["perfect_fifth_up"])]
-                elif shortest_difference == -6:
-                    message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["tritone_up"])]
-                elif shortest_difference == 1:
+                # Only consider octaves strictly below the note
+                positive_differences = [(note - oct) for oct in octaves if (note - oct) > 0]
+
+                if not positive_differences:
+                    self.logger.error("[JI] No positive interval found... Re-examine dynamic tuning logic")
+                    message_heap[current_msg_index][4] = pitches[get_preferred_interval_name(self.tuning["octave"])]
+                else:
+                    shortest_difference = min(positive_differences)
+                if shortest_difference == 1:
                     message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["minor_second_up"])]
                 elif shortest_difference == 2:
                     message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["major_second_up"])]
@@ -151,6 +140,18 @@ class JustIntonation:
                     message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["perfect_fourth_up"])]
                 elif shortest_difference == 6:
                     message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["tritone_up"])]
+                elif shortest_difference == 7:
+                    message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["perfect_fifth_up"])]
+                elif shortest_difference == 8:
+                    message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["minor_sixth_up"])]
+                elif shortest_difference == 9:
+                    message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["major_sixth_up"])]
+                elif shortest_difference == 10:
+                    message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["minor_seventh_up"])]
+                elif shortest_difference == 11:
+                    message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["major_seventh_up"])]
+                elif shortest_difference == 12:
+                    message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["octave"])]
                 else:
                     self.logger.error("[JI] shortest_difference value was invalid... Re-examine dynamic tuning logic")
                     message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["octave"])]
@@ -174,26 +175,15 @@ class JustIntonation:
                             message_heap[current_msg_index][4] = msg[4]
                             break
             else:
-                min_diff = (-1, 108)
-                differences = [(note - oct) for oct in octaves]
-                
-                for idx, diff in enumerate(differences):
-                    if abs(diff) < min_diff[1]:
-                        min_diff = (idx, abs(diff))
-                shortest_difference = differences[min_diff[0]]
-                if shortest_difference == -1:
-                    message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["major_seventh_up"])]
-                elif shortest_difference == -2:
-                    message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["minor_seventh_up"])]
-                elif shortest_difference == -3:
-                    message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["major_sixth_up"])]
-                elif shortest_difference == -4:
-                    message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["minor_sixth_up"])]
-                elif shortest_difference == -5:
-                    message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["perfect_fifth_up"])]
-                elif shortest_difference == -6:
-                    message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["tritone_up"])]
-                elif shortest_difference == 1:
+                # Only consider octaves strictly below the note
+                positive_differences = [(note - oct) for oct in octaves if (note - oct) > 0]
+
+                if not positive_differences:
+                    self.logger.error("[JI] No positive interval found... Re-examine dynamic tuning logic")
+                    message_heap[current_msg_index][4] = pitches[get_preferred_interval_name(self.tuning["octave"])]
+                else:
+                    shortest_difference = min(positive_differences)
+                if shortest_difference == 1:
                     message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["minor_second_up"])]
                 elif shortest_difference == 2:
                     message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["major_second_up"])]
@@ -205,8 +195,20 @@ class JustIntonation:
                     message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["perfect_fourth_up"])]
                 elif shortest_difference == 6:
                     message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["tritone_up"])]
+                elif shortest_difference == 7:
+                    message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["perfect_fifth_up"])]
+                elif shortest_difference == 8:
+                    message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["minor_sixth_up"])]
+                elif shortest_difference == 9:
+                    message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["major_sixth_up"])]
+                elif shortest_difference == 10:
+                    message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["minor_seventh_up"])]
+                elif shortest_difference == 11:
+                    message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["major_seventh_up"])]
+                elif shortest_difference == 12:
+                    message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["octave"])]
                 else:
-                    self.logger.error("[JI] shortest_difference value was invalid... Re-examine static tuning logic")
+                    self.logger.error("[JI] shortest_difference value was invalid... Re-examine dynamic tuning logic")
                     message_heap[message_heap.index(current_msg)][4] = pitches[get_preferred_interval_name(self.tuning["octave"])]
 
             pitch_bend_msg = self.get_pitch_bend_message(message_heap_elem=message_heap[current_msg_index])
@@ -214,8 +216,26 @@ class JustIntonation:
             return tuning_index, pitch_bend_msg, message_heap
         
         elif self.tuning_mode == "just-intonation":
-            # TODO: Make JI algo
-            pass
+            note = current_msg[0]
+            tuning_index = determine_octave(message_heap=message_heap, note=note)
+            octaves = [octave for octave in range(self.root + 12, 109, 12)]
+            octaves += [octave for octave in range(self.root - 12, 20, -12)]
+            octaves += [self.root]
+
+            current_msg_index = message_heap.index(current_msg)
+            if note in octaves:
+                if tuning_index is not None:
+                    for msg in message_heap:
+                        if msg[1] == tuning_index:
+                            message_heap[current_msg_index][4] = msg[4]
+                            break
+            reduced_message_heap = remove_harmonically_redundant_intervals(message_heap=message_heap)
+
+            print(reduced_message_heap)
+
+            pitch_bend_msg = self.get_pitch_bend_message(message_heap_elem=message_heap[current_msg_index])
+            return tuning_index, pitch_bend_msg, message_heap
+            
         else:
             return None
         
