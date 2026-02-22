@@ -1,11 +1,11 @@
 intervals,notes,identification
-"1,1,2,8",,Unknown
-"1,1,3,7",,Unknown
-"1,1,4,6",,Unknown
-"1,1,5,5",,Unknown
-"1,1,6,4",,Unknown
-"1,1,7,3",,Unknown
-"1,1,8,2",,Unknown
+"1,1,2,8","C,Db,D,E",Major(add 2)(add b2)(no 5)
+"7,1,1,3","C,G,Ab,A",6(no3)(add b6)
+"4,6,1,1","C,E,Bb,B",Major7(no5)(add b7)
+"1,1,5,5","C,Db,D,G",sus2(add b2)
+"4,1,1,6","C,E,F,Gb",Major b5(add 4)
+"7,3,1,1","C,G,Bb,B",Major7(no3)(add b7)
+"2,1,1,8","C,D,Eb,E",Major(no5)(add 2)(add b2)
 "1,2,1,8","C,Db,Eb,E",Half-Whole
 "2,2,7,1","C,D,E,B",Major7(no5)(add2)
 "1,2,3,6","C,Db,Eb,Gb",Diminished b2

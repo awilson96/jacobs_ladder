@@ -105,7 +105,14 @@ CHORD_TEMPLATES_4 = {
     "7(add 2)":                                 [2,2,6,2],
     "Minor(add 4)":                             [3,2,2,5],
     "Major(add 2)":                             [2,2,3,5],
-    "7sus4":                                    [5,2,3,2]
+    "7sus4":                                    [5,2,3,2],
+    "Major(add 2)(add b2)(no 5)":               [1,1,2,8],
+    "6(no3)(add b6)":                           [7,1,1,3],
+    "Major7(no5)(add b7)":                      [4,6,1,1],
+    "sus2(add b2)":                             [1,1,5,5],
+    "Major b5(add 4)":                          [4,1,1,6],
+    "Major7(no3)(add b7)":                      [7,3,1,1],
+    "Major(no5)(add 2)(add b2)":                [2,1,1,8]
 }
 
 CHORD_TEMPLATES_5 = {
