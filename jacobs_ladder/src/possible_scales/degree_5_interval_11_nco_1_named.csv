@@ -1,25 +1,25 @@
 intervals,notes,identification
-"1,1,2,1,7",,Unknown
-"1,1,2,2,6",,Unknown
-"1,1,2,3,5",,Unknown
-"1,1,2,4,4",,Unknown
-"1,1,2,5,3",,Unknown
-"1,1,2,6,2",,Unknown
-"1,1,3,1,6",,Unknown
-"1,1,3,2,5",,Unknown
-"1,1,3,3,4",,Unknown
-"1,1,3,4,3",,Unknown
-"1,1,3,5,2",,Unknown
-"1,1,4,1,5",,Unknown
-"1,1,4,2,4",,Unknown
-"1,1,4,3,3",,Unknown
-"1,1,4,4,2",,Unknown
-"1,1,5,1,4",,Unknown
-"1,1,5,2,3",,Unknown
-"1,1,5,3,2",,Unknown
-"1,1,6,1,3",,Unknown
-"1,1,6,2,2",,Unknown
-"1,1,7,1,2",,Unknown
+"1,1,2,1,7","C,Db,D,E,F",Major(no5)(add 4)(add b2)
+"2,2,6,1,1","C,D,E,Bb,B",Major 7(add 2)(add b7)
+"1,1,2,3,5","C,Db,D,E,G",Major(add 2)(add b2)
+"1,1,2,4,4","C,Db,D,E,Ab",Augmented(add 2)(add b2)
+"3,1,1,2,5","C,Eb,E,F,G",Major(add #2)(add 4)
+"1,1,2,6,2","C,Db,D,E,Bb",7(no5)(add b2)(add 2)
+"3,1,6,1,1","C,Eb,E,Bb,B",Major7(no5)(add #2)(add b7)
+"2,5,1,1,3","C,D,G,Ab,A",sus2(add b6)(add 6)
+"3,4,1,1,3","C,Eb,G,Ab,A",Minor6(add b6)
+"4,3,1,1,3","C,E,G,Ab,A",Major6(add b6)
+"2,1,1,3,5","C,D,Eb,E,G",Major(add 2)(add #2)
+"1,1,4,1,5","C,Db,D,Gb,G",sus2(add b2)(add b5)
+"2,4,1,1,4","C,D,Gb,G,Ab",sus2(add b5)(add #5)
+"4,3,3,1,1","C,E,G,Bb,B",Major7(add b7)
+"4,2,1,1,4","C,E,Gb,G,Ab",Major(add b5)(add #5)
+"4,1,1,5,1","C,E,F,Gb,B",Major7 b5(add 4)
+"1,1,5,2,3","C,Db,D,G,A",sus2(add b2)(add 6)
+"1,1,5,3,2","C,Db,D,G,Bb",7sus2(add b2)
+"1,3,1,1,6","C,Db,E,F,Gb",Major b5(add b2)(add 4)
+"2,2,1,1,6","C,D,E,F,Gb",Major b5(add 2)(add 4)
+"2,1,1,7,1","C,D,Eb,E,B",Major7(no5)(add2)(add #2)
 "1,2,1,2,6","C,Db,Eb,E,Gb","Diminished(add b2,#2)"
 "1,2,1,3,5","C,Db,Eb,E,G","Major(add b2,#2)"
 "4,4,1,2,1","C,E,Ab,A,B",Augmented7(add6)

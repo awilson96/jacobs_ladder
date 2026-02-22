@@ -153,7 +153,28 @@ CHORD_TEMPLATES_5 = {
     "MinorMajor7(add 2) #5":                    [2,1,5,3,1],
     "Augmented7(add6)":                         [4,4,1,2,1],
     "Major(add b2,#2)":                         [1,2,1,3,5],
-    "Diminished(add b2,#2)":                    [1,2,1,2,6]
+    "Diminished(add b2,#2)":                    [1,2,1,2,6],
+    "Major(no5)(add 4)(add b2)":                [1,1,2,1,7],
+    "Major 7(add 2)(add b7)":                   [2,2,6,1,1],
+    "Major(add 2)(add b2)":                     [1,1,2,3,5],
+    "Augmented(add 2)(add b2)":                 [1,1,2,4,4],
+    "Major(add #2)(add 4)":                     [3,1,1,2,5],
+    "7(no5)(add b2)(add 2)":                    [1,1,2,6,2],
+    "Major7(no5)(add #2)(add b7)":              [3,1,6,1,1],
+    "sus2(add b6)(add 6)":                      [2,5,1,1,3],
+    "Minor6(add b6)":                           [3,4,1,1,3],
+    "Major6(add b6)":                           [4,3,1,1,3],
+    "Major(add 2)(add #2)":                     [2,1,1,3,5],
+    "sus2(add b2)(add b5)":                     [1,1,4,1,5],
+    "sus2(add b5)(add #5)":                     [2,4,1,1,4],
+    "Major7(add b7)":                           [4,3,3,1,1],
+    "Major(add b5)(add #5)":                    [4,2,1,1,4],
+    "Major7 b5(add 4)":                         [4,1,1,5,1],
+    "sus2(add b2)(add 6)":                      [1,1,5,2,3],
+    "7sus2(add b2)":                            [1,1,5,3,2],
+    "Major b5(add b2)(add 4)":                  [1,3,1,1,6],
+    "Major b5(add 2)(add 4)":                   [2,2,1,1,6],
+    "Major7(no5)(add2)(add #2)":                [2,1,1,7,1]
 }
 
 CHORD_TEMPLATES_6 = {
