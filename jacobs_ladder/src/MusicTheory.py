@@ -2,10 +2,10 @@ import logging
 from collections import Counter
 from copy import deepcopy
 
+from .ChordClassifier import get_degree_2_chord_dict, get_degree_3_chord_dict, get_degree_4_chord_dict, get_degree_5_chord_dict, get_degree_6_chord_dict, get_degree_7_chord_dict, get_degree_8_chord_dict
 from .DataClasses import Scale
 from .Dictionaries import get_midi_notes
 from .Queue import InOutQueue
-from .TriadDefinitions import TriadDefinitions
 from .Scales import *
 from .Logging import setup_logging
 from .Utilities import remove_harmonically_redundant_intervals
@@ -40,9 +40,14 @@ class MusicTheory:
         self.diminished_harmonic_scales:  list[Scale]                 = get_diminished_harmonic_scales()
         self.whole_tone_scales:           list[Scale]                 = get_whole_tone_scales()
         self.pentatonic_scales:           list[Scale]                 = get_pentatonic_scales()
-        
-        # Used for matching triads in a more robust way
-        self.triad_definitions = TriadDefinitions()
+
+        self.degree_2_chord_lookup: dict = get_degree_2_chord_dict()
+        self.degree_3_chord_lookup: dict = get_degree_3_chord_dict()
+        self.degree_4_chord_lookup: dict = get_degree_4_chord_dict()
+        self.degree_5_chord_lookup: dict = get_degree_5_chord_dict()
+        self.degree_6_chord_lookup: dict = get_degree_6_chord_dict()
+        self.degree_7_chord_lookup: dict = get_degree_7_chord_dict()
+        self.degree_8_chord_lookup: dict = get_degree_8_chord_dict()
 
         # History of at most the last 5 lists of candidate keys used to determine the key uniquely at a given point in time
         # TODO: Determine the optimum lookback period (more than 5, less than 5?)
@@ -66,20 +71,16 @@ class MusicTheory:
         notes: list[int] = [note[0] for note in sorted_message_heap]
         instance_indices: list[int] = [indices[1] for indices in sorted_message_heap]
 
-        intervals: list[int] = self.get_intervals(notes)
+        intervals: tuple[int] = self.get_intervals(notes)
         
         if len(intervals) == 0:
             return f" "
         elif len(intervals) == 1:
-            diads = self.get_diad(intervals)
-            self.logger.debug(f"[MT] {diads=}")
-            return f"{diads}"      
-            
+            diad = self.degree_2_chord_lookup[intervals]
+            return f"{diad}"      
         elif len(intervals) == 2:      
-            triad_log, triad_internal = self.get_triad(intervals, notes)
-            self.logger.debug(f"[MT] {triad_log=}")
-            return triad_internal      
-        
+            triad = self.degree_3_chord_lookup[intervals]
+            return f"{triad}"      
         elif len(intervals) == 3:      
             tetrad = self.get_tetrad(intervals, notes)
             self.logger.debug(f"[MT] {tetrad=}")
@@ -229,24 +230,24 @@ class MusicTheory:
             logging.info(f"Queue is not yet populated with at least {self.QUEUE_SIZE} elements. Play at least 5 different chords to use this feature.")
             return None
 
-    def get_intervals(self, notes: list[int]):
-        """Determine the intervals between notes
+    def get_intervals(self, notes: list[int]) -> tuple[int, ...]:
+        """Determine the intervals between notes.
 
         Args:
             notes (list[int]): A list of unsorted integer notes
 
         Returns:
-            list[int]: A sorted list of the intervals from the lowest note to the highest note
+            tuple[int, ...]: A sorted tuple of intervals from lowest to highest note
         """
-        intervals = []
-
         sorted_notes = sorted(notes)
-        if len(sorted_notes) > 1:
-            for idx in range(len(sorted_notes) - 1):
-                intervals.append(notes[idx + 1] - notes[idx])
 
-        
-        return intervals
+        if len(sorted_notes) < 2:
+            return tuple()
+
+        return tuple(
+            (sorted_notes[i + 1] - sorted_notes[i]) % 12
+            for i in range(len(sorted_notes) - 1)
+        )
 
     def get_diad(self, intervals: list[int]):
         """

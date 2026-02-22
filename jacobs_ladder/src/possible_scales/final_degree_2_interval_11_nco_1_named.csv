@@ -1,13 +1,12 @@
 variant_intervals,identification
 1,Half Step
-11,Half Step 1 inversion
 2,Major 2nd
-10,Major 2nd 1 inversion
 3,Minor 3rd
-9,Minor 3rd 1 inversion
 4,Major 3rd
-8,Major 3rd 1 inversion
 5,Perfect Fourth
-7,Perfect Fourth 1 inversion
 6,Tritone
-6,Tritone 1 inversion
+7,Perfect Fifth
+8,Minor 6th
+9,Major 6th
+10,Minor 7th
+11,Major 7th

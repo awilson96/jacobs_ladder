@@ -377,7 +377,7 @@ def generate_variants(intervals):
     return variants
 
 
-def generate_variants_csv(input_csv, output_csv):
+def generate_variants_csv(input_csv, output_csv) -> dict:
     variant_map = {}
 
     with open(input_csv, newline='', encoding='utf-8') as infile, \
@@ -393,48 +393,83 @@ def generate_variants_csv(input_csv, output_csv):
             intervals = [int(x.strip()) for x in row["intervals"].split(",")]
             identification = row["identification"].strip()
 
+            # ----- DIAD EXCEPTION -----
+            if len(intervals) == 2:
+                # Only generate root position (single window)
+                variant = (intervals[0],)
+
+                writer.writerow({
+                    "variant_intervals": str(intervals[0]),
+                    "identification": identification
+                })
+
+                variant_map[variant] = identification
+                continue
+            # --------------------------
+
             variants = generate_variants(intervals)
 
             for i, variant in enumerate(variants):
 
-                # Root position = unchanged
                 if i == 0:
                     full_identification = identification
                 else:
                     full_identification = f"{identification} {i} inversion"
 
-                # Write verification CSV
                 writer.writerow({
                     "variant_intervals": ",".join(map(str, variant)),
                     "identification": full_identification
                 })
 
-                # Build hashmap
                 variant_map[variant] = full_identification
 
     return variant_map
 
+def generate_final_csvs():
+    input = Path("jacobs_ladder/src/possible_scales/degree_2_interval_11_nco_1.csv")
+    classify_csv(input)
+    input = Path("jacobs_ladder/src/possible_scales/degree_3_interval_11_nco_1.csv")
+    classify_csv(input)
+    input = Path("jacobs_ladder/src/possible_scales/degree_4_interval_11_nco_1.csv")
+    classify_csv(input)
+    input = Path("jacobs_ladder/src/possible_scales/degree_5_interval_11_nco_1.csv")
+    classify_csv(input)
+    input = Path("jacobs_ladder/src/possible_scales/degree_6_interval_11_nco_1.csv")
+    classify_csv(input)
+    input = Path("jacobs_ladder/src/possible_scales/degree_7_interval_11_nco_1.csv")
+    classify_csv(input)
+    input = Path("jacobs_ladder/src/possible_scales/degree_8_interval_11_nco_1.csv")
+    classify_csv(input)
+
+def get_degree_2_chord_dict():
+    return generate_variants_csv("jacobs_ladder/src/possible_scales/degree_2_interval_11_nco_1_named.csv","jacobs_ladder/src/possible_scales/final_degree_2_interval_11_nco_1_named.csv")
+
+def get_degree_3_chord_dict():
+    return generate_variants_csv("jacobs_ladder/src/possible_scales/degree_3_interval_11_nco_1_named.csv","jacobs_ladder/src/possible_scales/final_degree_3_interval_11_nco_1_named.csv")
+
+def get_degree_4_chord_dict():
+    return generate_variants_csv("jacobs_ladder/src/possible_scales/degree_4_interval_11_nco_1_named.csv","jacobs_ladder/src/possible_scales/final_degree_4_interval_11_nco_1_named.csv")
+
+def get_degree_5_chord_dict():
+    return generate_variants_csv("jacobs_ladder/src/possible_scales/degree_5_interval_11_nco_1_named.csv","jacobs_ladder/src/possible_scales/final_degree_5_interval_11_nco_1_named.csv")
+
+def get_degree_6_chord_dict():
+    return generate_variants_csv("jacobs_ladder/src/possible_scales/degree_6_interval_11_nco_1_named.csv","jacobs_ladder/src/possible_scales/final_degree_6_interval_11_nco_1_named.csv")
+
+def get_degree_7_chord_dict():
+    return generate_variants_csv("jacobs_ladder/src/possible_scales/degree_7_interval_11_nco_1_named.csv","jacobs_ladder/src/possible_scales/final_degree_7_interval_11_nco_1_named.csv")
+
+def get_degree_8_chord_dict():
+    return generate_variants_csv("jacobs_ladder/src/possible_scales/degree_8_interval_11_nco_1_named.csv","jacobs_ladder/src/possible_scales/final_degree_8_interval_11_nco_1_named.csv")
+
 
 if __name__ == "__main__":
-    input = Path("possible_scales/degree_2_interval_11_nco_1.csv")
-    classify_csv(input)
-    input = Path("possible_scales/degree_3_interval_11_nco_1.csv")
-    classify_csv(input)
-    input = Path("possible_scales/degree_4_interval_11_nco_1.csv")
-    classify_csv(input)
-    input = Path("possible_scales/degree_5_interval_11_nco_1.csv")
-    classify_csv(input)
-    input = Path("possible_scales/degree_6_interval_11_nco_1.csv")
-    classify_csv(input)
-    input = Path("possible_scales/degree_7_interval_11_nco_1.csv")
-    classify_csv(input)
-    input = Path("possible_scales/degree_8_interval_11_nco_1.csv")
-    classify_csv(input)
-
-    degree_2_chord_lookup = generate_variants_csv("possible_scales/degree_2_interval_11_nco_1_named.csv","possible_scales/final_degree_2_interval_11_nco_1_named.csv")
-    degree_3_chord_lookup = generate_variants_csv("possible_scales/degree_3_interval_11_nco_1_named.csv","possible_scales/final_degree_3_interval_11_nco_1_named.csv")
-    degree_4_chord_lookup = generate_variants_csv("possible_scales/degree_4_interval_11_nco_1_named.csv","possible_scales/final_degree_4_interval_11_nco_1_named.csv")
-    degree_5_chord_lookup = generate_variants_csv("possible_scales/degree_5_interval_11_nco_1_named.csv","possible_scales/final_degree_5_interval_11_nco_1_named.csv")
-    degree_6_chord_lookup = generate_variants_csv("possible_scales/degree_6_interval_11_nco_1_named.csv","possible_scales/final_degree_6_interval_11_nco_1_named.csv")
-    degree_7_chord_lookup = generate_variants_csv("possible_scales/degree_7_interval_11_nco_1_named.csv","possible_scales/final_degree_7_interval_11_nco_1_named.csv")
-    degree_8_chord_lookup = generate_variants_csv("possible_scales/degree_8_interval_11_nco_1_named.csv","possible_scales/final_degree_8_interval_11_nco_1_named.csv")
+    # generate_final_csvs()
+    get_degree_2_chord_dict()
+    get_degree_3_chord_dict()
+    get_degree_4_chord_dict()
+    get_degree_5_chord_dict()
+    get_degree_6_chord_dict()
+    get_degree_7_chord_dict()
+    get_degree_8_chord_dict()
+    

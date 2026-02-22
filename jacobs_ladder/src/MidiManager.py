@@ -278,6 +278,7 @@ class MidiController:
             chord = self.music_theory.determine_chord(self.message_heap)
             candidate_scales, bitmasks = self.music_theory.get_candidate_scales(message_heap=self.message_heap, scale_includes=self.scale_includes)
             key = self.music_theory.find_key()
+            print(chord)
 
             self.logger.debug(f"[MM] {chord=}")
             self.logger.debug(f"[MM] {candidate_scales=}")
