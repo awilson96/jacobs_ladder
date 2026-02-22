@@ -231,7 +231,7 @@ class JustIntonation:
                             break
             reduced_message_heap = remove_harmonically_redundant_intervals(message_heap=message_heap)
 
-            print(reduced_message_heap)
+            # print(reduced_message_heap)
 
             pitch_bend_msg = self.get_pitch_bend_message(message_heap_elem=message_heap[current_msg_index])
             return tuning_index, pitch_bend_msg, message_heap

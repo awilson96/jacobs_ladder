@@ -72,9 +72,11 @@ class MusicTheory:
         instance_indices: list[int] = [indices[1] for indices in sorted_message_heap]
 
         intervals: tuple[int] = self.get_intervals(notes)
+
+        print(intervals)
         
         if len(intervals) == 0:
-            return f" "
+            return f"{self.int_note[notes[0]]}"
         elif len(intervals) == 1:
             diad = self.degree_2_chord_lookup[intervals]
             return f"{diad}"      
@@ -82,9 +84,20 @@ class MusicTheory:
             triad = self.degree_3_chord_lookup[intervals]
             return f"{triad}"      
         elif len(intervals) == 3:      
-            tetrad = self.get_tetrad(intervals, notes)
-            self.logger.debug(f"[MT] {tetrad=}")
-            return tetrad
+            tetrad = self.degree_4_chord_lookup[intervals]
+            return f"{tetrad}"
+        elif len(intervals) == 4:      
+            pentatonic = self.degree_5_chord_lookup[intervals]
+            return f"{pentatonic}"
+        elif len(intervals) == 5:      
+            sexatonic = self.degree_6_chord_lookup[intervals]
+            return f"{sexatonic}"
+        elif len(intervals) == 6:      
+            heptatonic = self.degree_7_chord_lookup[intervals]
+            return f"{heptatonic}"
+        elif len(intervals) == 7:      
+            octotonic = self.degree_8_chord_lookup[intervals]
+            return f"{octotonic}"
         else:
             return None
     
@@ -231,22 +244,24 @@ class MusicTheory:
             return None
 
     def get_intervals(self, notes: list[int]) -> tuple[int, ...]:
-        """Determine the intervals between notes.
+        """Determine intervals relative to the root note (lowest note).
 
         Args:
             notes (list[int]): A list of unsorted integer notes
 
         Returns:
-            tuple[int, ...]: A sorted tuple of intervals from lowest to highest note
+            tuple[int, ...]: Intervals from root to each other note (mod 12)
         """
         sorted_notes = sorted(notes)
 
         if len(sorted_notes) < 2:
             return tuple()
 
+        root = sorted_notes[0]
+
         return tuple(
-            (sorted_notes[i + 1] - sorted_notes[i]) % 12
-            for i in range(len(sorted_notes) - 1)
+            (note - root) % 12
+            for note in sorted_notes[1:]
         )
 
     def get_diad(self, intervals: list[int]):
