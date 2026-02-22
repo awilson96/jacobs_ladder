@@ -1,0 +1,12 @@
+intervals,notes,identification
+"1,11","C,Db",Half Step
+"2,10","C,D",Major 2nd
+"3,9","C,Eb",Minor 3rd
+"4,8","C,E",Major 3rd
+"5,7","C,F",Perfect Fourth
+"6,6","C,Gb",Tritone
+"7,5","C,G",Perfect Fifth
+"8,4","C,Ab",Minor 6th
+"9,3","C,A",Major 6th
+"10,2","C,Bb",Minor 7th
+"11,1","C,B",Major 7th

@@ -34,6 +34,20 @@ NOTE_NAMES = ["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"]
 # Canonical templates by degree
 # You fill these in manually
 # -----------------------------
+CHORD_TEMPLATES_2 = {
+    "Half Step":                                [1,11],
+    "Major 2nd":                                [2,10],
+    "Minor 3rd":                                [3,9],
+    "Major 3rd":                                [4,8],
+    "Perfect Fourth":                           [5,7],
+    "Tritone":                                  [6,6],
+    "Perfect Fifth":                            [7,5],
+    "Minor 6th":                                [8,4],
+    "Major 6th":                                [9,3],
+    "Minor 7th":                                [10,2],
+    "Major 7th":                                [11,1]
+}
+
 CHORD_TEMPLATES_3 = {
     "Chromatic":                                [1,1,10],
     "Maj7(no3)(no5)(add 2)":                    [2,9,1],
@@ -228,6 +242,7 @@ CHORD_TEMPLATES_8 = {
 }
 
 TEMPLATES_BY_DEGREE = {
+    2: CHORD_TEMPLATES_2,
     3: CHORD_TEMPLATES_3,
     4: CHORD_TEMPLATES_4,
     5: CHORD_TEMPLATES_5,
@@ -318,6 +333,8 @@ def classify_csv(path: Path):
     print(f"Wrote {out_path}")
 
 if __name__ == "__main__":
+    input = Path("possible_scales/degree_2_interval_11_nco_1.csv")
+    classify_csv(input)
     input = Path("possible_scales/degree_3_interval_11_nco_1.csv")
     classify_csv(input)
     input = Path("possible_scales/degree_4_interval_11_nco_1.csv")
