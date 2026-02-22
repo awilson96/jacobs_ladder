@@ -154,7 +154,7 @@ CHORD_TEMPLATES_5 = {
     "Augmented7(add6)":                         [4,4,1,2,1],
     "Major(add b2,#2)":                         [1,2,1,3,5],
     "Diminished(add b2,#2)":                    [1,2,1,2,6],
-    "Major(no5)(add 4)(add b2)":                [1,1,2,1,7],
+    "Major(no5)(add b2)(add 2)(add 4)":         [1,1,2,1,7],
     "Major 7(add 2)(add b7)":                   [2,2,6,1,1],
     "Major(add 2)(add b2)":                     [1,1,2,3,5],
     "Augmented(add 2)(add b2)":                 [1,1,2,4,4],
@@ -360,6 +360,61 @@ def classify_csv(path: Path):
 
     print(f"Wrote {out_path}")
 
+def generate_variants(intervals):
+    """
+    intervals: list[int] that sum to 12
+    returns: list of tuple variants (each length n-1)
+    """
+    n = len(intervals)
+    variants = []
+
+    for i in range(n):
+        variant = []
+        for j in range(n - 1):
+            variant.append(intervals[(i + j) % n])
+        variants.append(tuple(variant))
+
+    return variants
+
+
+def generate_variants_csv(input_csv, output_csv):
+    variant_map = {}
+
+    with open(input_csv, newline='', encoding='utf-8') as infile, \
+         open(output_csv, 'w', newline='', encoding='utf-8') as outfile:
+
+        reader = csv.DictReader(infile)
+
+        fieldnames = ["variant_intervals", "identification"]
+        writer = csv.DictWriter(outfile, fieldnames=fieldnames)
+        writer.writeheader()
+
+        for row in reader:
+            intervals = [int(x.strip()) for x in row["intervals"].split(",")]
+            identification = row["identification"].strip()
+
+            variants = generate_variants(intervals)
+
+            for i, variant in enumerate(variants):
+
+                # Root position = unchanged
+                if i == 0:
+                    full_identification = identification
+                else:
+                    full_identification = f"{identification} {i} inversion"
+
+                # Write verification CSV
+                writer.writerow({
+                    "variant_intervals": ",".join(map(str, variant)),
+                    "identification": full_identification
+                })
+
+                # Build hashmap
+                variant_map[variant] = full_identification
+
+    return variant_map
+
+
 if __name__ == "__main__":
     input = Path("possible_scales/degree_2_interval_11_nco_1.csv")
     classify_csv(input)
@@ -375,3 +430,11 @@ if __name__ == "__main__":
     classify_csv(input)
     input = Path("possible_scales/degree_8_interval_11_nco_1.csv")
     classify_csv(input)
+
+    degree_2_chord_lookup = generate_variants_csv("possible_scales/degree_2_interval_11_nco_1_named.csv","possible_scales/final_degree_2_interval_11_nco_1_named.csv")
+    degree_3_chord_lookup = generate_variants_csv("possible_scales/degree_3_interval_11_nco_1_named.csv","possible_scales/final_degree_3_interval_11_nco_1_named.csv")
+    degree_4_chord_lookup = generate_variants_csv("possible_scales/degree_4_interval_11_nco_1_named.csv","possible_scales/final_degree_4_interval_11_nco_1_named.csv")
+    degree_5_chord_lookup = generate_variants_csv("possible_scales/degree_5_interval_11_nco_1_named.csv","possible_scales/final_degree_5_interval_11_nco_1_named.csv")
+    degree_6_chord_lookup = generate_variants_csv("possible_scales/degree_6_interval_11_nco_1_named.csv","possible_scales/final_degree_6_interval_11_nco_1_named.csv")
+    degree_7_chord_lookup = generate_variants_csv("possible_scales/degree_7_interval_11_nco_1_named.csv","possible_scales/final_degree_7_interval_11_nco_1_named.csv")
+    degree_8_chord_lookup = generate_variants_csv("possible_scales/degree_8_interval_11_nco_1_named.csv","possible_scales/final_degree_8_interval_11_nco_1_named.csv")

@@ -1,5 +1,5 @@
 intervals,notes,identification
-"1,1,2,1,7","C,Db,D,E,F",Major(no5)(add 4)(add b2)
+"1,1,2,1,7","C,Db,D,E,F",Major(no5)(add b2)(add 2)(add 4)
 "2,2,6,1,1","C,D,E,Bb,B",Major 7(add 2)(add b7)
 "1,1,2,3,5","C,Db,D,E,G",Major(add 2)(add b2)
 "1,1,2,4,4","C,Db,D,E,Ab",Augmented(add 2)(add b2)

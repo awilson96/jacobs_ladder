@@ -1,0 +1,337 @@
+variant_intervals,identification
+"1,1,2,1,2","Major Scale(no6,no7)(add b2) Bebop"
+"1,2,1,2,5","Major Scale(no6,no7)(add b2) Bebop 1 inversion"
+"2,1,2,5,1","Major Scale(no6,no7)(add b2) Bebop 2 inversion"
+"1,2,5,1,1","Major Scale(no6,no7)(add b2) Bebop 3 inversion"
+"2,5,1,1,2","Major Scale(no6,no7)(add b2) Bebop 4 inversion"
+"5,1,1,2,1","Major Scale(no6,no7)(add b2) Bebop 5 inversion"
+"1,1,2,1,3","Harmonic Major(no5,no7)(add b2) Bebop"
+"1,2,1,3,4","Harmonic Major(no5,no7)(add b2) Bebop 1 inversion"
+"2,1,3,4,1","Harmonic Major(no5,no7)(add b2) Bebop 2 inversion"
+"1,3,4,1,1","Harmonic Major(no5,no7)(add b2) Bebop 3 inversion"
+"3,4,1,1,2","Harmonic Major(no5,no7)(add b2) Bebop 4 inversion"
+"4,1,1,2,1","Harmonic Major(no5,no7)(add b2) Bebop 5 inversion"
+"1,1,2,1,4","Major Scale(no5,no7)(add b2) Bebop"
+"1,2,1,4,3","Major Scale(no5,no7)(add b2) Bebop 1 inversion"
+"2,1,4,3,1","Major Scale(no5,no7)(add b2) Bebop 2 inversion"
+"1,4,3,1,1","Major Scale(no5,no7)(add b2) Bebop 3 inversion"
+"4,3,1,1,2","Major Scale(no5,no7)(add b2) Bebop 4 inversion"
+"3,1,1,2,1","Major Scale(no5,no7)(add b2) Bebop 5 inversion"
+"5,2,1,1,2","Major(add b6) Bebop(no2,no3)"
+"2,1,1,2,1","Major(add b6) Bebop(no2,no3) 1 inversion"
+"1,1,2,1,5","Major(add b6) Bebop(no2,no3) 2 inversion"
+"1,2,1,5,2","Major(add b6) Bebop(no2,no3) 3 inversion"
+"2,1,5,2,1","Major(add b6) Bebop(no2,no3) 4 inversion"
+"1,5,2,1,1","Major(add b6) Bebop(no2,no3) 5 inversion"
+"2,2,1,5,1",Major(no5) #6 Bebop
+"2,1,5,1,1",Major(no5) #6 Bebop 1 inversion
+"1,5,1,1,2",Major(no5) #6 Bebop 2 inversion
+"5,1,1,2,2",Major(no5) #6 Bebop 3 inversion
+"1,1,2,2,1",Major(no5) #6 Bebop 4 inversion
+"1,2,2,1,5",Major(no5) #6 Bebop 5 inversion
+"1,1,2,2,2",-3Major Scale(rootless) #2 Bebop
+"1,2,2,2,4",-3Major Scale(rootless) #2 Bebop 1 inversion
+"2,2,2,4,1",-3Major Scale(rootless) #2 Bebop 2 inversion
+"2,2,4,1,1",-3Major Scale(rootless) #2 Bebop 3 inversion
+"2,4,1,1,2",-3Major Scale(rootless) #2 Bebop 4 inversion
+"4,1,1,2,2",-3Major Scale(rootless) #2 Bebop 5 inversion
+"3,1,1,2,2",Major Scale(no7) #2 Bebop
+"1,1,2,2,3",Major Scale(no7) #2 Bebop 1 inversion
+"1,2,2,3,3",Major Scale(no7) #2 Bebop 2 inversion
+"2,2,3,3,1",Major Scale(no7) #2 Bebop 3 inversion
+"2,3,3,1,1",Major Scale(no7) #2 Bebop 4 inversion
+"3,3,1,1,2",Major Scale(no7) #2 Bebop 5 inversion
+"2,2,4,2,1","Harmonic Major(no4,no5)(add b7) Bebop"
+"2,4,2,1,1","Harmonic Major(no4,no5)(add b7) Bebop 1 inversion"
+"4,2,1,1,2","Harmonic Major(no4,no5)(add b7) Bebop 2 inversion"
+"2,1,1,2,2","Harmonic Major(no4,no5)(add b7) Bebop 3 inversion"
+"1,1,2,2,4","Harmonic Major(no4,no5)(add b7) Bebop 4 inversion"
+"1,2,2,4,2","Harmonic Major(no4,no5)(add b7) Bebop 5 inversion"
+"1,1,2,3,1","Harmonic Major(no4,no7)(add b2) Bebop"
+"1,2,3,1,4","Harmonic Major(no4,no7)(add b2) Bebop 1 inversion"
+"2,3,1,4,1","Harmonic Major(no4,no7)(add b2) Bebop 2 inversion"
+"3,1,4,1,1","Harmonic Major(no4,no7)(add b2) Bebop 3 inversion"
+"1,4,1,1,2","Harmonic Major(no4,no7)(add b2) Bebop 4 inversion"
+"4,1,1,2,3","Harmonic Major(no4,no7)(add b2) Bebop 5 inversion"
+"1,1,2,3,2",Pentatonic(add b2) Bebop
+"1,2,3,2,3",Pentatonic(add b2) Bebop 1 inversion
+"2,3,2,3,1",Pentatonic(add b2) Bebop 2 inversion
+"3,2,3,1,1",Pentatonic(add b2) Bebop 3 inversion
+"2,3,1,1,2",Pentatonic(add b2) Bebop 4 inversion
+"3,1,1,2,3",Pentatonic(add b2) Bebop 5 inversion
+"1,1,2,3,3",7(add b2)(add 2) Bebop
+"1,2,3,3,2",7(add b2)(add 2) Bebop 1 inversion
+"2,3,3,2,1",7(add b2)(add 2) Bebop 2 inversion
+"3,3,2,1,1",7(add b2)(add 2) Bebop 3 inversion
+"3,2,1,1,2",7(add b2)(add 2) Bebop 4 inversion
+"2,1,1,2,3",7(add b2)(add 2) Bebop 5 inversion
+"3,1,1,2,4",Major Scale(no6) #2 Bebop
+"1,1,2,4,1",Major Scale(no6) #2 Bebop 1 inversion
+"1,2,4,1,3",Major Scale(no6) #2 Bebop 2 inversion
+"2,4,1,3,1",Major Scale(no6) #2 Bebop 3 inversion
+"4,1,3,1,1",Major Scale(no6) #2 Bebop 4 inversion
+"1,3,1,1,2",Major Scale(no6) #2 Bebop 5 inversion
+"2,2,1,1,2",Harmonic Major(no7) b5 Bebop
+"2,1,1,2,4",Harmonic Major(no7) b5 Bebop 1 inversion
+"1,1,2,4,2",Harmonic Major(no7) b5 Bebop 2 inversion
+"1,2,4,2,2",Harmonic Major(no7) b5 Bebop 3 inversion
+"2,4,2,2,1",Harmonic Major(no7) b5 Bebop 4 inversion
+"4,2,2,1,1",Harmonic Major(no7) b5 Bebop 5 inversion
+"2,5,1,2,1","Harmonic Major(no2,no3)(add b7) Bebop"
+"5,1,2,1,1","Harmonic Major(no2,no3)(add b7) Bebop 1 inversion"
+"1,2,1,1,2","Harmonic Major(no2,no3)(add b7) Bebop 2 inversion"
+"2,1,1,2,5","Harmonic Major(no2,no3)(add b7) Bebop 3 inversion"
+"1,1,2,5,1","Harmonic Major(no2,no3)(add b7) Bebop 4 inversion"
+"1,2,5,1,2","Harmonic Major(no2,no3)(add b7) Bebop 5 inversion"
+"2,4,1,1,3",Harmonic Major(no3) #4 Bebop
+"4,1,1,3,1",Harmonic Major(no3) #4 Bebop 1 inversion
+"1,1,3,1,2",Harmonic Major(no3) #4 Bebop 2 inversion
+"1,3,1,2,4",Harmonic Major(no3) #4 Bebop 3 inversion
+"3,1,2,4,1",Harmonic Major(no3) #4 Bebop 4 inversion
+"1,2,4,1,1",Harmonic Major(no3) #4 Bebop 5 inversion
+"3,3,1,1,3",Harmonic Minor(no2) #4 Bebop
+"3,1,1,3,1",Harmonic Minor(no2) #4 Bebop 1 inversion
+"1,1,3,1,3",Harmonic Minor(no2) #4 Bebop 2 inversion
+"1,3,1,3,3",Harmonic Minor(no2) #4 Bebop 3 inversion
+"3,1,3,3,1",Harmonic Minor(no2) #4 Bebop 4 inversion
+"1,3,3,1,1",Harmonic Minor(no2) #4 Bebop 5 inversion
+"2,1,1,3,1","Harmonic Major(no4,no7)(add #2) Bebop"
+"1,1,3,1,4","Harmonic Major(no4,no7)(add #2) Bebop 1 inversion"
+"1,3,1,4,2","Harmonic Major(no4,no7)(add #2) Bebop 2 inversion"
+"3,1,4,2,1","Harmonic Major(no4,no7)(add #2) Bebop 3 inversion"
+"1,4,2,1,1","Harmonic Major(no4,no7)(add #2) Bebop 4 inversion"
+"4,2,1,1,3","Harmonic Major(no4,no7)(add #2) Bebop 5 inversion"
+"2,1,4,1,1","Melodic Minor(no4,no7)(add b6) Bebop"
+"1,4,1,1,3","Melodic Minor(no4,no7)(add b6) Bebop 1 inversion"
+"4,1,1,3,2","Melodic Minor(no4,no7)(add b6) Bebop 2 inversion"
+"1,1,3,2,1","Melodic Minor(no4,no7)(add b6) Bebop 3 inversion"
+"1,3,2,1,4","Melodic Minor(no4,no7)(add b6) Bebop 4 inversion"
+"3,2,1,4,1","Melodic Minor(no4,no7)(add b6) Bebop 5 inversion"
+"2,2,3,1,1",Pentatonic(add b6) Bebop
+"2,3,1,1,3",Pentatonic(add b6) Bebop 1 inversion
+"3,1,1,3,2",Pentatonic(add b6) Bebop 2 inversion
+"1,1,3,2,2",Pentatonic(add b6) Bebop 3 inversion
+"1,3,2,2,3",Pentatonic(add b6) Bebop 4 inversion
+"3,2,2,3,1",Pentatonic(add b6) Bebop 5 inversion
+"2,1,1,3,2",Pentatonic(add #2) Bebop
+"1,1,3,2,3",Pentatonic(add #2) Bebop 1 inversion
+"1,3,2,3,2",Pentatonic(add #2) Bebop 2 inversion
+"3,2,3,2,1",Pentatonic(add #2) Bebop 3 inversion
+"2,3,2,1,1",Pentatonic(add #2) Bebop 4 inversion
+"3,2,1,1,3",Pentatonic(add #2) Bebop 5 inversion
+"3,1,1,3,3",Harmonic Major(no5) #2 Bebop
+"1,1,3,3,1",Harmonic Major(no5) #2 Bebop 1 inversion
+"1,3,3,1,3",Harmonic Major(no5) #2 Bebop 2 inversion
+"3,3,1,3,1",Harmonic Major(no5) #2 Bebop 3 inversion
+"3,1,3,1,1",Harmonic Major(no5) #2 Bebop 4 inversion
+"1,3,1,1,3",Harmonic Major(no5) #2 Bebop 5 inversion
+"2,1,1,3,3",7(add 2)(add #2) Bebop
+"1,1,3,3,2",7(add 2)(add #2) Bebop 1 inversion
+"1,3,3,2,2",7(add 2)(add #2) Bebop 2 inversion
+"3,3,2,2,1",7(add 2)(add #2) Bebop 3 inversion
+"3,2,2,1,1",7(add 2)(add #2) Bebop 4 inversion
+"2,2,1,1,3",7(add 2)(add #2) Bebop 5 inversion
+"2,1,1,3,4",Major7(add 2)(add #2) Bebop
+"1,1,3,4,1",Major7(add 2)(add #2) Bebop 1 inversion
+"1,3,4,1,2",Major7(add 2)(add #2) Bebop 2 inversion
+"3,4,1,2,1",Major7(add 2)(add #2) Bebop 3 inversion
+"4,1,2,1,1",Major7(add 2)(add #2) Bebop 4 inversion
+"1,2,1,1,3",Major7(add 2)(add #2) Bebop 5 inversion
+"2,3,1,1,4",Major7sus2sus4 Bebop
+"3,1,1,4,1",Major7sus2sus4 Bebop 1 inversion
+"1,1,4,1,2",Major7sus2sus4 Bebop 2 inversion
+"1,4,1,2,3",Major7sus2sus4 Bebop 3 inversion
+"4,1,2,3,1",Major7sus2sus4 Bebop 4 inversion
+"1,2,3,1,1",Major7sus2sus4 Bebop 5 inversion
+"1,1,4,1,3","Melodic Minor(no2,no6)(add b5) Bebop"
+"1,4,1,3,2","Melodic Minor(no2,no6)(add b5) Bebop 1 inversion"
+"4,1,3,2,1","Melodic Minor(no2,no6)(add b5) Bebop 2 inversion"
+"1,3,2,1,1","Melodic Minor(no2,no6)(add b5) Bebop 3 inversion"
+"3,2,1,1,4","Melodic Minor(no2,no6)(add b5) Bebop 4 inversion"
+"2,1,1,4,1","Melodic Minor(no2,no6)(add b5) Bebop 5 inversion"
+"2,1,3,1,1",Harmonic Minor(no7) #4 Bebop
+"1,3,1,1,4",Harmonic Minor(no7) #4 Bebop 1 inversion
+"3,1,1,4,2",Harmonic Minor(no7) #4 Bebop 2 inversion
+"1,1,4,2,1",Harmonic Minor(no7) #4 Bebop 3 inversion
+"1,4,2,1,3",Harmonic Minor(no7) #4 Bebop 4 inversion
+"4,2,1,3,1",Harmonic Minor(no7) #4 Bebop 5 inversion
+"1,4,2,2,2",Major Scale(no3) b2 Bebop
+"4,2,2,2,1",Major Scale(no3) b2 Bebop 1 inversion
+"2,2,2,1,1",Major Scale(no3) b2 Bebop 2 inversion
+"2,2,1,1,4",Major Scale(no3) b2 Bebop 3 inversion
+"2,1,1,4,2",Major Scale(no3) b2 Bebop 4 inversion
+"1,1,4,2,2",Major Scale(no3) b2 Bebop 5 inversion
+"2,1,1,4,3","Harmonic Major(no4,no5)(add #2) Bebop"
+"1,1,4,3,1","Harmonic Major(no4,no5)(add #2) Bebop 1 inversion"
+"1,4,3,1,2","Harmonic Major(no4,no5)(add #2) Bebop 2 inversion"
+"4,3,1,2,1","Harmonic Major(no4,no5)(add #2) Bebop 3 inversion"
+"3,1,2,1,1","Harmonic Major(no4,no5)(add #2) Bebop 4 inversion"
+"1,2,1,1,4","Harmonic Major(no4,no5)(add #2) Bebop 5 inversion"
+"2,2,1,1,5",Major Scale(no6) b5 Bebop
+"2,1,1,5,1",Major Scale(no6) b5 Bebop 1 inversion
+"1,1,5,1,2",Major Scale(no6) b5 Bebop 2 inversion
+"1,5,1,2,2",Major Scale(no6) b5 Bebop 3 inversion
+"5,1,2,2,1",Major Scale(no6) b5 Bebop 4 inversion
+"1,2,2,1,1",Major Scale(no6) b5 Bebop 5 inversion
+"2,1,1,5,2","Major Scale(no4,no6)(add #2) Bebop"
+"1,1,5,2,1","Major Scale(no4,no6)(add #2) Bebop 1 inversion"
+"1,5,2,1,2","Major Scale(no4,no6)(add #2) Bebop 2 inversion"
+"5,2,1,2,1","Major Scale(no4,no6)(add #2) Bebop 3 inversion"
+"2,1,2,1,1","Major Scale(no4,no6)(add #2) Bebop 4 inversion"
+"1,2,1,1,5","Major Scale(no4,no6)(add #2) Bebop 5 inversion"
+"1,2,1,2,1","Diminished Scale(no7,no8)"
+"2,1,2,1,5","Diminished Scale(no7,no8) 1 inversion"
+"1,2,1,5,1","Diminished Scale(no7,no8) 2 inversion"
+"2,1,5,1,2","Diminished Scale(no7,no8) 3 inversion"
+"1,5,1,2,1","Diminished Scale(no7,no8) 4 inversion"
+"5,1,2,1,2","Diminished Scale(no7,no8) 5 inversion"
+"2,1,2,2,4",Harmonic Minor(no6)
+"1,2,2,4,1",Harmonic Minor(no6) 1 inversion
+"2,2,4,1,2",Harmonic Minor(no6) 2 inversion
+"2,4,1,2,1",Harmonic Minor(no6) 3 inversion
+"4,1,2,1,2",Harmonic Minor(no6) 4 inversion
+"1,2,1,2,2",Harmonic Minor(no6) 5 inversion
+"2,1,2,3,3",Harmonic Minor(no5)
+"1,2,3,3,1",Harmonic Minor(no5) 1 inversion
+"2,3,3,1,2",Harmonic Minor(no5) 2 inversion
+"3,3,1,2,1",Harmonic Minor(no5) 3 inversion
+"3,1,2,1,2",Harmonic Minor(no5) 4 inversion
+"1,2,1,2,3",Harmonic Minor(no5) 5 inversion
+"2,1,2,4,2",Melodic Minor(no5)
+"1,2,4,2,1",Melodic Minor(no5) 1 inversion
+"2,4,2,1,2",Melodic Minor(no5) 2 inversion
+"4,2,1,2,1",Melodic Minor(no5) 3 inversion
+"2,1,2,1,2",Melodic Minor(no5) 4 inversion
+"1,2,1,2,4",Melodic Minor(no5) 5 inversion
+"4,1,2,1,3",Harmonic Major(no2)
+"1,2,1,3,1",Harmonic Major(no2) 1 inversion
+"2,1,3,1,4",Harmonic Major(no2) 2 inversion
+"1,3,1,4,1",Harmonic Major(no2) 3 inversion
+"3,1,4,1,2",Harmonic Major(no2) 4 inversion
+"1,4,1,2,1",Harmonic Major(no2) 5 inversion
+"1,2,1,3,2","Diminished Scale(no5,no8)"
+"2,1,3,2,3","Diminished Scale(no5,no8) 1 inversion"
+"1,3,2,3,1","Diminished Scale(no5,no8) 2 inversion"
+"3,2,3,1,2","Diminished Scale(no5,no8) 3 inversion"
+"2,3,1,2,1","Diminished Scale(no5,no8) 4 inversion"
+"3,1,2,1,3","Diminished Scale(no5,no8) 5 inversion"
+"2,1,2,1,3",-2Harmonic Major(rootless)
+"1,2,1,3,3",-2Harmonic Major(rootless) 1 inversion
+"2,1,3,3,2",-2Harmonic Major(rootless) 2 inversion
+"1,3,3,2,1",-2Harmonic Major(rootless) 3 inversion
+"3,3,2,1,2",-2Harmonic Major(rootless) 4 inversion
+"3,2,1,2,1",-2Harmonic Major(rootless) 5 inversion
+"2,1,4,1,3",Harmonic Minor(no4)
+"1,4,1,3,1",Harmonic Minor(no4) 1 inversion
+"4,1,3,1,2",Harmonic Minor(no4) 2 inversion
+"1,3,1,2,1",Harmonic Minor(no4) 3 inversion
+"3,1,2,1,4",Harmonic Minor(no4) 4 inversion
+"1,2,1,4,1",Harmonic Minor(no4) 5 inversion
+"2,1,4,2,2",Melodic Minor(no4)
+"1,4,2,2,1",Melodic Minor(no4) 1 inversion
+"4,2,2,1,2",Melodic Minor(no4) 2 inversion
+"2,2,1,2,1",Melodic Minor(no4) 3 inversion
+"2,1,2,1,4",Melodic Minor(no4) 4 inversion
+"1,2,1,4,2",Melodic Minor(no4) 5 inversion
+"2,2,1,2,4",Major Scale(no6)
+"2,1,2,4,1",Major Scale(no6) 1 inversion
+"1,2,4,1,2",Major Scale(no6) 2 inversion
+"2,4,1,2,2",Major Scale(no6) 3 inversion
+"4,1,2,2,1",Major Scale(no6) 4 inversion
+"1,2,2,1,2",Major Scale(no6) 5 inversion
+"2,2,1,3,3",Harmonic Major(no5)
+"2,1,3,3,1",Harmonic Major(no5) 1 inversion
+"1,3,3,1,2",Harmonic Major(no5) 2 inversion
+"3,3,1,2,2",Harmonic Major(no5) 3 inversion
+"3,1,2,2,1",Harmonic Major(no5) 4 inversion
+"1,2,2,1,3",Harmonic Major(no5) 5 inversion
+"2,2,1,4,2",Major Scale(no5)
+"2,1,4,2,1",Major Scale(no5) 1 inversion
+"1,4,2,1,2",Major Scale(no5) 2 inversion
+"4,2,1,2,2",Major Scale(no5) 3 inversion
+"2,1,2,2,1",Major Scale(no5) 4 inversion
+"1,2,2,1,4",Major Scale(no5) 5 inversion
+"4,1,2,2,2",Major Scale(no2)
+"1,2,2,2,1",Major Scale(no2) 1 inversion
+"2,2,2,1,4",Major Scale(no2) 2 inversion
+"2,2,1,4,1",Major Scale(no2) 3 inversion
+"2,1,4,1,2",Major Scale(no2) 4 inversion
+"1,4,1,2,2",Major Scale(no2) 5 inversion
+"1,2,2,2,2",-2Melodic Minor(rootless)
+"2,2,2,2,3",-2Melodic Minor(rootless) 1 inversion
+"2,2,2,3,1",-2Melodic Minor(rootless) 2 inversion
+"2,2,3,1,2",-2Melodic Minor(rootless) 3 inversion
+"2,3,1,2,2",-2Melodic Minor(rootless) 4 inversion
+"3,1,2,2,2",-2Melodic Minor(rootless) 5 inversion
+"2,1,2,2,2",Melodic Minor(no7)
+"1,2,2,2,3",Melodic Minor(no7) 1 inversion
+"2,2,2,3,2",Melodic Minor(no7) 2 inversion
+"2,2,3,2,1",Melodic Minor(no7) 3 inversion
+"2,3,2,1,2",Melodic Minor(no7) 4 inversion
+"3,2,1,2,2",Melodic Minor(no7) 5 inversion
+"2,2,3,1,3",Harmonic Major(no4)
+"2,3,1,3,1",Harmonic Major(no4) 1 inversion
+"3,1,3,1,2",Harmonic Major(no4) 2 inversion
+"1,3,1,2,2",Harmonic Major(no4) 3 inversion
+"3,1,2,2,3",Harmonic Major(no4) 4 inversion
+"1,2,2,3,1",Harmonic Major(no4) 5 inversion
+"2,2,1,2,2",Major Scale(no7)
+"2,1,2,2,3",Major Scale(no7) 1 inversion
+"1,2,2,3,2",Major Scale(no7) 2 inversion
+"2,2,3,2,2",Major Scale(no7) 3 inversion
+"2,3,2,2,1",Major Scale(no7) 4 inversion
+"3,2,2,1,2",Major Scale(no7) 5 inversion
+"1,2,3,1,2","Diminished Scale(no4,no8)"
+"2,3,1,2,3","Diminished Scale(no4,no8) 1 inversion"
+"3,1,2,3,1","Diminished Scale(no4,no8) 2 inversion"
+"1,2,3,1,2","Diminished Scale(no4,no8) 3 inversion"
+"2,3,1,2,3","Diminished Scale(no4,no8) 4 inversion"
+"3,1,2,3,1","Diminished Scale(no4,no8) 5 inversion"
+"1,2,3,1,3","Diminished Scale(no4,no7)"
+"2,3,1,3,2","Diminished Scale(no4,no7) 1 inversion"
+"3,1,3,2,1","Diminished Scale(no4,no7) 2 inversion"
+"1,3,2,1,2","Diminished Scale(no4,no7) 3 inversion"
+"3,2,1,2,3","Diminished Scale(no4,no7) 4 inversion"
+"2,1,2,3,1","Diminished Scale(no4,no7) 5 inversion"
+"2,3,2,1,3",Harmonic Major(no3)
+"3,2,1,3,1",Harmonic Major(no3) 1 inversion
+"2,1,3,1,2",Harmonic Major(no3) 2 inversion
+"1,3,1,2,3",Harmonic Major(no3) 3 inversion
+"3,1,2,3,2",Harmonic Major(no3) 4 inversion
+"1,2,3,2,1",Harmonic Major(no3) 5 inversion
+"2,3,2,2,2",Major Scale(no3)
+"3,2,2,2,1",Major Scale(no3) 1 inversion
+"2,2,2,1,2",Major Scale(no3) 2 inversion
+"2,2,1,2,3",Major Scale(no3) 3 inversion
+"2,1,2,3,2",Major Scale(no3) 4 inversion
+"1,2,3,2,2",Major Scale(no3) 5 inversion
+"1,3,1,3,1",Augmented scale
+"3,1,3,1,3",Augmented scale 1 inversion
+"1,3,1,3,1",Augmented scale 2 inversion
+"3,1,3,1,3",Augmented scale 3 inversion
+"1,3,1,3,1",Augmented scale 4 inversion
+"3,1,3,1,3",Augmented scale 5 inversion
+"3,2,2,1,3",Harmonic Minor(no2)
+"2,2,1,3,1",Harmonic Minor(no2) 1 inversion
+"2,1,3,1,3",Harmonic Minor(no2) 2 inversion
+"1,3,1,3,2",Harmonic Minor(no2) 3 inversion
+"3,1,3,2,2",Harmonic Minor(no2) 4 inversion
+"1,3,2,2,1",Harmonic Minor(no2) 5 inversion
+"1,3,2,1,3","Diminished Scale(no3,no7)"
+"3,2,1,3,2","Diminished Scale(no3,no7) 1 inversion"
+"2,1,3,2,1","Diminished Scale(no3,no7) 2 inversion"
+"1,3,2,1,3","Diminished Scale(no3,no7) 3 inversion"
+"3,2,1,3,2","Diminished Scale(no3,no7) 4 inversion"
+"2,1,3,2,1","Diminished Scale(no3,no7) 5 inversion"
+"3,2,2,2,2",Melodic Minor(no2)
+"2,2,2,2,1",Melodic Minor(no2) 1 inversion
+"2,2,2,1,3",Melodic Minor(no2) 2 inversion
+"2,2,1,3,2",Melodic Minor(no2) 3 inversion
+"2,1,3,2,2",Melodic Minor(no2) 4 inversion
+"1,3,2,2,2",Melodic Minor(no2) 5 inversion
+"2,2,2,2,2",Whole Tone Scale
+"2,2,2,2,2",Whole Tone Scale 1 inversion
+"2,2,2,2,2",Whole Tone Scale 2 inversion
+"2,2,2,2,2",Whole Tone Scale 3 inversion
+"2,2,2,2,2",Whole Tone Scale 4 inversion
+"2,2,2,2,2",Whole Tone Scale 5 inversion

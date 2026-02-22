@@ -1,0 +1,169 @@
+variant_intervals,identification
+"1,1,2",Major(add 2)(add b2)(no 5)
+"1,2,8",Major(add 2)(add b2)(no 5) 1 inversion
+"2,8,1",Major(add 2)(add b2)(no 5) 2 inversion
+"8,1,1",Major(add 2)(add b2)(no 5) 3 inversion
+"7,1,1",6(no3)(add b6)
+"1,1,3",6(no3)(add b6) 1 inversion
+"1,3,7",6(no3)(add b6) 2 inversion
+"3,7,1",6(no3)(add b6) 3 inversion
+"4,6,1",Major7(no5)(add b7)
+"6,1,1",Major7(no5)(add b7) 1 inversion
+"1,1,4",Major7(no5)(add b7) 2 inversion
+"1,4,6",Major7(no5)(add b7) 3 inversion
+"1,1,5",sus2(add b2)
+"1,5,5",sus2(add b2) 1 inversion
+"5,5,1",sus2(add b2) 2 inversion
+"5,1,1",sus2(add b2) 3 inversion
+"4,1,1",Major b5(add 4)
+"1,1,6",Major b5(add 4) 1 inversion
+"1,6,4",Major b5(add 4) 2 inversion
+"6,4,1",Major b5(add 4) 3 inversion
+"7,3,1",Major7(no3)(add b7)
+"3,1,1",Major7(no3)(add b7) 1 inversion
+"1,1,7",Major7(no3)(add b7) 2 inversion
+"1,7,3",Major7(no3)(add b7) 3 inversion
+"2,1,1",Major(no5)(add 2)(add b2)
+"1,1,8",Major(no5)(add 2)(add b2) 1 inversion
+"1,8,2",Major(no5)(add 2)(add b2) 2 inversion
+"8,2,1",Major(no5)(add 2)(add b2) 3 inversion
+"1,2,1",Half-Whole
+"2,1,8",Half-Whole 1 inversion
+"1,8,1",Half-Whole 2 inversion
+"8,1,2",Half-Whole 3 inversion
+"2,2,7",Major7(no5)(add2)
+"2,7,1",Major7(no5)(add2) 1 inversion
+"7,1,2",Major7(no5)(add2) 2 inversion
+"1,2,2",Major7(no5)(add2) 3 inversion
+"1,2,3",Diminished b2
+"2,3,6",Diminished b2 1 inversion
+"3,6,1",Diminished b2 2 inversion
+"6,1,2",Diminished b2 3 inversion
+"1,2,4",Minor b2
+"2,4,5",Minor b2 1 inversion
+"4,5,1",Minor b2 2 inversion
+"5,1,2",Minor b2 3 inversion
+"4,1,2",Major(add 4)
+"1,2,5",Major(add 4) 1 inversion
+"2,5,4",Major(add 4) 2 inversion
+"5,4,1",Major(add 4) 3 inversion
+"1,2,6",Diminished(no5) b2
+"2,6,3",Diminished(no5) b2 1 inversion
+"6,3,1",Diminished(no5) b2 2 inversion
+"3,1,2",Diminished(no5) b2 3 inversion
+"1,2,7",Minor7(no5) b2
+"2,7,2",Minor7(no5) b2 1 inversion
+"7,2,1",Minor7(no5) b2 2 inversion
+"2,1,2",Minor7(no5) b2 3 inversion
+"1,3,1",Major(no5)(add 4) b2
+"3,1,7",Major(no5)(add 4) b2 1 inversion
+"1,7,1",Major(no5)(add 4) b2 2 inversion
+"7,1,3",Major(no5)(add 4) b2 3 inversion
+"3,2,6",MinorMajor7(no5)(add4)
+"2,6,1",MinorMajor7(no5)(add4) 1 inversion
+"6,1,3",MinorMajor7(no5)(add4) 2 inversion
+"1,3,2",MinorMajor7(no5)(add4) 3 inversion
+"3,3,5",MinorMajor7 b5
+"3,5,1",MinorMajor7 b5 1 inversion
+"5,1,3",MinorMajor7 b5 2 inversion
+"1,3,3",MinorMajor7 b5 3 inversion
+"3,4,4",MinorMajor7(mMaj7)
+"4,4,1",MinorMajor7(mMaj7) 1 inversion
+"4,1,3",MinorMajor7(mMaj7) 2 inversion
+"1,3,4",MinorMajor7(mMaj7) 3 inversion
+"3,5,3",MinorMajor7 #5
+"5,3,1",MinorMajor7 #5 1 inversion
+"3,1,3",MinorMajor7 #5 2 inversion
+"1,3,5",MinorMajor7 #5 3 inversion
+"1,3,6",7(no5) b2
+"3,6,2",7(no5) b2 1 inversion
+"6,2,1",7(no5) b2 2 inversion
+"2,1,3",7(no5) b2 3 inversion
+"6,1,4",Major7(no3) #4
+"1,4,1",Major7(no3) #4 1 inversion
+"4,1,6",Major7(no3) #4 2 inversion
+"1,6,1",Major7(no3) #4 3 inversion
+"4,2,5",Major7 b5
+"2,5,1",Major7 b5 1 inversion
+"5,1,4",Major7 b5 2 inversion
+"1,4,2",Major7 b5 3 inversion
+"4,3,4",Major7
+"3,4,1",Major7 1 inversion
+"4,1,4",Major7 2 inversion
+"1,4,3",Major7 3 inversion
+"4,4,3",Augmented Major7
+"4,3,1",Augmented Major7 1 inversion
+"3,1,4",Augmented Major7 2 inversion
+"1,4,4",Augmented Major7 3 inversion
+"2,1,4",Minor(add 2)
+"1,4,5",Minor(add 2) 1 inversion
+"4,5,2",Minor(add 2) 2 inversion
+"5,2,1",Minor(add 2) 3 inversion
+"1,5,1",Crunch
+"5,1,5",Crunch 1 inversion
+"1,5,1",Crunch 2 inversion
+"5,1,5",Crunch 3 inversion
+"5,2,4",sus4 Maj7
+"2,4,1",sus4 Maj7 1 inversion
+"4,1,5",sus4 Maj7 2 inversion
+"1,5,2",sus4 Maj7 3 inversion
+"3,3,1",Minor #4
+"3,1,5",Minor #4 1 inversion
+"1,5,3",Minor #4 2 inversion
+"5,3,3",Minor #4 3 inversion
+"4,2,1",Major #4
+"2,1,5",Major #4 1 inversion
+"1,5,4",Major #4 2 inversion
+"5,4,2",Major #4 3 inversion
+"3,1,6",7(no5) #2
+"1,6,2",7(no5) #2 1 inversion
+"6,2,3",7(no5) #2 2 inversion
+"2,3,1",7(no5) #2 3 inversion
+"2,1,6",Minor(no5)(add 2)(add 6)
+"1,6,3",Minor(no5)(add 2)(add 6) 1 inversion
+"6,3,2",Minor(no5)(add 2)(add 6) 2 inversion
+"3,2,1",Minor(no5)(add 2)(add 6) 3 inversion
+"7,2,2",Major7(no5)(add 6)
+"2,2,1",Major7(no5)(add 6) 1 inversion
+"2,1,7",Major7(no5)(add 6) 2 inversion
+"1,7,2",Major7(no5)(add 6) 3 inversion
+"2,2,6",7(add 2)
+"2,6,2",7(add 2) 1 inversion
+"6,2,2",7(add 2) 2 inversion
+"2,2,2",7(add 2) 3 inversion
+"2,2,3",Major(add 2)
+"2,3,5",Major(add 2) 1 inversion
+"3,5,2",Major(add 2) 2 inversion
+"5,2,2",Major(add 2) 3 inversion
+"2,2,4",Augmented(add 2)
+"2,4,4",Augmented(add 2) 1 inversion
+"4,4,2",Augmented(add 2) 2 inversion
+"4,2,2",Augmented(add 2) 3 inversion
+"3,2,2",Minor(add 4)
+"2,2,5",Minor(add 4) 1 inversion
+"2,5,3",Minor(add 4) 2 inversion
+"5,3,2",Minor(add 4) 3 inversion
+"5,2,3",7sus4
+"2,3,2",7sus4 1 inversion
+"3,2,5",7sus4 2 inversion
+"2,5,2",7sus4 3 inversion
+"3,3,4",Half-diminished(m7b5)
+"3,4,2",Half-diminished(m7b5) 1 inversion
+"4,2,3",Half-diminished(m7b5) 2 inversion
+"2,3,3",Half-diminished(m7b5) 3 inversion
+"3,4,3",Minor7
+"4,3,2",Minor7 1 inversion
+"3,2,3",Minor7 2 inversion
+"2,3,4",Minor7 3 inversion
+"4,2,4",7 b5
+"2,4,2",7 b5 1 inversion
+"4,2,4",7 b5 2 inversion
+"2,4,2",7 b5 3 inversion
+"4,3,3",7
+"3,3,2",7 1 inversion
+"3,2,4",7 2 inversion
+"2,4,3",7 3 inversion
+"3,3,3",Fully diminished
+"3,3,3",Fully diminished 1 inversion
+"3,3,3",Fully diminished 2 inversion
+"3,3,3",Fully diminished 3 inversion

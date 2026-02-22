@@ -1,0 +1,58 @@
+variant_intervals,identification
+"1,1",Chromatic
+"1,10",Chromatic 1 inversion
+"10,1",Chromatic 2 inversion
+"2,9",Maj7(no3)(no5)(add 2)
+"9,1",Maj7(no3)(no5)(add 2) 1 inversion
+"1,2",Maj7(no3)(no5)(add 2) 2 inversion
+"3,8",MinorMajor7(no5)
+"8,1",MinorMajor7(no5) 1 inversion
+"1,3",MinorMajor7(no5) 2 inversion
+"4,7",Major7(no5)
+"7,1",Major7(no5) 1 inversion
+"1,4",Major7(no5) 2 inversion
+"6,1",sus#4
+"1,5",sus#4 1 inversion
+"5,6",sus#4 2 inversion
+"6,5",Major7 b5(no3)
+"5,1",Major7 b5(no3) 1 inversion
+"1,6",Major7 b5(no3) 2 inversion
+"7,4",Major7(no3)
+"4,1",Major7(no3) 1 inversion
+"1,7",Major7(no3) 2 inversion
+"3,1",3(add #2)
+"1,8",3(add #2) 1 inversion
+"8,3",3(add #2) 2 inversion
+"2,1",Minor(add 2)(no5)
+"1,9",Minor(add 2)(no5) 1 inversion
+"9,2",Minor(add 2)(no5) 2 inversion
+"2,2",Major(add 2)(no5)
+"2,8",Major(add 2)(no5) 1 inversion
+"8,2",Major(add 2)(no5) 2 inversion
+"3,7",Minor7(no5)
+"7,2",Minor7(no5) 1 inversion
+"2,3",Minor7(no5) 2 inversion
+"4,6",7(no5)
+"6,2",7(no5) 1 inversion
+"2,4",7(no5) 2 inversion
+"2,5",sus2
+"5,5",sus2 1 inversion
+"5,2",sus2 2 inversion
+"6,4",Minor7 b5(no3)
+"4,2",Minor7 b5(no3) 1 inversion
+"2,6",Minor7 b5(no3) 2 inversion
+"7,3",Minor7 (no3)
+"3,2",Minor7 (no3) 1 inversion
+"2,7",Minor7 (no3) 2 inversion
+"3,3",Diminished
+"3,6",Diminished 1 inversion
+"6,3",Diminished 2 inversion
+"3,4",Minor
+"4,5",Minor 1 inversion
+"5,3",Minor 2 inversion
+"4,3",Major
+"3,5",Major 1 inversion
+"5,4",Major 2 inversion
+"4,4",Augmented
+"4,4",Augmented 1 inversion
+"4,4",Augmented 2 inversion

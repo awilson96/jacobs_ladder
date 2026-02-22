@@ -1,0 +1,33 @@
+variant_intervals,identification
+"2,1,2,2,1,1,2",Melodic Minor(add b6) Bebop Scale
+"1,2,2,1,1,2,1",Melodic Minor(add b6) Bebop Scale 1 inversion
+"2,2,1,1,2,1,2",Melodic Minor(add b6) Bebop Scale 2 inversion
+"2,1,1,2,1,2,1",Melodic Minor(add b6) Bebop Scale 3 inversion
+"1,1,2,1,2,1,2",Melodic Minor(add b6) Bebop Scale 4 inversion
+"1,2,1,2,1,2,2",Melodic Minor(add b6) Bebop Scale 5 inversion
+"2,1,2,1,2,2,1",Melodic Minor(add b6) Bebop Scale 6 inversion
+"1,2,1,2,2,1,1",Melodic Minor(add b6) Bebop Scale 7 inversion
+"2,2,1,2,1,1,2",Major(add b6) Bebop Scale
+"2,1,2,1,1,2,1",Major(add b6) Bebop Scale 1 inversion
+"1,2,1,1,2,1,2",Major(add b6) Bebop Scale 2 inversion
+"2,1,1,2,1,2,2",Major(add b6) Bebop Scale 3 inversion
+"1,1,2,1,2,2,1",Major(add b6) Bebop Scale 4 inversion
+"1,2,1,2,2,1,2",Major(add b6) Bebop Scale 5 inversion
+"2,1,2,2,1,2,1",Major(add b6) Bebop Scale 6 inversion
+"1,2,2,1,2,1,1",Major(add b6) Bebop Scale 7 inversion
+"2,1,2,1,1,2,2",Melodic Minor(add #4) Bebop Scale
+"1,2,1,1,2,2,1",Melodic Minor(add #4) Bebop Scale 1 inversion
+"2,1,1,2,2,1,2",Melodic Minor(add #4) Bebop Scale 2 inversion
+"1,1,2,2,1,2,1",Melodic Minor(add #4) Bebop Scale 3 inversion
+"1,2,2,1,2,1,2",Melodic Minor(add #4) Bebop Scale 4 inversion
+"2,2,1,2,1,2,1",Melodic Minor(add #4) Bebop Scale 5 inversion
+"2,1,2,1,2,1,1",Melodic Minor(add #4) Bebop Scale 6 inversion
+"1,2,1,2,1,1,2",Melodic Minor(add #4) Bebop Scale 7 inversion
+"1,2,1,2,1,2,1",Diminished Scale
+"2,1,2,1,2,1,2",Diminished Scale 1 inversion
+"1,2,1,2,1,2,1",Diminished Scale 2 inversion
+"2,1,2,1,2,1,2",Diminished Scale 3 inversion
+"1,2,1,2,1,2,1",Diminished Scale 4 inversion
+"2,1,2,1,2,1,2",Diminished Scale 5 inversion
+"1,2,1,2,1,2,1",Diminished Scale 6 inversion
+"2,1,2,1,2,1,2",Diminished Scale 7 inversion
