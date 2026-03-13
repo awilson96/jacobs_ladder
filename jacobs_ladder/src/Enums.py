@@ -97,3 +97,9 @@ class NoteDivisions(Enum):
 class MidiStatus(Enum):
     NOTE_ON = 144
     NOTE_OFF = 128
+
+class Algorithm(Enum):
+    FIXED_AXIS = 0
+    CLOSEST_OCTAVE = 1
+    LOWER_OCTAVE = 2
+    UPPER_OCTAVE = 3
