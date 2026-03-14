@@ -24,7 +24,6 @@ class UDPSender:
             # Serialize the data to JSON format
             message = json.dumps(data)
             self.sock.sendto(message.encode(), self.send_address)
-            self.logger.debug(f"Sent: {data}")
         except Exception as e:
             self.logger.error(f"Error sending data: {e}")
 
@@ -36,9 +35,8 @@ class UDPSender:
         """
         try:
             self.sock.sendto(data_bytes, self.send_address)
-            self.logger.debug(f"Sent bytes: {data_bytes}")
         except Exception as e:
-            self.logger.debug(f"Error sending data: {e}")
+            self.logger.error(f"Error sending data: {e}")
 
     def stop(self):
         self.sock.close()
@@ -60,7 +58,6 @@ class UDPReceiver(ABC):
                 try:
                     # Wait for incoming data (up to 4 KB)
                     data, _ = self.sock.recvfrom(4096)
-                    self.logger.debug(f"Received raw UDP data: {data.hex()}")
                     self.dispatch_message(data=data)
 
                 except socket.timeout:

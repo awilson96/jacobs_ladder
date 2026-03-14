@@ -39,7 +39,6 @@ class MidiRecorder:
         self.start_ticks = self.qpc.qpcGetTicks()
         self.last_ticks = self.start_ticks
         self.messages = []
-        self.logger.info("Recording started...")
 
     def stop(self, filename="recording.mid"):
         """Stop recording and save in background. Safe against multiple calls."""
@@ -66,7 +65,6 @@ class MidiRecorder:
             daemon=True
         )
         self._saving_thread.start()
-        self.logger.info(f"Recording stopped — saving in background to {filename}...")
 
     def _save_recording(self, filename, start_ticks):
         """Threaded save operation, clears messages after saving."""
@@ -93,8 +91,6 @@ class MidiRecorder:
                 elif 176 <= status < 192:
                     msg_type = 'control_change'
 
-                self.logger.debug(msg_type, note_or_control, velocity_or_value, delta_s)
-
                 if msg_type:
                     delta_ticks = int(mido.second2tick(delta_s, mid.ticks_per_beat, tempo))
 
@@ -113,7 +109,6 @@ class MidiRecorder:
                     self.logger.warning(f"Skipped unknown status byte: {status}")
 
             mid.save(filename)
-            self.logger.info(f"Recording saved to: {os.path.abspath(filename)}")
 
         except Exception as e:
             self.logger.error(f"Error while saving MIDI file: {e}")

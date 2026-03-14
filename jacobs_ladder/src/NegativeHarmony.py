@@ -1,12 +1,5 @@
 from .Enums import Algorithm
 
-class NegativeHarmony:
-
-    def __init__(self, substitute: bool = False):
-        self.substitute = substitute
-        self.note
-
-
 class NoteMap:
     def __init__(self, name: str, octaveNoteMap: dict, algorithm: Algorithm, active: bool, keyCenter: int = 60) -> None:
         self.name = name
@@ -62,10 +55,13 @@ class NoteMap:
         Returns:
             int: negative harmony version of your note if NoteMap is active and your original note otherwise
         """
-        if self.active:
-            return self.noteMapping[note-self.__midiRange__[0]]
-        else:
-            return note
+        if not self.active:
+            return None
+
+        if note not in self.__midiRange__:
+            return None
+
+        return self.noteMapping[note - self.__midiRange__[0]]
         
     def isActive(self) -> bool:
         """Check if the current NoteMap is active
@@ -139,6 +135,8 @@ class NoteMap:
             match self.algorithm:
                 case Algorithm.CLOSEST_OCTAVE:
                     self.__mapClosestOctave__(octaveIntervalMap, pitch_class)
+                case Algorithm.FIXED_AXIS:
+                    pass
                 case Algorithm.LOWER_OCTAVE:
                     self.__mapLowerOctave__(octaveIntervalMap, pitch_class)
                 case Algorithm.UPPER_OCTAVE:
@@ -266,6 +264,105 @@ class NoteMap:
             elif value not in self.__midiRange__:
                 return False
         return True
+    
+class NegativeHarmony:
+
+    def __init__(self, substitute: bool = False):
+        self.substitute = substitute
+        self.maps = []
+
+    def addNoteMapping(self, noteMap: NoteMap) -> None:
+        """Add a new NoteMap to the NagativeHarmony class
+
+        Args:
+            map (NoteMap): a note mapping which can be used to map notes to their revolved or reflected variants
+        """
+        if noteMap.getName() not in [name.getName() for name in self.maps]:
+            self.maps.append(noteMap)
+
+    def editMapNote(self, name: str, key: int, value: int):
+        for map in self.maps:
+            if map.getName() == name:
+                return map.editOctaveNoteMap(key, value)
+
+    def getMaps(self) -> list:
+        return self.maps
+
+    def processNoteOn(self, note: int) -> dict:
+        display_notes = []
+        play_notes = []
+
+        for index, note_map in enumerate(self.maps):
+
+            if not note_map.isActive():
+                continue
+
+            mapped_note = note_map.getNegativeHarmonyNote(note)
+
+            if mapped_note is None:
+                continue
+
+            display_notes.append((index, mapped_note))
+
+            if self.substitute:
+                play_notes.append(mapped_note)
+
+        if not self.substitute:
+            play_notes = [note]
+
+        return {
+            "display": display_notes,
+            "play": play_notes
+        }
+    
+    def processNoteOff(self, note: int) -> list:
+        notes = []
+
+        for note_map in self.maps:
+            if note_map.isActive():
+                mapped = note_map.getNegativeHarmonyNote(note)
+                if mapped is not None:
+                    notes.append(mapped)
+
+        if not self.substitute:
+            notes.append(note)
+
+        return notes
+
+    def removeNoteMapping(self, name: str) -> None:
+        """Remove a map from the Negative Harmony class
+
+        Args:
+            name (str): the name of the map to remove
+        """
+        for map in self.maps:
+            if map.getName() == name:
+                self.maps.remove(map)
+                break
+
+    def setMapActive(self, name: str, active: bool):
+        for map in self.maps:
+            if map.getName() == name:
+                map.setActive(active)
+                return
+    
+    def setMapAlgorithm(self, name: str, algorithm):
+        for map in self.maps:
+            if map.getName() == name:
+                map.setAlgorithm(algorithm)
+
+    def setMapKeyCenter(self, name: str, keyCenter: int):
+        for map in self.maps:
+            if map.getName() == name:
+                map.setKeyCenter(keyCenter)
+
+    def subNegHarmNotes(self, shouldSubstitute: bool) -> None:
+        """Edit the substitute class variable which substitutes original notes for all active NoteMap notes if True and only forwards negative harmony notes to GUI if False
+
+        Args:
+            shouldSubstitute (bool): True if you want to substitute original notes for negative harmony notes, False otherwise
+        """
+        self.substitute = shouldSubstitute
         
 if __name__ == "__main__":
     cg_reflected = {60: 67, 61: 66, 62: 65, 63: 64, 64: 63, 65: 62, 66: 61, 67: 60, 68: 71, 69: 70, 70: 69, 71: 68}

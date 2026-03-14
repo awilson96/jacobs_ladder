@@ -73,7 +73,7 @@ class MusicTheory:
 
         intervals: tuple[int] = self.get_intervals(notes)
 
-        print(intervals)
+        # print(intervals)
         
         if len(intervals) == 0:
             return f"{self.int_note[notes[0]]}"
@@ -169,9 +169,6 @@ class MusicTheory:
                     if note in avoid_notes:
                         avoid_notes.remove(note)
                         bitmasks.append(self.get_bitmask(scale=scale))
-            
-            if avoid_notes:
-                self.logger.debug(f"[MT] \r{sorted(list(avoid_notes))}")
 
         candidate_key_names = [candidate_key.name for candidate_key in candidate_keys]
 

@@ -34,8 +34,6 @@ class JustIntonation:
         self.tuning_config = read_tuning_config(name=kwargs.get("tuning_ratios_all", "5-limit-ratios"))
         self.tuning_pref = read_tuning_config(name=kwargs.get("tuning_ratios_pref", "5-limit-pref"))
         self.tuning_limit = kwargs.get("tuning_limit", 5) 
-
-        self.logger.info("[JI] Construtor called")
         
         if self.tuning:
             self.calculate_pitch_table(offset=0)

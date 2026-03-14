@@ -19,14 +19,11 @@ class JacobMonitor(UDPReceiver):
     def dispatch_message(self, data: bytes):
         """Decode and dispatch incoming UDP datagrams by message type."""
         if len(data) < 4:
-            self.logger.warning("[JM] Received message too short")
             return
 
         # Unpack 32-bit message type (big-endian)
         message_type = struct.unpack_from(">I", data, 0)[0]
         payload = data[4:]
-
-        self.logger.info(f"[JM] Received message type: {message_type}")
 
 
         if message_type == 1:
@@ -46,8 +43,6 @@ class JacobMonitor(UDPReceiver):
 
         # Unpack recording_state and tempo_bpm (both uint32, big-endian)
         recording_state, tempo_bpm = struct.unpack_from(">II", payload, 0)
-
-        self.logger.info(f"[JM] Received recording_state={recording_state}, tempo_bpm={tempo_bpm}")
 
         if hasattr(self.manager, "change_recording_mode"):
             try:
@@ -74,8 +69,6 @@ class JacobMonitor(UDPReceiver):
                 cleaned_ports.append(" ".join(port.split()[:-1]))
             else:
                 cleaned_ports.append(port)
-
-        self.logger.info(f"[JM] Received get_midi_input_ports request...\nSending cleaned ports:\n{cleaned_ports}")
 
         if not cleaned_ports:
             payload = b""
@@ -132,7 +125,6 @@ class JacobMonitor(UDPReceiver):
                     project_root = Path(__file__).resolve().parents[2]
                     map_ports_bin = project_root / "jacobs_ladder" / "cpp" / "bin" / "MapPorts"
 
-                    self.logger.info(f"[JM] Launching MapPorts for input: {new_port}")
                     self._map_ports_process = subprocess.Popen(
                         [str(map_ports_bin), "--port", new_port],
                         stdout=subprocess.DEVNULL,
@@ -149,8 +141,6 @@ class JacobMonitor(UDPReceiver):
             self.manager.set_input_port(effective_input_port)
             self.manager.initialize_ports()
             self.manager.set_midi_callback()
-
-            self.logger.info(f"[JM] Input port switched successfully: {new_port}")
 
             # --- Update default_config.yaml ---
             project_root = Path(__file__).resolve().parents[2]
@@ -172,7 +162,6 @@ class JacobMonitor(UDPReceiver):
                 with open(config_path, "w", encoding="utf-8") as f:
                     f.write(new_config_text)
 
-                self.logger.info(f"[JM] default_config.yaml updated with input_port: {new_port}")
             else:
                 self.logger.warning(f"[JM] default_config.yaml not found at {config_path}")
 
