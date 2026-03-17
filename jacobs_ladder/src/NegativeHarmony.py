@@ -1,3 +1,4 @@
+from .DataClasses import DisplayNote, NoteProcessResult
 from .Enums import Algorithm, PlayMode
 
 class NoteMap:
@@ -291,15 +292,18 @@ class NegativeHarmony:
     def getPlayMode(self) -> PlayMode:
         return self.play_mode
 
-    def processNoteOn(self, note: int) -> dict:
-        
+    def processNoteOn(self, note: int) -> NoteProcessResult:
+
         if self.playMode == PlayMode.ORIGINAL_ONLY:
-            play_notes = [note]
+            return NoteProcessResult(
+                display=[DisplayNote("Original", note)],
+                play=[note]
+            )
 
         display_notes = []
         mapped_notes = []
 
-        for index, note_map in enumerate(self.maps):
+        for note_map in self.maps:
 
             if not note_map.isActive():
                 continue
@@ -309,22 +313,23 @@ class NegativeHarmony:
             if mapped_note is None:
                 continue
 
-            display_notes.append((index, mapped_note))
+            display_notes.append(DisplayNote(note_map.getName(), mapped_note))
             mapped_notes.append(mapped_note)
 
         if self.playMode == PlayMode.SUBSTITUTE:
             play_notes = mapped_notes
 
         elif self.playMode == PlayMode.LAYERED:
+            display_notes.insert(0, DisplayNote("Original", note))
             play_notes = [note] + mapped_notes
 
         else:
             play_notes = [note]
 
-        return {
-            "display": display_notes,
-            "play": play_notes
-        }
+        return NoteProcessResult(
+            display=display_notes,
+            play=play_notes
+        )
     
     def processNoteOff(self, note: int) -> list:
         

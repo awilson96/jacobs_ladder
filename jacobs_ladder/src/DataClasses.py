@@ -38,3 +38,13 @@ class RhythmNoteEvent:
         self.velocity = velocity
         self.tempo = tempo
         self.absolute_time = offset + division_to_dt(division=division, tempo=tempo)
+        
+@dataclass
+class DisplayNote:
+    map_name: str
+    note: int
+    
+@dataclass
+class NoteProcessResult:
+    display: list[DisplayNote]
+    play: list[int]
