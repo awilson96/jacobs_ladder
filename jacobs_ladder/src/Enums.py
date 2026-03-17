@@ -103,3 +103,8 @@ class Algorithm(Enum):
     CLOSEST_OCTAVE = 1
     LOWER_OCTAVE = 2
     UPPER_OCTAVE = 3
+    
+class PlayMode(Enum):
+    ORIGINAL_ONLY = 1
+    SUBSTITUTE = 2
+    LAYERED = 3

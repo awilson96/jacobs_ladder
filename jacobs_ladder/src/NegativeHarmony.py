@@ -1,4 +1,4 @@
-from .Enums import Algorithm
+from .Enums import Algorithm, PlayMode
 
 class NoteMap:
     def __init__(self, name: str, octaveNoteMap: dict, algorithm: Algorithm, active: bool, keyCenter: int = 60) -> None:
@@ -267,8 +267,8 @@ class NoteMap:
     
 class NegativeHarmony:
 
-    def __init__(self, substitute: bool = False):
-        self.substitute = substitute
+    def __init__(self, playMode: PlayMode = PlayMode.SUBSTITUTE):
+        self.play_mode = playMode
         self.maps = []
 
     def addNoteMapping(self, noteMap: NoteMap) -> None:
@@ -285,12 +285,19 @@ class NegativeHarmony:
             if map.getName() == name:
                 return map.editOctaveNoteMap(key, value)
 
-    def getMaps(self) -> list:
+    def getMaps(self) -> list[NoteMap]:
         return self.maps
+    
+    def getPlayMode(self) -> PlayMode:
+        return self.play_mode
 
     def processNoteOn(self, note: int) -> dict:
+        
+        if self.playMode == PlayMode.ORIGINAL_ONLY:
+            play_notes = [note]
+
         display_notes = []
-        play_notes = []
+        mapped_notes = []
 
         for index, note_map in enumerate(self.maps):
 
@@ -303,11 +310,15 @@ class NegativeHarmony:
                 continue
 
             display_notes.append((index, mapped_note))
+            mapped_notes.append(mapped_note)
 
-            if self.substitute:
-                play_notes.append(mapped_note)
+        if self.playMode == PlayMode.SUBSTITUTE:
+            play_notes = mapped_notes
 
-        if not self.substitute:
+        elif self.playMode == PlayMode.LAYERED:
+            play_notes = [note] + mapped_notes
+
+        else:
             play_notes = [note]
 
         return {
@@ -316,18 +327,25 @@ class NegativeHarmony:
         }
     
     def processNoteOff(self, note: int) -> list:
-        notes = []
+        
+        if self.playMode == PlayMode.ORIGINAL_ONLY:
+            return [note]
+
+        mapped_notes = []
 
         for note_map in self.maps:
             if note_map.isActive():
                 mapped = note_map.getNegativeHarmonyNote(note)
                 if mapped is not None:
-                    notes.append(mapped)
+                    mapped_notes.append(mapped)
 
-        if not self.substitute:
-            notes.append(note)
+        if self.playMode == PlayMode.SUBSTITUTE:
+            return mapped_notes
 
-        return notes
+        elif self.playMode == PlayMode.LAYERED:
+            return [note] + mapped_notes
+
+        return [note]
 
     def removeNoteMapping(self, name: str) -> None:
         """Remove a map from the Negative Harmony class
@@ -340,29 +358,27 @@ class NegativeHarmony:
                 self.maps.remove(map)
                 break
 
-    def setMapActive(self, name: str, active: bool):
+    def setMapActive(self, name: str, active: bool) -> None:
         for map in self.maps:
             if map.getName() == name:
                 map.setActive(active)
                 return
     
-    def setMapAlgorithm(self, name: str, algorithm):
+    def setMapAlgorithm(self, name: str, algorithm: Algorithm) -> None:
         for map in self.maps:
             if map.getName() == name:
                 map.setAlgorithm(algorithm)
+                return
 
-    def setMapKeyCenter(self, name: str, keyCenter: int):
+    def setMapKeyCenter(self, name: str, keyCenter: int) -> None:
         for map in self.maps:
             if map.getName() == name:
                 map.setKeyCenter(keyCenter)
-
-    def subNegHarmNotes(self, shouldSubstitute: bool) -> None:
-        """Edit the substitute class variable which substitutes original notes for all active NoteMap notes if True and only forwards negative harmony notes to GUI if False
-
-        Args:
-            shouldSubstitute (bool): True if you want to substitute original notes for negative harmony notes, False otherwise
-        """
-        self.substitute = shouldSubstitute
+                return
+            
+    def setPlayMode(self, playMode: PlayMode) -> None:
+        self.play_mode = playMode
+        return
         
 if __name__ == "__main__":
     cg_reflected = {60: 67, 61: 66, 62: 65, 63: 64, 64: 63, 65: 62, 66: 61, 67: 60, 68: 71, 69: 70, 70: 69, 71: 68}
